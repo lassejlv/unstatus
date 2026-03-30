@@ -36,6 +36,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/")({
   component: StatusPagesPage,
@@ -48,7 +49,15 @@ function StatusPagesPage() {
   const pagesQuery = orpc.statusPages.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
   });
-  const { data: pages } = useQuery(pagesQuery);
+  const { data: pages, isLoading } = useQuery(pagesQuery);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-12">
+        <Spinner className="size-5" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,6 +111,7 @@ function StatusPagesPage() {
               Create a status page to share your uptime with users.
             </EmptyDescription>
           </EmptyHeader>
+          {activeOrg && <CreateStatusPageDialog organizationId={activeOrg.id} />}
         </Empty>
       )}
     </div>

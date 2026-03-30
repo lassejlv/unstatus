@@ -45,6 +45,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Spinner } from "@/components/ui/spinner";
 
 const REGIONS = [
   { id: "eu", label: "Europe" },
@@ -62,7 +63,15 @@ function MonitorsPage() {
   const monitorsQuery = orpc.monitors.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
   });
-  const { data: monitors } = useQuery(monitorsQuery);
+  const { data: monitors, isLoading } = useQuery(monitorsQuery);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-12">
+        <Spinner className="size-5" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,6 +134,7 @@ function MonitorsPage() {
               Create your first monitor to start tracking uptime.
             </EmptyDescription>
           </EmptyHeader>
+          {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} />}
         </Empty>
       )}
     </div>

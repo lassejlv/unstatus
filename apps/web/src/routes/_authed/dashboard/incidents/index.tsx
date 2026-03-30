@@ -44,6 +44,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/_authed/dashboard/incidents/")({
   component: IncidentsPage,
@@ -60,8 +61,16 @@ function IncidentsPage() {
     input: orgId ? { organizationId: orgId } : skipToken,
   });
 
-  const { data: monitors } = useQuery(monitorsQuery);
-  const { data: incidents } = useQuery(incidentsQuery);
+  const { data: monitors, isLoading: monitorsLoading } = useQuery(monitorsQuery);
+  const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
+
+  if (monitorsLoading || incidentsLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-12">
+        <Spinner className="size-5" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -122,9 +131,14 @@ function IncidentsPage() {
           <EmptyHeader>
             <EmptyTitle>No incidents</EmptyTitle>
             <EmptyDescription>
-              No incidents have been reported yet.
+              {monitors?.length
+                ? "No incidents have been reported yet."
+                : "Create a monitor first to start reporting incidents."}
             </EmptyDescription>
           </EmptyHeader>
+          {monitors?.length ? (
+            <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
+          ) : null}
         </Empty>
       )}
     </div>

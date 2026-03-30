@@ -16,21 +16,12 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
@@ -40,25 +31,15 @@ function SettingsPage() {
   const { activeOrg } = useOrg();
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-sm font-medium">Settings</h1>
-
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
       {/* Org details */}
       {activeOrg && <OrgDetails orgId={activeOrg.id} />}
-
-      <Separator />
 
       {/* Members */}
       {activeOrg && <MembersSection orgId={activeOrg.id} />}
 
-      <Separator />
-
-      {/* Create new org */}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-xs font-medium">Organizations</h2>
-        <OrgList />
-        <CreateOrgDialog />
-      </div>
+      {/* Organizations */}
+      <OrgSection />
     </div>
   );
 }
@@ -72,33 +53,41 @@ function OrgDetails({ orgId }: { orgId: string }) {
   if (!org) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-xs font-medium">Organization</h2>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label>Name</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label>Slug</Label>
-          <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+    <div className="rounded-lg border">
+      <div className="border-b px-4 py-3">
+        <h2 className="text-sm font-medium">Organization</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Manage your organization name and URL slug.
+        </p>
+      </div>
+      <div className="flex flex-col gap-4 p-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label>Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Slug</Label>
+            <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+          </div>
         </div>
       </div>
-      <Button
-        size="sm"
-        className="self-start"
-        disabled={saving || (!name && !slug)}
-        onClick={async () => {
-          setSaving(true);
-          await authClient.organization.update({
-            data: { name, slug },
-            organizationId: orgId,
-          });
-          setSaving(false);
-        }}
-      >
-        Save
-      </Button>
+      <div className="flex items-center justify-end border-t bg-muted/30 px-4 py-3">
+        <Button
+          size="sm"
+          disabled={saving || (!name && !slug)}
+          onClick={async () => {
+            setSaving(true);
+            await authClient.organization.update({
+              data: { name, slug },
+              organizationId: orgId,
+            });
+            setSaving(false);
+          }}
+        >
+          Save changes
+        </Button>
+      </div>
     </div>
   );
 }
@@ -108,51 +97,49 @@ function MembersSection({ orgId }: { orgId: string }) {
   const members = data ?? [];
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-medium">Members</h2>
+    <div className="rounded-lg border">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div>
+          <h2 className="text-sm font-medium">Members</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage who has access to this organization.
+          </p>
+        </div>
         <InviteMemberDialog orgId={orgId} />
       </div>
       {members.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell>
-                  <div>
-                    <span className="text-sm font-medium">{m.user.name}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">{m.user.email}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{m.role}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {m.role !== "owner" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        authClient.organization.removeMember({ memberIdOrEmail: m.id })
-                      }
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div>
+          {members.map((m, i) => (
+            <div
+              key={m.id}
+              className={`flex items-center justify-between px-4 py-3 ${i < members.length - 1 ? "border-b" : ""}`}
+            >
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{m.user.name}</span>
+                <span className="text-xs text-muted-foreground">{m.user.email}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{m.role}</Badge>
+                {m.role !== "owner" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() =>
+                      authClient.organization.removeMember({ memberIdOrEmail: m.id })
+                    }
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        <p className="text-xs text-muted-foreground">No members.</p>
+        <div className="px-4 py-6 text-center">
+          <p className="text-xs text-muted-foreground">No members yet. Invite someone to get started.</p>
+        </div>
       )}
     </div>
   );
@@ -221,24 +208,47 @@ function InviteMemberDialog({ orgId }: { orgId: string }) {
   );
 }
 
-function OrgList() {
+function OrgSection() {
   const { data: orgs } = authClient.useListOrganizations();
-  const { setActiveOrg } = useOrg();
-
-  if (!orgs?.length) return null;
+  const { setActiveOrg, activeOrg } = useOrg();
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {orgs.map((org) => (
-        <Button
-          key={org.id}
-          variant="outline"
-          size="sm"
-          onClick={() => setActiveOrg(org.id)}
-        >
-          {org.name}
-        </Button>
-      ))}
+    <div className="rounded-lg border">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div>
+          <h2 className="text-sm font-medium">Organizations</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Switch between or create new organizations.
+          </p>
+        </div>
+        <CreateOrgDialog />
+      </div>
+      {orgs?.length ? (
+        <div>
+          {orgs.map((org, i) => (
+            <div
+              key={org.id}
+              className={`flex items-center justify-between px-4 py-3 ${i < orgs.length - 1 ? "border-b" : ""}`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{org.name}</span>
+                {org.id === activeOrg?.id && (
+                  <Badge variant="secondary">Current</Badge>
+                )}
+              </div>
+              {org.id !== activeOrg?.id && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveOrg(org.id)}
+                >
+                  Switch
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -252,7 +262,7 @@ function CreateOrgDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="self-start">
+        <Button size="sm" variant="outline">
           New organization
         </Button>
       </DialogTrigger>

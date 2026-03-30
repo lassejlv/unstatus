@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 const REGIONS = [
   { id: "eu", label: "Europe" },
@@ -95,7 +96,13 @@ function MonitorDetailPage() {
 
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
 
-  if (!monitor) return null;
+  if (!monitor) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-12">
+        <Spinner className="size-5" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -208,54 +215,72 @@ function MonitorDetailPage() {
               <SheetHeader>
                 <SheetTitle>Check details</SheetTitle>
               </SheetHeader>
-              <div className="flex flex-col gap-4 pt-4">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge
-                    className="w-fit"
-                    variant={
-                      selectedCheck.status === "up"
-                        ? "default"
-                        : selectedCheck.status === "degraded"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                  >
-                    {selectedCheck.status}
-                  </Badge>
-                  <span className="text-muted-foreground">Status code</span>
-                  <span>{selectedCheck.statusCode ?? "—"}</span>
-                  <span className="text-muted-foreground">Latency</span>
-                  <span>{selectedCheck.latency}ms</span>
-                  <span className="text-muted-foreground">Region</span>
-                  <span>{selectedCheck.region ?? "—"}</span>
-                  <span className="text-muted-foreground">Time</span>
-                  <span>{new Date(selectedCheck.checkedAt).toLocaleString()}</span>
+              <div className="flex flex-col gap-6 pt-4">
+                {/* Summary */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between border-b px-3 py-2.5">
+                    <span className="text-xs text-muted-foreground">Status</span>
+                    <Badge
+                      variant={
+                        selectedCheck.status === "up"
+                          ? "default"
+                          : selectedCheck.status === "degraded"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {selectedCheck.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between border-b px-3 py-2.5">
+                    <span className="text-xs text-muted-foreground">Status code</span>
+                    <span className="text-xs font-medium font-mono">{selectedCheck.statusCode ?? "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b px-3 py-2.5">
+                    <span className="text-xs text-muted-foreground">Latency</span>
+                    <span className="text-xs font-medium font-mono">{selectedCheck.latency}ms</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b px-3 py-2.5">
+                    <span className="text-xs text-muted-foreground">Region</span>
+                    <span className="text-xs font-medium">{selectedCheck.region?.toUpperCase() ?? "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5">
+                    <span className="text-xs text-muted-foreground">Time</span>
+                    <span className="text-xs font-medium">{new Date(selectedCheck.checkedAt).toLocaleString()}</span>
+                  </div>
                   {selectedCheck.message && (
-                    <>
-                      <span className="text-muted-foreground">Message</span>
-                      <span>{selectedCheck.message}</span>
-                    </>
+                    <div className="flex items-center justify-between border-t px-3 py-2.5">
+                      <span className="text-xs text-muted-foreground">Message</span>
+                      <span className="text-xs font-medium">{selectedCheck.message}</span>
+                    </div>
                   )}
                 </div>
 
+                {/* Response headers */}
                 {selectedCheck.responseHeaders && (
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-2">
                     <span className="text-xs font-medium">Response headers</span>
-                    <pre className="rounded border bg-muted p-2 text-[11px] overflow-x-auto whitespace-pre-wrap break-all">
+                    <div className="rounded-lg border">
                       {Object.entries(
                         selectedCheck.responseHeaders as Record<string, string>,
-                      )
-                        .map(([k, v]) => `${k}: ${v}`)
-                        .join("\n")}
-                    </pre>
+                      ).map(([key, value], i, arr) => (
+                        <div
+                          key={key}
+                          className={`flex gap-3 px-3 py-2 text-[11px] ${i < arr.length - 1 ? "border-b" : ""}`}
+                        >
+                          <span className="shrink-0 font-mono font-medium text-muted-foreground">{key}</span>
+                          <span className="font-mono break-all text-right ml-auto">{value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
+                {/* Response body */}
                 {selectedCheck.responseBody && (
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-2">
                     <span className="text-xs font-medium">Response body</span>
-                    <pre className="rounded border bg-muted p-2 text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-96">
+                    <pre className="rounded-lg border bg-muted/50 p-3 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all max-h-96">
                       {formatBody(selectedCheck.responseBody)}
                     </pre>
                   </div>

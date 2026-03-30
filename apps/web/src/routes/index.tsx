@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
+import { Globe, Bell, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -115,18 +116,25 @@ function HomePage() {
             >
               Status
             </Link>
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-sm">
-                Sign in
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/login">
+                <Button variant="ghost" size="sm" className="text-sm">
+                  Sign in
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button size="sm" className="text-sm">
+                  Sign up free
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </motion.header>
 
       <main className="flex-1 px-6">
         {/* Hero */}
-        <section className="mx-auto max-w-5xl pt-32 pb-40">
+        <section className="mx-auto max-w-5xl pt-20 pb-24">
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -168,31 +176,46 @@ function HomePage() {
         </section>
 
         {/* Features */}
-        <section className="mx-auto max-w-5xl border-t py-24">
+        <section className="mx-auto max-w-5xl border-t py-20">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid gap-12 text-center sm:grid-cols-3"
+            className="grid gap-10 sm:grid-cols-3"
           >
-            <motion.div variants={fadeInVariants}>
-              <h3 className="text-sm font-medium">Public pages</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Custom domains and branding that matches your company.
-              </p>
+            <motion.div variants={fadeInVariants} className="flex flex-col gap-3">
+              <div className="flex size-8 items-center justify-center rounded-md border bg-muted">
+                <Globe className="size-4 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">Public status pages</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  Custom domains and branding that matches your company. Keep customers informed in real time.
+                </p>
+              </div>
             </motion.div>
-            <motion.div variants={fadeInVariants}>
-              <h3 className="text-sm font-medium">Notifications</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Email, SMS, and webhooks when incidents occur.
-              </p>
+            <motion.div variants={fadeInVariants} className="flex flex-col gap-3">
+              <div className="flex size-8 items-center justify-center rounded-md border bg-muted">
+                <Bell className="size-4 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">Instant notifications</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  Email, SMS, and webhooks the moment an incident is detected. No delays, no missed alerts.
+                </p>
+              </div>
             </motion.div>
-            <motion.div variants={fadeInVariants}>
-              <h3 className="text-sm font-medium">Monitoring</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Automated health checks with historical data.
-              </p>
+            <motion.div variants={fadeInVariants} className="flex flex-col gap-3">
+              <div className="flex size-8 items-center justify-center rounded-md border bg-muted">
+                <Activity className="size-4 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">Uptime monitoring</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  Automated HTTP and TCP health checks from multiple regions with full historical data.
+                </p>
+              </div>
             </motion.div>
           </motion.div>
         </section>
