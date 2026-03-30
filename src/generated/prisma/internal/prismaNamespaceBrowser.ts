@@ -170,7 +170,8 @@ export const MonitorScalarFieldEnum = {
   rules: 'rules',
   regions: 'regions',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  lastCheckedAt: 'lastCheckedAt'
 } as const
 
 export type MonitorScalarFieldEnum = (typeof MonitorScalarFieldEnum)[keyof typeof MonitorScalarFieldEnum]
@@ -184,6 +185,8 @@ export const MonitorCheckScalarFieldEnum = {
   statusCode: 'statusCode',
   message: 'message',
   region: 'region',
+  responseHeaders: 'responseHeaders',
+  responseBody: 'responseBody',
   checkedAt: 'checkedAt'
 } as const
 

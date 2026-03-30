@@ -17,6 +17,52 @@ To build this application for production:
 bun --bun run build
 ```
 
+## Custom Domains via Cloudflare
+
+This repo includes a separate Cloudflare Worker in [`cf-proxy/`](/Users/lassevestergaard/Documents/dev/unstatus/cf-proxy) for white-label status page domains.
+
+### Expected DNS layout
+
+Use your Cloudflare zone as the SaaS entrypoint:
+
+- `cname.unstatus.lassejlv.dk`
+  Customer-facing CNAME target for Cloudflare for SaaS custom hostnames.
+- `origin.unstatus.lassejlv.dk`
+  Dedicated origin hostname that points to Railway.
+
+Do not point the Worker back at the same public SaaS hostname. The proxy origin must be a separate hostname to avoid loops.
+
+### Railway DNS
+
+Create a Railway custom domain for:
+
+```txt
+origin.unstatus.lassejlv.dk
+```
+
+Point that hostname at your Railway service as normal.
+
+### Cloudflare Worker env
+
+The `cf-proxy` Worker uses:
+
+```txt
+APP_ORIGIN=https://origin.unstatus.lassejlv.dk
+FIRST_PARTY_HOSTS=cname.unstatus.lassejlv.dk
+```
+
+If you later move the first-party app UI onto another host in Cloudflare, append it to `FIRST_PARTY_HOSTS` as a comma-separated list.
+
+### Customer DNS
+
+Each customer domain should CNAME to:
+
+```txt
+cname.unstatus.lassejlv.dk
+```
+
+The Worker forwards the original custom hostname to the TanStack app through the trusted `x-unstatus-custom-host` header, and the app resolves the page from `StatusPage.customDomain`.
+
 ## Testing
 
 This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:

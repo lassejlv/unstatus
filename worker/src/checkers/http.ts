@@ -16,11 +16,22 @@ export async function checkHttp(monitor: Monitor) {
     const rules = (monitor.rules as Rule[]) ?? [];
     const passed = evaluateRules(rules, res);
 
+    const responseHeaders: Record<string, string> = {};
+    res.headers.forEach((v, k) => { responseHeaders[k] = v; });
+
+    let responseBody: string | null = null;
+    try {
+      responseBody = await res.text();
+      if (responseBody.length > 64_000) responseBody = responseBody.slice(0, 64_000);
+    } catch {}
+
     return {
       status: passed ? "up" : "degraded",
       latency,
       statusCode: res.status,
       message: passed ? null : "Rule check failed",
+      responseHeaders,
+      responseBody,
     };
   } catch (e) {
     return {
@@ -28,6 +39,8 @@ export async function checkHttp(monitor: Monitor) {
       latency: Math.round(performance.now() - start),
       statusCode: null,
       message: e instanceof Error ? e.message : "Unknown error",
+      responseHeaders: null,
+      responseBody: null,
     };
   }
 }

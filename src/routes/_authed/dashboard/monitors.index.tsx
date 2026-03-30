@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Empty,
   EmptyHeader,
@@ -138,6 +139,10 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
   const [host, setHost] = useState("");
   const [port, setPort] = useState("");
   const [regions, setRegions] = useState<string[]>(["eu"]);
+  const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
+  const [body, setBody] = useState("");
+  const [rules, setRules] = useState<{ type: string; operator: string; value: string }[]>([]);
+  const [autoIncidents, setAutoIncidents] = useState(false);
 
   const create = useMutation({
     ...orpc.monitors.create.mutationOptions(),
@@ -218,6 +223,24 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
               </div>
             </div>
           )}
+          {type === "http" && (
+            <>
+              <HeadersEditor headers={headers} onChange={setHeaders} />
+              <div className="flex flex-col gap-1.5">
+                <Label>Request body</Label>
+                <Input
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder='{"key":"value"}'
+                />
+              </div>
+              <RulesEditor rules={rules} onChange={setRules} />
+            </>
+          )}
+          <div className="flex items-center gap-2">
+            <Switch checked={autoIncidents} onCheckedChange={setAutoIncidents} />
+            <Label>Auto-create incidents on downtime</Label>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label>Regions</Label>
             <div className="flex gap-3">
@@ -251,7 +274,15 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
                 name,
                 type,
                 regions,
-                ...(type === "http" ? { url } : { host, port: Number(port) }),
+                autoIncidents,
+                ...(type === "http"
+                  ? {
+                      url,
+                      headers: headers.length ? Object.fromEntries(headers.map((h) => [h.key, h.value])) : undefined,
+                      body: body || undefined,
+                      rules: rules.length ? rules : undefined,
+                    }
+                  : { host, port: Number(port) }),
               })
             }
           >
@@ -260,5 +291,147 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function HeadersEditor({
+  headers,
+  onChange,
+}: {
+  headers: { key: string; value: string }[];
+  onChange: (h: { key: string; value: string }[]) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <Label>Headers</Label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs"
+          onClick={() => onChange([...headers, { key: "", value: "" }])}
+        >
+          + Add
+        </Button>
+      </div>
+      {headers.map((h, i) => (
+        <div key={i} className="flex gap-1.5">
+          <Input
+            className="flex-1"
+            placeholder="Key"
+            value={h.key}
+            onChange={(e) => {
+              const next = [...headers];
+              next[i] = { ...next[i], key: e.target.value };
+              onChange(next);
+            }}
+          />
+          <Input
+            className="flex-1"
+            placeholder="Value"
+            value={h.value}
+            onChange={(e) => {
+              const next = [...headers];
+              next[i] = { ...next[i], value: e.target.value };
+              onChange(next);
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-9 px-2 text-xs"
+            onClick={() => onChange(headers.filter((_, j) => j !== i))}
+          >
+            ×
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RulesEditor({
+  rules,
+  onChange,
+}: {
+  rules: { type: string; operator: string; value: string }[];
+  onChange: (r: { type: string; operator: string; value: string }[]) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <Label>Rules</Label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs"
+          onClick={() => onChange([...rules, { type: "status", operator: "eq", value: "200" }])}
+        >
+          + Add
+        </Button>
+      </div>
+      {rules.map((r, i) => (
+        <div key={i} className="flex gap-1.5">
+          <Select
+            value={r.type}
+            onValueChange={(v) => {
+              const next = [...rules];
+              next[i] = { ...next[i], type: v };
+              onChange(next);
+            }}
+          >
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="header">Header</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={r.operator}
+            onValueChange={(v) => {
+              const next = [...rules];
+              next[i] = { ...next[i], operator: v };
+              onChange(next);
+            }}
+          >
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="eq">equals</SelectItem>
+              <SelectItem value="neq">not equals</SelectItem>
+              <SelectItem value="contains">contains</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            className="flex-1"
+            placeholder={r.type === "status" ? "200" : "content-type: application/json"}
+            value={r.value}
+            onChange={(e) => {
+              const next = [...rules];
+              next[i] = { ...next[i], value: e.target.value };
+              onChange(next);
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-9 px-2 text-xs"
+            onClick={() => onChange(rules.filter((_, j) => j !== i))}
+          >
+            ×
+          </Button>
+        </div>
+      ))}
+      {rules.length === 0 && (
+        <p className="text-[11px] text-muted-foreground">No rules — defaults to checking response is 2xx.</p>
+      )}
+    </div>
   );
 }

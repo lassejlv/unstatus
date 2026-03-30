@@ -1,5 +1,6 @@
 import { authedProcedure } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 import z from "zod";
 
 const REGIONS = ["eu", "us", "asia"] as const;
@@ -20,6 +21,7 @@ const createInput = z.object({
     .array(z.object({ type: z.string(), operator: z.string(), value: z.string() }))
     .optional(),
   regions: z.array(z.enum(REGIONS)).default(["eu"]),
+  autoIncidents: z.boolean().default(false),
 });
 
 const updateInput = createInput.partial().extend({ id: z.string() });
@@ -63,5 +65,20 @@ export const monitorsRouter = {
         orderBy: { checkedAt: "desc" },
         take: input.limit,
       });
+    }),
+
+  runCheck: authedProcedure
+    .input(z.object({ monitorId: z.string() }))
+    .handler(async ({ input }) => {
+      const workerUrl = env.WORKER_EU_URL ?? env.WORKER_URL;
+      if (!workerUrl || !env.WORKER_SECRET) {
+        throw new Error("Worker not configured");
+      }
+      const res = await fetch(`${workerUrl}/run/${input.monitorId}`, {
+        method: "POST",
+        headers: { "x-worker-secret": env.WORKER_SECRET },
+      });
+      if (!res.ok) throw new Error("Worker check failed");
+      return res.json();
     }),
 };

@@ -3,6 +3,26 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -11,6 +31,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+
+const REGIONS = [
+  { id: "eu", label: "Europe" },
+  { id: "us", label: "US" },
+  { id: "asia", label: "Asia" },
+] as const;
 
 export const Route = createFileRoute("/_authed/dashboard/monitors/$monitorId")({
   component: MonitorDetailPage,
@@ -19,45 +52,51 @@ export const Route = createFileRoute("/_authed/dashboard/monitors/$monitorId")({
 function MonitorDetailPage() {
   const { monitorId } = Route.useParams();
   const qc = useQueryClient();
-  const { data: monitor } = useQuery(
-    orpc.monitors.get.queryOptions({ input: { id: monitorId } }),
-  );
-  const { data: checks } = useQuery(
-    orpc.monitors.checks.queryOptions({ input: { monitorId } }),
-  );
+  const monitorOpts = orpc.monitors.get.queryOptions({ input: { id: monitorId } });
+  const checksOpts = orpc.monitors.checks.queryOptions({ input: { monitorId } });
+  const { data: monitor } = useQuery(monitorOpts);
+  const { data: checks } = useQuery(checksOpts);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: monitorOpts.queryKey });
 
   const toggle = useMutation({
     ...orpc.monitors.update.mutationOptions(),
-    onSuccess: () => {
-      qc.invalidateQueries({
-        queryKey: orpc.monitors.get.queryOptions({
-          input: { id: monitorId },
-        }).queryKey,
-      });
-    },
+    onSuccess: invalidate,
   });
 
   const del = useMutation({
     ...orpc.monitors.delete.mutationOptions(),
-    onSuccess: () => {
-      window.history.back();
-    },
+    onSuccess: () => window.history.back(),
   });
+
+  const runCheck = useMutation({
+    ...orpc.monitors.runCheck.mutationOptions(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: checksOpts.queryKey }),
+  });
+
+  const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
 
   if (!monitor) return null;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link
-            to="/dashboard/monitors"
-            className="text-xs text-muted-foreground hover:underline"
-          >
-            ← Monitors
-          </Link>
-        </div>
+        <Link
+          to="/dashboard/monitors"
+          className="text-xs text-muted-foreground hover:underline"
+        >
+          ← Monitors
+        </Link>
         <div className="flex gap-2">
+          <EditMonitorDialog monitor={monitor} onSuccess={invalidate} />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={runCheck.isPending}
+            onClick={() => runCheck.mutate({ monitorId: monitor.id })}
+          >
+            {runCheck.isPending ? "Checking…" : "Run check"}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -107,7 +146,11 @@ function MonitorDetailPage() {
           </TableHeader>
           <TableBody>
             {checks.map((c) => (
-              <TableRow key={c.id}>
+              <TableRow
+                key={c.id}
+                className="cursor-pointer"
+                onClick={() => setSelectedCheck(c)}
+              >
                 <TableCell>
                   <Badge
                     variant={
@@ -138,6 +181,357 @@ function MonitorDetailPage() {
       ) : (
         <p className="text-xs text-muted-foreground">No checks yet.</p>
       )}
+
+      <Sheet open={!!selectedCheck} onOpenChange={(open) => !open && setSelectedCheck(null)}>
+        <SheetContent className="overflow-y-auto sm:max-w-lg">
+          {selectedCheck && (
+            <>
+              <SheetHeader>
+                <SheetTitle>Check details</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-4 pt-4">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <span className="text-muted-foreground">Status</span>
+                  <Badge
+                    className="w-fit"
+                    variant={
+                      selectedCheck.status === "up"
+                        ? "default"
+                        : selectedCheck.status === "degraded"
+                          ? "secondary"
+                          : "destructive"
+                    }
+                  >
+                    {selectedCheck.status}
+                  </Badge>
+                  <span className="text-muted-foreground">Status code</span>
+                  <span>{selectedCheck.statusCode ?? "—"}</span>
+                  <span className="text-muted-foreground">Latency</span>
+                  <span>{selectedCheck.latency}ms</span>
+                  <span className="text-muted-foreground">Region</span>
+                  <span>{selectedCheck.region ?? "—"}</span>
+                  <span className="text-muted-foreground">Time</span>
+                  <span>{new Date(selectedCheck.checkedAt).toLocaleString()}</span>
+                  {selectedCheck.message && (
+                    <>
+                      <span className="text-muted-foreground">Message</span>
+                      <span>{selectedCheck.message}</span>
+                    </>
+                  )}
+                </div>
+
+                {selectedCheck.responseHeaders && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium">Response headers</span>
+                    <pre className="rounded border bg-muted p-2 text-[11px] overflow-x-auto whitespace-pre-wrap break-all">
+                      {Object.entries(
+                        selectedCheck.responseHeaders as Record<string, string>,
+                      )
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join("\n")}
+                    </pre>
+                  </div>
+                )}
+
+                {selectedCheck.responseBody && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium">Response body</span>
+                    <pre className="rounded border bg-muted p-2 text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-96">
+                      {formatBody(selectedCheck.responseBody)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function formatBody(body: string): string {
+  try {
+    return JSON.stringify(JSON.parse(body), null, 2);
+  } catch {
+    return body;
+  }
+}
+
+type MonitorData = {
+  id: string;
+  name: string;
+  type: string;
+  url: string | null;
+  method: string | null;
+  host: string | null;
+  port: number | null;
+  interval: number;
+  timeout: number;
+  regions: unknown;
+  headers: unknown;
+  body: string | null;
+  rules: unknown;
+  autoIncidents: boolean;
+};
+
+function EditMonitorDialog({
+  monitor,
+  onSuccess,
+}: {
+  monitor: MonitorData;
+  onSuccess: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(monitor.name);
+  const [url, setUrl] = useState(monitor.url ?? "");
+  const [method, setMethod] = useState(monitor.method ?? "GET");
+  const [host, setHost] = useState(monitor.host ?? "");
+  const [port, setPort] = useState(monitor.port?.toString() ?? "");
+  const [interval, setInterval_] = useState(monitor.interval.toString());
+  const [timeout, setTimeout_] = useState(monitor.timeout.toString());
+  const [regions, setRegions] = useState<string[]>(
+    (monitor.regions as string[]) ?? [],
+  );
+  const [headers, setHeaders] = useState<{ key: string; value: string }[]>(
+    Object.entries((monitor.headers as Record<string, string>) ?? {}).map(([key, value]) => ({ key, value })),
+  );
+  const [body, setBody] = useState(monitor.body ?? "");
+  const [rules, setRules] = useState<{ type: string; operator: string; value: string }[]>(
+    (monitor.rules as { type: string; operator: string; value: string }[]) ?? [],
+  );
+  const [autoIncidents, setAutoIncidents] = useState(monitor.autoIncidents);
+
+  useEffect(() => {
+    if (open) {
+      setName(monitor.name);
+      setUrl(monitor.url ?? "");
+      setMethod(monitor.method ?? "GET");
+      setHost(monitor.host ?? "");
+      setPort(monitor.port?.toString() ?? "");
+      setInterval_(monitor.interval.toString());
+      setTimeout_(monitor.timeout.toString());
+      setRegions((monitor.regions as string[]) ?? []);
+      setHeaders(Object.entries((monitor.headers as Record<string, string>) ?? {}).map(([key, value]) => ({ key, value })));
+      setBody(monitor.body ?? "");
+      setRules((monitor.rules as { type: string; operator: string; value: string }[]) ?? []);
+      setAutoIncidents(monitor.autoIncidents);
+    }
+  }, [open, monitor]);
+
+  const update = useMutation({
+    ...orpc.monitors.update.mutationOptions(),
+    onSuccess: () => {
+      onSuccess();
+      setOpen(false);
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Edit
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit monitor</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label>Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          {monitor.type === "http" ? (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label>URL</Label>
+                <Input value={url} onChange={(e) => setUrl(e.target.value)} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Method</Label>
+                <Select value={method} onValueChange={setMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"].map(
+                      (m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1.5">
+                <Label>Host</Label>
+                <Input
+                  value={host}
+                  onChange={(e) => setHost(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Port</Label>
+                <Input
+                  type="number"
+                  value={port}
+                  onChange={(e) => setPort(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+          {monitor.type === "http" && (
+            <>
+              <HeadersEditor headers={headers} onChange={setHeaders} />
+              <div className="flex flex-col gap-1.5">
+                <Label>Request body</Label>
+                <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder='{"key":"value"}' />
+              </div>
+              <RulesEditor rules={rules} onChange={setRules} />
+            </>
+          )}
+          <div className="flex items-center gap-2">
+            <Switch checked={autoIncidents} onCheckedChange={setAutoIncidents} />
+            <Label>Auto-create incidents on downtime</Label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1.5">
+              <Label>Interval (s)</Label>
+              <Input
+                type="number"
+                value={interval}
+                onChange={(e) => setInterval_(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Timeout (s)</Label>
+              <Input
+                type="number"
+                value={timeout}
+                onChange={(e) => setTimeout_(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Regions</Label>
+            <div className="flex gap-3">
+              {REGIONS.map((r) => (
+                <label key={r.id} className="flex items-center gap-1.5 text-xs">
+                  <Checkbox
+                    checked={regions.includes(r.id)}
+                    onCheckedChange={(checked) =>
+                      setRegions((prev) =>
+                        checked
+                          ? [...prev, r.id]
+                          : prev.filter((x) => x !== r.id),
+                      )
+                    }
+                  />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button
+            disabled={!name || update.isPending}
+            onClick={() =>
+              update.mutate({
+                id: monitor.id,
+                name,
+                interval: Number(interval),
+                timeout: Number(timeout),
+                regions,
+                autoIncidents,
+                ...(monitor.type === "http"
+                  ? {
+                      url,
+                      method,
+                      headers: headers.length ? Object.fromEntries(headers.map((h) => [h.key, h.value])) : undefined,
+                      body: body || undefined,
+                      rules: rules.length ? rules : undefined,
+                    }
+                  : { host, port: Number(port) }),
+              })
+            }
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function HeadersEditor({
+  headers,
+  onChange,
+}: {
+  headers: { key: string; value: string }[];
+  onChange: (h: { key: string; value: string }[]) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <Label>Headers</Label>
+        <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={() => onChange([...headers, { key: "", value: "" }])}>+ Add</Button>
+      </div>
+      {headers.map((h, i) => (
+        <div key={i} className="flex gap-1.5">
+          <Input className="flex-1" placeholder="Key" value={h.key} onChange={(e) => { const next = [...headers]; next[i] = { ...next[i], key: e.target.value }; onChange(next); }} />
+          <Input className="flex-1" placeholder="Value" value={h.value} onChange={(e) => { const next = [...headers]; next[i] = { ...next[i], value: e.target.value }; onChange(next); }} />
+          <Button type="button" variant="ghost" size="sm" className="h-9 px-2 text-xs" onClick={() => onChange(headers.filter((_, j) => j !== i))}>×</Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RulesEditor({
+  rules,
+  onChange,
+}: {
+  rules: { type: string; operator: string; value: string }[];
+  onChange: (r: { type: string; operator: string; value: string }[]) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <Label>Rules</Label>
+        <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={() => onChange([...rules, { type: "status", operator: "eq", value: "200" }])}>+ Add</Button>
+      </div>
+      {rules.map((r, i) => (
+        <div key={i} className="flex gap-1.5">
+          <Select value={r.type} onValueChange={(v) => { const next = [...rules]; next[i] = { ...next[i], type: v }; onChange(next); }}>
+            <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="header">Header</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={r.operator} onValueChange={(v) => { const next = [...rules]; next[i] = { ...next[i], operator: v }; onChange(next); }}>
+            <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="eq">equals</SelectItem>
+              <SelectItem value="neq">not equals</SelectItem>
+              <SelectItem value="contains">contains</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input className="flex-1" placeholder={r.type === "status" ? "200" : "content-type: application/json"} value={r.value} onChange={(e) => { const next = [...rules]; next[i] = { ...next[i], value: e.target.value }; onChange(next); }} />
+          <Button type="button" variant="ghost" size="sm" className="h-9 px-2 text-xs" onClick={() => onChange(rules.filter((_, j) => j !== i))}>×</Button>
+        </div>
+      ))}
+      {rules.length === 0 && <p className="text-[11px] text-muted-foreground">No rules — defaults to checking response is 2xx.</p>}
     </div>
   );
 }

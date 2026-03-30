@@ -53,6 +53,7 @@ export type MonitorMinAggregateOutputType = {
   port: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  lastCheckedAt: Date | null
 }
 
 export type MonitorMaxAggregateOutputType = {
@@ -70,6 +71,7 @@ export type MonitorMaxAggregateOutputType = {
   port: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  lastCheckedAt: Date | null
 }
 
 export type MonitorCountAggregateOutputType = {
@@ -90,6 +92,7 @@ export type MonitorCountAggregateOutputType = {
   regions: number
   createdAt: number
   updatedAt: number
+  lastCheckedAt: number
   _all: number
 }
 
@@ -121,6 +124,7 @@ export type MonitorMinAggregateInputType = {
   port?: true
   createdAt?: true
   updatedAt?: true
+  lastCheckedAt?: true
 }
 
 export type MonitorMaxAggregateInputType = {
@@ -138,6 +142,7 @@ export type MonitorMaxAggregateInputType = {
   port?: true
   createdAt?: true
   updatedAt?: true
+  lastCheckedAt?: true
 }
 
 export type MonitorCountAggregateInputType = {
@@ -158,6 +163,7 @@ export type MonitorCountAggregateInputType = {
   regions?: true
   createdAt?: true
   updatedAt?: true
+  lastCheckedAt?: true
   _all?: true
 }
 
@@ -265,6 +271,7 @@ export type MonitorGroupByOutputType = {
   regions: runtime.JsonValue
   createdAt: Date
   updatedAt: Date
+  lastCheckedAt: Date | null
   _count: MonitorCountAggregateOutputType | null
   _avg: MonitorAvgAggregateOutputType | null
   _sum: MonitorSumAggregateOutputType | null
@@ -308,6 +315,7 @@ export type MonitorWhereInput = {
   regions?: Prisma.JsonFilter<"Monitor">
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
+  lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   checks?: Prisma.MonitorCheckListRelationFilter
   statusPageMonitors?: Prisma.StatusPageMonitorListRelationFilter
@@ -332,6 +340,7 @@ export type MonitorOrderByWithRelationInput = {
   regions?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   checks?: Prisma.MonitorCheckOrderByRelationAggregateInput
   statusPageMonitors?: Prisma.StatusPageMonitorOrderByRelationAggregateInput
@@ -359,6 +368,7 @@ export type MonitorWhereUniqueInput = Prisma.AtLeast<{
   regions?: Prisma.JsonFilter<"Monitor">
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
+  lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   checks?: Prisma.MonitorCheckListRelationFilter
   statusPageMonitors?: Prisma.StatusPageMonitorListRelationFilter
@@ -383,6 +393,7 @@ export type MonitorOrderByWithAggregationInput = {
   regions?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MonitorCountOrderByAggregateInput
   _avg?: Prisma.MonitorAvgOrderByAggregateInput
   _max?: Prisma.MonitorMaxOrderByAggregateInput
@@ -411,6 +422,7 @@ export type MonitorScalarWhereWithAggregatesInput = {
   regions?: Prisma.JsonWithAggregatesFilter<"Monitor">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Monitor"> | Date | string
+  lastCheckedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Monitor"> | Date | string | null
 }
 
 export type MonitorCreateInput = {
@@ -430,6 +442,7 @@ export type MonitorCreateInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMonitorsInput
   checks?: Prisma.MonitorCheckCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
@@ -454,6 +467,7 @@ export type MonitorUncheckedCreateInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   checks?: Prisma.MonitorCheckUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
@@ -476,6 +490,7 @@ export type MonitorUpdateInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMonitorsNestedInput
   checks?: Prisma.MonitorCheckUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
@@ -500,6 +515,7 @@ export type MonitorUncheckedUpdateInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checks?: Prisma.MonitorCheckUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
@@ -523,6 +539,7 @@ export type MonitorCreateManyInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
 }
 
 export type MonitorUpdateManyMutationInput = {
@@ -542,6 +559,7 @@ export type MonitorUpdateManyMutationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type MonitorUncheckedUpdateManyInput = {
@@ -562,6 +580,7 @@ export type MonitorUncheckedUpdateManyInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type MonitorListRelationFilter = {
@@ -592,6 +611,7 @@ export type MonitorCountOrderByAggregateInput = {
   regions?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  lastCheckedAt?: Prisma.SortOrder
 }
 
 export type MonitorAvgOrderByAggregateInput = {
@@ -615,6 +635,7 @@ export type MonitorMaxOrderByAggregateInput = {
   port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  lastCheckedAt?: Prisma.SortOrder
 }
 
 export type MonitorMinOrderByAggregateInput = {
@@ -632,6 +653,7 @@ export type MonitorMinOrderByAggregateInput = {
   port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  lastCheckedAt?: Prisma.SortOrder
 }
 
 export type MonitorSumOrderByAggregateInput = {
@@ -762,6 +784,7 @@ export type MonitorCreateWithoutOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   checks?: Prisma.MonitorCheckCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
@@ -784,6 +807,7 @@ export type MonitorUncheckedCreateWithoutOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   checks?: Prisma.MonitorCheckUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
@@ -836,6 +860,7 @@ export type MonitorScalarWhereInput = {
   regions?: Prisma.JsonFilter<"Monitor">
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
+  lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
 }
 
 export type MonitorCreateWithoutChecksInput = {
@@ -855,6 +880,7 @@ export type MonitorCreateWithoutChecksInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMonitorsInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
@@ -878,6 +904,7 @@ export type MonitorUncheckedCreateWithoutChecksInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
 }
@@ -915,6 +942,7 @@ export type MonitorUpdateWithoutChecksInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMonitorsNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
@@ -938,6 +966,7 @@ export type MonitorUncheckedUpdateWithoutChecksInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
 }
@@ -959,6 +988,7 @@ export type MonitorCreateWithoutStatusPageMonitorsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMonitorsInput
   checks?: Prisma.MonitorCheckCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
@@ -982,6 +1012,7 @@ export type MonitorUncheckedCreateWithoutStatusPageMonitorsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   checks?: Prisma.MonitorCheckUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
 }
@@ -1019,6 +1050,7 @@ export type MonitorUpdateWithoutStatusPageMonitorsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMonitorsNestedInput
   checks?: Prisma.MonitorCheckUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
@@ -1042,6 +1074,7 @@ export type MonitorUncheckedUpdateWithoutStatusPageMonitorsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checks?: Prisma.MonitorCheckUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
 }
@@ -1063,6 +1096,7 @@ export type MonitorCreateWithoutIncidentsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMonitorsInput
   checks?: Prisma.MonitorCheckCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
@@ -1086,6 +1120,7 @@ export type MonitorUncheckedCreateWithoutIncidentsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
   checks?: Prisma.MonitorCheckUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
 }
@@ -1123,6 +1158,7 @@ export type MonitorUpdateWithoutIncidentsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMonitorsNestedInput
   checks?: Prisma.MonitorCheckUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
@@ -1146,6 +1182,7 @@ export type MonitorUncheckedUpdateWithoutIncidentsInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checks?: Prisma.MonitorCheckUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
 }
@@ -1167,6 +1204,7 @@ export type MonitorCreateManyOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
 }
 
 export type MonitorUpdateWithoutOrganizationInput = {
@@ -1186,6 +1224,7 @@ export type MonitorUpdateWithoutOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checks?: Prisma.MonitorCheckUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
@@ -1208,6 +1247,7 @@ export type MonitorUncheckedUpdateWithoutOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checks?: Prisma.MonitorCheckUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
@@ -1230,6 +1270,7 @@ export type MonitorUncheckedUpdateManyWithoutOrganizationInput = {
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1299,6 +1340,7 @@ export type MonitorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   regions?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  lastCheckedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   checks?: boolean | Prisma.Monitor$checksArgs<ExtArgs>
   statusPageMonitors?: boolean | Prisma.Monitor$statusPageMonitorsArgs<ExtArgs>
@@ -1324,6 +1366,7 @@ export type MonitorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   regions?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  lastCheckedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitor"]>
 
@@ -1345,6 +1388,7 @@ export type MonitorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   regions?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  lastCheckedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitor"]>
 
@@ -1366,9 +1410,10 @@ export type MonitorSelectScalar = {
   regions?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  lastCheckedAt?: boolean
 }
 
-export type MonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "active" | "interval" | "timeout" | "url" | "method" | "headers" | "body" | "host" | "port" | "rules" | "regions" | "createdAt" | "updatedAt", ExtArgs["result"]["monitor"]>
+export type MonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "active" | "interval" | "timeout" | "url" | "method" | "headers" | "body" | "host" | "port" | "rules" | "regions" | "createdAt" | "updatedAt" | "lastCheckedAt", ExtArgs["result"]["monitor"]>
 export type MonitorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   checks?: boolean | Prisma.Monitor$checksArgs<ExtArgs>
@@ -1409,6 +1454,7 @@ export type $MonitorPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     regions: runtime.JsonValue
     createdAt: Date
     updatedAt: Date
+    lastCheckedAt: Date | null
   }, ExtArgs["result"]["monitor"]>
   composites: {}
 }
@@ -1853,6 +1899,7 @@ export interface MonitorFieldRefs {
   readonly regions: Prisma.FieldRef<"Monitor", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Monitor", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Monitor", 'DateTime'>
+  readonly lastCheckedAt: Prisma.FieldRef<"Monitor", 'DateTime'>
 }
     
 

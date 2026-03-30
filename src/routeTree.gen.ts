@@ -11,15 +11,21 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as IncidentsIncidentIdRouteImport } from './routes/incidents/$incidentId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
+import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AuthedDashboardStatusPagesRouteImport } from './routes/_authed/dashboard/status-pages'
-import { Route as AuthedDashboardIncidentsRouteImport } from './routes/_authed/dashboard/incidents'
+import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
+import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
 import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors.index'
+import { Route as AuthedDashboardIncidentsIndexRouteImport } from './routes/_authed/dashboard/incidents/index'
+import { Route as AuthedDashboardStatusPagesPageIdRouteImport } from './routes/_authed/dashboard/status-pages/$pageId'
 import { Route as AuthedDashboardMonitorsMonitorIdRouteImport } from './routes/_authed/dashboard/monitors.$monitorId'
+import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes/_authed/dashboard/incidents/$incidentId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -30,20 +36,35 @@ const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedIndexRoute = AuthedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthedRoute,
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentsIncidentIdRoute = IncidentsIncidentIdRouteImport.update({
+  id: '/incidents/$incidentId',
+  path: '/incidents/$incidentId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthedRoute,
 } as any)
+const StatusSlugIndexRoute = StatusSlugIndexRouteImport.update({
+  id: '/status/$slug/',
+  path: '/status/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const StatusSlugIncidentIdRoute = StatusSlugIncidentIdRouteImport.update({
+  id: '/status/$slug/$incidentId',
+  path: '/status/$slug/$incidentId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
@@ -55,16 +76,15 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedDashboardStatusPagesRoute =
-  AuthedDashboardStatusPagesRouteImport.update({
-    id: '/status-pages',
-    path: '/status-pages',
-    getParentRoute: () => AuthedDashboardRoute,
-  } as any)
-const AuthedDashboardIncidentsRoute =
-  AuthedDashboardIncidentsRouteImport.update({
-    id: '/incidents',
-    path: '/incidents',
+const AuthedDashboardSettingsRoute = AuthedDashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedDashboardStatusPagesIndexRoute =
+  AuthedDashboardStatusPagesIndexRouteImport.update({
+    id: '/status-pages/',
+    path: '/status-pages/',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
 const AuthedDashboardMonitorsIndexRoute =
@@ -73,49 +93,85 @@ const AuthedDashboardMonitorsIndexRoute =
     path: '/monitors/',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardIncidentsIndexRoute =
+  AuthedDashboardIncidentsIndexRouteImport.update({
+    id: '/incidents/',
+    path: '/incidents/',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardStatusPagesPageIdRoute =
+  AuthedDashboardStatusPagesPageIdRouteImport.update({
+    id: '/status-pages/$pageId',
+    path: '/status-pages/$pageId',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardMonitorsMonitorIdRoute =
   AuthedDashboardMonitorsMonitorIdRouteImport.update({
     id: '/monitors/$monitorId',
     path: '/monitors/$monitorId',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardIncidentsIncidentIdRoute =
+  AuthedDashboardIncidentsIncidentIdRouteImport.update({
+    id: '/incidents/$incidentId',
+    path: '/incidents/$incidentId',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthedIndexRoute
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
-  '/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
-  '/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
+  '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
+  '/status/$slug/': typeof StatusSlugIndexRoute
+  '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
   '/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
+  '/dashboard/incidents/': typeof AuthedDashboardIncidentsIndexRoute
   '/dashboard/monitors/': typeof AuthedDashboardMonitorsIndexRoute
+  '/dashboard/status-pages/': typeof AuthedDashboardStatusPagesIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/': typeof AuthedIndexRoute
-  '/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
-  '/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
+  '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
+  '/status/$slug': typeof StatusSlugIndexRoute
+  '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
   '/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
+  '/dashboard/incidents': typeof AuthedDashboardIncidentsIndexRoute
   '/dashboard/monitors': typeof AuthedDashboardMonitorsIndexRoute
+  '/dashboard/status-pages': typeof AuthedDashboardStatusPagesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
-  '/_authed/': typeof AuthedIndexRoute
-  '/_authed/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
-  '/_authed/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
+  '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
+  '/status/$slug/': typeof StatusSlugIndexRoute
+  '/_authed/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
   '/_authed/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/_authed/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
+  '/_authed/dashboard/incidents/': typeof AuthedDashboardIncidentsIndexRoute
   '/_authed/dashboard/monitors/': typeof AuthedDashboardMonitorsIndexRoute
+  '/_authed/dashboard/status-pages/': typeof AuthedDashboardStatusPagesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,44 +179,66 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
-    | '/dashboard/incidents'
-    | '/dashboard/status-pages'
+    | '/incidents/$incidentId'
+    | '/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/status/$slug/$incidentId'
     | '/dashboard/'
+    | '/status/$slug/'
+    | '/dashboard/incidents/$incidentId'
     | '/dashboard/monitors/$monitorId'
+    | '/dashboard/status-pages/$pageId'
+    | '/dashboard/incidents/'
     | '/dashboard/monitors/'
+    | '/dashboard/status-pages/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
     | '/'
-    | '/dashboard/incidents'
-    | '/dashboard/status-pages'
+    | '/login'
+    | '/incidents/$incidentId'
+    | '/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/status/$slug/$incidentId'
     | '/dashboard'
+    | '/status/$slug'
+    | '/dashboard/incidents/$incidentId'
     | '/dashboard/monitors/$monitorId'
+    | '/dashboard/status-pages/$pageId'
+    | '/dashboard/incidents'
     | '/dashboard/monitors'
+    | '/dashboard/status-pages'
   id:
     | '__root__'
+    | '/'
     | '/_authed'
     | '/login'
     | '/_authed/dashboard'
-    | '/_authed/'
-    | '/_authed/dashboard/incidents'
-    | '/_authed/dashboard/status-pages'
+    | '/incidents/$incidentId'
+    | '/_authed/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/status/$slug/$incidentId'
     | '/_authed/dashboard/'
+    | '/status/$slug/'
+    | '/_authed/dashboard/incidents/$incidentId'
     | '/_authed/dashboard/monitors/$monitorId'
+    | '/_authed/dashboard/status-pages/$pageId'
+    | '/_authed/dashboard/incidents/'
     | '/_authed/dashboard/monitors/'
+    | '/_authed/dashboard/status-pages/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  IncidentsIncidentIdRoute: typeof IncidentsIncidentIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
+  StatusSlugIndexRoute: typeof StatusSlugIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -179,12 +257,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/': {
-      id: '/_authed/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthedIndexRouteImport
-      parentRoute: typeof AuthedRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incidents/$incidentId': {
+      id: '/incidents/$incidentId'
+      path: '/incidents/$incidentId'
+      fullPath: '/incidents/$incidentId'
+      preLoaderRoute: typeof IncidentsIncidentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
@@ -193,12 +278,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/status/$slug/': {
+      id: '/status/$slug/'
+      path: '/status/$slug'
+      fullPath: '/status/$slug/'
+      preLoaderRoute: typeof StatusSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/dashboard/': {
       id: '/_authed/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
+    }
+    '/status/$slug/$incidentId': {
+      id: '/status/$slug/$incidentId'
+      path: '/status/$slug/$incidentId'
+      fullPath: '/status/$slug/$incidentId'
+      preLoaderRoute: typeof StatusSlugIncidentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
       id: '/api/rpc/$'
@@ -214,18 +313,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/dashboard/status-pages': {
-      id: '/_authed/dashboard/status-pages'
-      path: '/status-pages'
-      fullPath: '/dashboard/status-pages'
-      preLoaderRoute: typeof AuthedDashboardStatusPagesRouteImport
+    '/_authed/dashboard/settings': {
+      id: '/_authed/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthedDashboardSettingsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
-    '/_authed/dashboard/incidents': {
-      id: '/_authed/dashboard/incidents'
-      path: '/incidents'
-      fullPath: '/dashboard/incidents'
-      preLoaderRoute: typeof AuthedDashboardIncidentsRouteImport
+    '/_authed/dashboard/status-pages/': {
+      id: '/_authed/dashboard/status-pages/'
+      path: '/status-pages'
+      fullPath: '/dashboard/status-pages/'
+      preLoaderRoute: typeof AuthedDashboardStatusPagesIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
     '/_authed/dashboard/monitors/': {
@@ -235,6 +334,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardMonitorsIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/incidents/': {
+      id: '/_authed/dashboard/incidents/'
+      path: '/incidents'
+      fullPath: '/dashboard/incidents/'
+      preLoaderRoute: typeof AuthedDashboardIncidentsIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/status-pages/$pageId': {
+      id: '/_authed/dashboard/status-pages/$pageId'
+      path: '/status-pages/$pageId'
+      fullPath: '/dashboard/status-pages/$pageId'
+      preLoaderRoute: typeof AuthedDashboardStatusPagesPageIdRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/monitors/$monitorId': {
       id: '/_authed/dashboard/monitors/$monitorId'
       path: '/monitors/$monitorId'
@@ -242,23 +355,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardMonitorsMonitorIdRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/incidents/$incidentId': {
+      id: '/_authed/dashboard/incidents/$incidentId'
+      path: '/incidents/$incidentId'
+      fullPath: '/dashboard/incidents/$incidentId'
+      preLoaderRoute: typeof AuthedDashboardIncidentsIncidentIdRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
   }
 }
 
 interface AuthedDashboardRouteChildren {
-  AuthedDashboardIncidentsRoute: typeof AuthedDashboardIncidentsRoute
-  AuthedDashboardStatusPagesRoute: typeof AuthedDashboardStatusPagesRoute
+  AuthedDashboardSettingsRoute: typeof AuthedDashboardSettingsRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+  AuthedDashboardIncidentsIncidentIdRoute: typeof AuthedDashboardIncidentsIncidentIdRoute
   AuthedDashboardMonitorsMonitorIdRoute: typeof AuthedDashboardMonitorsMonitorIdRoute
+  AuthedDashboardStatusPagesPageIdRoute: typeof AuthedDashboardStatusPagesPageIdRoute
+  AuthedDashboardIncidentsIndexRoute: typeof AuthedDashboardIncidentsIndexRoute
   AuthedDashboardMonitorsIndexRoute: typeof AuthedDashboardMonitorsIndexRoute
+  AuthedDashboardStatusPagesIndexRoute: typeof AuthedDashboardStatusPagesIndexRoute
 }
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
-  AuthedDashboardIncidentsRoute: AuthedDashboardIncidentsRoute,
-  AuthedDashboardStatusPagesRoute: AuthedDashboardStatusPagesRoute,
+  AuthedDashboardSettingsRoute: AuthedDashboardSettingsRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+  AuthedDashboardIncidentsIncidentIdRoute:
+    AuthedDashboardIncidentsIncidentIdRoute,
   AuthedDashboardMonitorsMonitorIdRoute: AuthedDashboardMonitorsMonitorIdRoute,
+  AuthedDashboardStatusPagesPageIdRoute: AuthedDashboardStatusPagesPageIdRoute,
+  AuthedDashboardIncidentsIndexRoute: AuthedDashboardIncidentsIndexRoute,
   AuthedDashboardMonitorsIndexRoute: AuthedDashboardMonitorsIndexRoute,
+  AuthedDashboardStatusPagesIndexRoute: AuthedDashboardStatusPagesIndexRoute,
 }
 
 const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
@@ -267,22 +394,24 @@ const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
 
 interface AuthedRouteChildren {
   AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
-  AuthedIndexRoute: typeof AuthedIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
-  AuthedIndexRoute: AuthedIndexRoute,
 }
 
 const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
+  IncidentsIncidentIdRoute: IncidentsIncidentIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,
+  StatusSlugIndexRoute: StatusSlugIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

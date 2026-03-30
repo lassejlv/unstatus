@@ -119,8 +119,11 @@ model Monitor {
   // Regions to ping from: ["eu", "us", "asia"]
   regions     Json     @default("[]")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  autoIncidents Boolean @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastCheckedAt DateTime?
   checks      MonitorCheck[]
   statusPageMonitors StatusPageMonitor[]
   incidents   Incident[]
@@ -135,12 +138,14 @@ model MonitorCheck {
   monitorId String
   monitor   Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
-  status    String   // "up" | "down" | "degraded"
-  latency   Int      // ms
-  statusCode Int?
-  message   String?
-  region    String?
-  checkedAt DateTime @default(now())
+  status          String   // "up" | "down" | "degraded"
+  latency         Int      // ms
+  statusCode      Int?
+  message         String?
+  region          String?
+  responseHeaders Json?
+  responseBody    String?
+  checkedAt       DateTime @default(now())
 
   @@index([monitorId, checkedAt])
   @@map("monitor_check")

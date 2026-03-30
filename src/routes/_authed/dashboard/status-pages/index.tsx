@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   skipToken,
   useQuery,
@@ -36,12 +36,13 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 
-export const Route = createFileRoute("/_authed/dashboard/status-pages")({
+export const Route = createFileRoute("/_authed/dashboard/status-pages/")({
   component: StatusPagesPage,
 });
 
 function StatusPagesPage() {
   const { activeOrg } = useOrg();
+  const navigate = useNavigate();
   const orgId = activeOrg?.id;
   const pagesQuery = orpc.statusPages.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
@@ -67,7 +68,16 @@ function StatusPagesPage() {
           </TableHeader>
           <TableBody>
             {pages.map((p) => (
-              <TableRow key={p.id}>
+              <TableRow
+                key={p.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate({
+                    to: "/dashboard/status-pages/$pageId",
+                    params: { pageId: p.id },
+                  })
+                }
+              >
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell className="text-muted-foreground">
                   /{p.slug}

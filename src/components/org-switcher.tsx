@@ -37,7 +37,7 @@ export function OrgSwitcher() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="bottom" className="w-56">
             {orgs.map((org) => (
-              <DropdownMenuItem key={org.id} onClick={() => setActiveOrg(org)}>
+              <DropdownMenuItem key={org.id} onClick={() => setActiveOrg(org.id)}>
                 {org.name}
               </DropdownMenuItem>
             ))}

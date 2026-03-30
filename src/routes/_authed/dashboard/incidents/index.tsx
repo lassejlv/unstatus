@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   skipToken,
   useQuery,
@@ -44,12 +44,13 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 
-export const Route = createFileRoute("/_authed/dashboard/incidents")({
+export const Route = createFileRoute("/_authed/dashboard/incidents/")({
   component: IncidentsPage,
 });
 
 function IncidentsPage() {
   const { activeOrg } = useOrg();
+  const navigate = useNavigate();
   const orgId = activeOrg?.id;
   const monitorsQuery = orpc.monitors.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
@@ -82,7 +83,16 @@ function IncidentsPage() {
           </TableHeader>
           <TableBody>
             {incidents.map((i) => (
-              <TableRow key={i.id}>
+              <TableRow
+                key={i.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate({
+                    to: "/dashboard/incidents/$incidentId",
+                    params: { incidentId: i.id },
+                  })
+                }
+              >
                 <TableCell className="font-medium">{i.title}</TableCell>
                 <TableCell>
                   <Badge

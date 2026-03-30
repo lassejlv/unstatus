@@ -17,6 +17,7 @@ import {
 import { OrgSwitcher } from "@/components/org-switcher";
 import { UserDropdown } from "@/components/user-dropdown";
 import { OrgProvider } from "@/components/org-context";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_authed/dashboard")({
   component: DashboardLayout,
@@ -27,10 +28,11 @@ const navItems = [
   { label: "Monitors", to: "/dashboard/monitors", search: {} },
   { label: "Incidents", to: "/dashboard/incidents", search: {} },
   { label: "Status Pages", to: "/dashboard/status-pages", search: {} },
+  { label: "Settings", to: "/dashboard/settings", search: {} },
 ] as const;
 
 function DashboardLayout() {
-  const { session } = Route.useRouteContext();
+  const { data: session } = authClient.useSession();
   const matchRoute = useMatchRoute();
 
   return (
@@ -62,7 +64,7 @@ function DashboardLayout() {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
-            <UserDropdown user={session.user} />
+            {session?.user && <UserDropdown user={session.user} />}
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>

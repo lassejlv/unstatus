@@ -44,6 +44,7 @@ export type MonitorCheckMinAggregateOutputType = {
   statusCode: number | null
   message: string | null
   region: string | null
+  responseBody: string | null
   checkedAt: Date | null
 }
 
@@ -55,6 +56,7 @@ export type MonitorCheckMaxAggregateOutputType = {
   statusCode: number | null
   message: string | null
   region: string | null
+  responseBody: string | null
   checkedAt: Date | null
 }
 
@@ -66,6 +68,8 @@ export type MonitorCheckCountAggregateOutputType = {
   statusCode: number
   message: number
   region: number
+  responseHeaders: number
+  responseBody: number
   checkedAt: number
   _all: number
 }
@@ -89,6 +93,7 @@ export type MonitorCheckMinAggregateInputType = {
   statusCode?: true
   message?: true
   region?: true
+  responseBody?: true
   checkedAt?: true
 }
 
@@ -100,6 +105,7 @@ export type MonitorCheckMaxAggregateInputType = {
   statusCode?: true
   message?: true
   region?: true
+  responseBody?: true
   checkedAt?: true
 }
 
@@ -111,6 +117,8 @@ export type MonitorCheckCountAggregateInputType = {
   statusCode?: true
   message?: true
   region?: true
+  responseHeaders?: true
+  responseBody?: true
   checkedAt?: true
   _all?: true
 }
@@ -209,6 +217,8 @@ export type MonitorCheckGroupByOutputType = {
   statusCode: number | null
   message: string | null
   region: string | null
+  responseHeaders: runtime.JsonValue | null
+  responseBody: string | null
   checkedAt: Date
   _count: MonitorCheckCountAggregateOutputType | null
   _avg: MonitorCheckAvgAggregateOutputType | null
@@ -243,6 +253,8 @@ export type MonitorCheckWhereInput = {
   statusCode?: Prisma.IntNullableFilter<"MonitorCheck"> | number | null
   message?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   region?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
+  responseHeaders?: Prisma.JsonNullableFilter<"MonitorCheck">
+  responseBody?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   checkedAt?: Prisma.DateTimeFilter<"MonitorCheck"> | Date | string
   monitor?: Prisma.XOR<Prisma.MonitorScalarRelationFilter, Prisma.MonitorWhereInput>
 }
@@ -255,6 +267,8 @@ export type MonitorCheckOrderByWithRelationInput = {
   statusCode?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
   region?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseHeaders?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseBody?: Prisma.SortOrderInput | Prisma.SortOrder
   checkedAt?: Prisma.SortOrder
   monitor?: Prisma.MonitorOrderByWithRelationInput
 }
@@ -270,6 +284,8 @@ export type MonitorCheckWhereUniqueInput = Prisma.AtLeast<{
   statusCode?: Prisma.IntNullableFilter<"MonitorCheck"> | number | null
   message?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   region?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
+  responseHeaders?: Prisma.JsonNullableFilter<"MonitorCheck">
+  responseBody?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   checkedAt?: Prisma.DateTimeFilter<"MonitorCheck"> | Date | string
   monitor?: Prisma.XOR<Prisma.MonitorScalarRelationFilter, Prisma.MonitorWhereInput>
 }, "id">
@@ -282,6 +298,8 @@ export type MonitorCheckOrderByWithAggregationInput = {
   statusCode?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
   region?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseHeaders?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseBody?: Prisma.SortOrderInput | Prisma.SortOrder
   checkedAt?: Prisma.SortOrder
   _count?: Prisma.MonitorCheckCountOrderByAggregateInput
   _avg?: Prisma.MonitorCheckAvgOrderByAggregateInput
@@ -301,6 +319,8 @@ export type MonitorCheckScalarWhereWithAggregatesInput = {
   statusCode?: Prisma.IntNullableWithAggregatesFilter<"MonitorCheck"> | number | null
   message?: Prisma.StringNullableWithAggregatesFilter<"MonitorCheck"> | string | null
   region?: Prisma.StringNullableWithAggregatesFilter<"MonitorCheck"> | string | null
+  responseHeaders?: Prisma.JsonNullableWithAggregatesFilter<"MonitorCheck">
+  responseBody?: Prisma.StringNullableWithAggregatesFilter<"MonitorCheck"> | string | null
   checkedAt?: Prisma.DateTimeWithAggregatesFilter<"MonitorCheck"> | Date | string
 }
 
@@ -311,6 +331,8 @@ export type MonitorCheckCreateInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
   monitor: Prisma.MonitorCreateNestedOneWithoutChecksInput
 }
@@ -323,6 +345,8 @@ export type MonitorCheckUncheckedCreateInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
 }
 
@@ -333,6 +357,8 @@ export type MonitorCheckUpdateInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monitor?: Prisma.MonitorUpdateOneRequiredWithoutChecksNestedInput
 }
@@ -345,6 +371,8 @@ export type MonitorCheckUncheckedUpdateInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -356,6 +384,8 @@ export type MonitorCheckCreateManyInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
 }
 
@@ -366,6 +396,8 @@ export type MonitorCheckUpdateManyMutationInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -377,6 +409,8 @@ export type MonitorCheckUncheckedUpdateManyInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -398,6 +432,8 @@ export type MonitorCheckCountOrderByAggregateInput = {
   statusCode?: Prisma.SortOrder
   message?: Prisma.SortOrder
   region?: Prisma.SortOrder
+  responseHeaders?: Prisma.SortOrder
+  responseBody?: Prisma.SortOrder
   checkedAt?: Prisma.SortOrder
 }
 
@@ -414,6 +450,7 @@ export type MonitorCheckMaxOrderByAggregateInput = {
   statusCode?: Prisma.SortOrder
   message?: Prisma.SortOrder
   region?: Prisma.SortOrder
+  responseBody?: Prisma.SortOrder
   checkedAt?: Prisma.SortOrder
 }
 
@@ -425,6 +462,7 @@ export type MonitorCheckMinOrderByAggregateInput = {
   statusCode?: Prisma.SortOrder
   message?: Prisma.SortOrder
   region?: Prisma.SortOrder
+  responseBody?: Prisma.SortOrder
   checkedAt?: Prisma.SortOrder
 }
 
@@ -482,6 +520,8 @@ export type MonitorCheckCreateWithoutMonitorInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
 }
 
@@ -492,6 +532,8 @@ export type MonitorCheckUncheckedCreateWithoutMonitorInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
 }
 
@@ -532,6 +574,8 @@ export type MonitorCheckScalarWhereInput = {
   statusCode?: Prisma.IntNullableFilter<"MonitorCheck"> | number | null
   message?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   region?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
+  responseHeaders?: Prisma.JsonNullableFilter<"MonitorCheck">
+  responseBody?: Prisma.StringNullableFilter<"MonitorCheck"> | string | null
   checkedAt?: Prisma.DateTimeFilter<"MonitorCheck"> | Date | string
 }
 
@@ -542,6 +586,8 @@ export type MonitorCheckCreateManyMonitorInput = {
   statusCode?: number | null
   message?: string | null
   region?: string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: string | null
   checkedAt?: Date | string
 }
 
@@ -552,6 +598,8 @@ export type MonitorCheckUpdateWithoutMonitorInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -562,6 +610,8 @@ export type MonitorCheckUncheckedUpdateWithoutMonitorInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -572,6 +622,8 @@ export type MonitorCheckUncheckedUpdateManyWithoutMonitorInput = {
   statusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseHeaders?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  responseBody?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   checkedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -585,6 +637,8 @@ export type MonitorCheckSelect<ExtArgs extends runtime.Types.Extensions.Internal
   statusCode?: boolean
   message?: boolean
   region?: boolean
+  responseHeaders?: boolean
+  responseBody?: boolean
   checkedAt?: boolean
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitorCheck"]>
@@ -597,6 +651,8 @@ export type MonitorCheckSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   statusCode?: boolean
   message?: boolean
   region?: boolean
+  responseHeaders?: boolean
+  responseBody?: boolean
   checkedAt?: boolean
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitorCheck"]>
@@ -609,6 +665,8 @@ export type MonitorCheckSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   statusCode?: boolean
   message?: boolean
   region?: boolean
+  responseHeaders?: boolean
+  responseBody?: boolean
   checkedAt?: boolean
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitorCheck"]>
@@ -621,10 +679,12 @@ export type MonitorCheckSelectScalar = {
   statusCode?: boolean
   message?: boolean
   region?: boolean
+  responseHeaders?: boolean
+  responseBody?: boolean
   checkedAt?: boolean
 }
 
-export type MonitorCheckOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "monitorId" | "status" | "latency" | "statusCode" | "message" | "region" | "checkedAt", ExtArgs["result"]["monitorCheck"]>
+export type MonitorCheckOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "monitorId" | "status" | "latency" | "statusCode" | "message" | "region" | "responseHeaders" | "responseBody" | "checkedAt", ExtArgs["result"]["monitorCheck"]>
 export type MonitorCheckInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }
@@ -648,6 +708,8 @@ export type $MonitorCheckPayload<ExtArgs extends runtime.Types.Extensions.Intern
     statusCode: number | null
     message: string | null
     region: string | null
+    responseHeaders: runtime.JsonValue | null
+    responseBody: string | null
     checkedAt: Date
   }, ExtArgs["result"]["monitorCheck"]>
   composites: {}
@@ -1080,6 +1142,8 @@ export interface MonitorCheckFieldRefs {
   readonly statusCode: Prisma.FieldRef<"MonitorCheck", 'Int'>
   readonly message: Prisma.FieldRef<"MonitorCheck", 'String'>
   readonly region: Prisma.FieldRef<"MonitorCheck", 'String'>
+  readonly responseHeaders: Prisma.FieldRef<"MonitorCheck", 'Json'>
+  readonly responseBody: Prisma.FieldRef<"MonitorCheck", 'String'>
   readonly checkedAt: Prisma.FieldRef<"MonitorCheck", 'DateTime'>
 }
     

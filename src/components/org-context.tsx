@@ -1,22 +1,35 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
+import { createContext, useContext, type ReactNode } from "react";
+import { authClient } from "@/lib/auth-client";
 
 type Org = { id: string; name: string; slug: string; logo: string | null };
 
 const OrgContext = createContext<{
   activeOrg: Org | null;
-  setActiveOrg: (org: Org) => void;
+  setActiveOrg: (orgId: string) => void;
   orgs: Org[];
 } | null>(null);
 
 export function OrgProvider({ children }: { children: ReactNode }) {
-  const { data: orgs } = useQuery(orpc.orgs.list.queryOptions());
-  const [activeOrg, setActiveOrg] = useState<Org | null>(null);
-  const resolved = activeOrg ?? orgs?.[0] ?? null;
+  const { data: orgs } = authClient.useListOrganizations();
+  const { data: activeOrgData } = authClient.useActiveOrganization();
+
+  const orgList: Org[] = (orgs ?? []).map((o) => ({
+    id: o.id,
+    name: o.name,
+    slug: o.slug,
+    logo: o.logo,
+  }));
+
+  const active = activeOrgData
+    ? { id: activeOrgData.id, name: activeOrgData.name, slug: activeOrgData.slug, logo: activeOrgData.logo }
+    : orgList[0] ?? null;
+
+  const setActiveOrg = (orgId: string) => {
+    authClient.organization.setActive({ organizationId: orgId });
+  };
 
   return (
-    <OrgContext.Provider value={{ activeOrg: resolved, setActiveOrg, orgs: orgs ?? [] }}>
+    <OrgContext.Provider value={{ activeOrg: active, setActiveOrg, orgs: orgList }}>
       {children}
     </OrgContext.Provider>
   );

@@ -7,7 +7,6 @@ export const Route = createFileRoute("/_authed")({
     if (!session) {
       throw redirect({ to: "/login" });
     }
-    return { session };
   },
   component: () => <Outlet />,
 });

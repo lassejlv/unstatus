@@ -8,6 +8,8 @@ export async function checkTcp(monitor: Monitor) {
     latency: number;
     statusCode: null;
     message: string | null;
+    responseHeaders: null;
+    responseBody: null;
   }>((resolve) => {
     const socket = connect(
       { host: monitor.host!, port: monitor.port!, timeout: monitor.timeout * 1000 },
@@ -18,6 +20,8 @@ export async function checkTcp(monitor: Monitor) {
           latency: Math.round(performance.now() - start),
           statusCode: null,
           message: null,
+          responseHeaders: null,
+          responseBody: null,
         });
       },
     );
@@ -28,6 +32,8 @@ export async function checkTcp(monitor: Monitor) {
         latency: Math.round(performance.now() - start),
         statusCode: null,
         message: e.message,
+        responseHeaders: null,
+        responseBody: null,
       });
     });
     socket.on("timeout", () => {
@@ -37,6 +43,8 @@ export async function checkTcp(monitor: Monitor) {
         latency: Math.round(performance.now() - start),
         statusCode: null,
         message: "Connection timed out",
+        responseHeaders: null,
+        responseBody: null,
       });
     });
   });
