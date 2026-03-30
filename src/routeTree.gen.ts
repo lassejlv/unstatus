@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
@@ -26,6 +27,11 @@ import { Route as AuthedDashboardStatusPagesPageIdRouteImport } from './routes/_
 import { Route as AuthedDashboardMonitorsMonitorIdRouteImport } from './routes/_authed/dashboard/monitors.$monitorId'
 import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes/_authed/dashboard/incidents/$incidentId'
 
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -115,6 +121,7 @@ const AuthedDashboardIncidentsIncidentIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/pricing'
     | '/dashboard'
     | '/dashboard/settings'
     | '/api/auth/$'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/pricing'
     | '/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authed'
     | '/login'
+    | '/pricing'
     | '/_authed/dashboard'
     | '/_authed/dashboard/settings'
     | '/api/auth/$'
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
@@ -230,6 +243,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,

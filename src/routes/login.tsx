@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,9 +26,7 @@ function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
+          <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
