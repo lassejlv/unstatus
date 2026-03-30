@@ -105,7 +105,6 @@ function StatusPageDetailPage() {
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           /status/{page.slug}
-          {page.customDomain && ` · ${page.customDomain}`}
         </p>
       </div>
 
@@ -172,7 +171,6 @@ type PageData = {
   name: string;
   slug: string;
   isPublic: boolean;
-  customDomain: string | null;
   brandColor: string | null;
   headerText: string | null;
   footerText: string | null;
@@ -189,7 +187,6 @@ function EditPageDialog({
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
   const [isPublic, setIsPublic] = useState(page.isPublic);
-  const [customDomain, setCustomDomain] = useState(page.customDomain ?? "");
   const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
   const [footerText, setFooterText] = useState(page.footerText ?? "");
@@ -199,7 +196,6 @@ function EditPageDialog({
       setName(page.name);
       setSlug(page.slug);
       setIsPublic(page.isPublic);
-      setCustomDomain(page.customDomain ?? "");
       setBrandColor(page.brandColor ?? "#000000");
       setHeaderText(page.headerText ?? "");
       setFooterText(page.footerText ?? "");
@@ -239,14 +235,6 @@ function EditPageDialog({
             <Label>Public</Label>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Custom domain</Label>
-            <Input
-              value={customDomain}
-              onChange={(e) => setCustomDomain(e.target.value)}
-              placeholder="status.example.com"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
             <Label>Brand color</Label>
             <Input
               value={brandColor}
@@ -281,7 +269,6 @@ function EditPageDialog({
                 name,
                 slug,
                 isPublic,
-                customDomain,
                 brandColor,
                 headerText: headerText || undefined,
                 footerText: footerText || undefined,

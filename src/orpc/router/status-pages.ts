@@ -1,6 +1,5 @@
 import z from "zod";
 
-import { normalizeOptionalCustomDomain } from "@/lib/custom-domain";
 import { prisma } from "@/lib/prisma";
 import { authedProcedure } from "@/orpc/procedures";
 
@@ -9,7 +8,6 @@ const createInput = z.object({
   name: z.string(),
   slug: z.string(),
   isPublic: z.boolean().default(true),
-  customDomain: z.string().optional(),
   logoUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   brandColor: z.string().default("#000000"),
@@ -51,28 +49,15 @@ export const statusPagesRouter = {
   ),
 
   create: authedProcedure.input(createInput).handler(async ({ input }) => {
-    const customDomain = normalizeOptionalCustomDomain(input.customDomain);
-    return prisma.statusPage.create({
-      data: {
-        ...input,
-        customDomain,
-      },
-    });
+    return prisma.statusPage.create({ data: input });
   }),
 
   update: authedProcedure.input(updateInput).handler(async ({ input }) => {
     const { id, ...data } = input;
-    const customDomain =
-      data.customDomain === undefined
-        ? undefined
-        : normalizeOptionalCustomDomain(data.customDomain) ?? null;
 
     return prisma.statusPage.update({
       where: { id },
-      data: {
-        ...data,
-        customDomain,
-      },
+      data,
     });
   }),
 

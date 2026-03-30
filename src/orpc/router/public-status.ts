@@ -1,6 +1,5 @@
 import z from "zod";
 
-import { getTrustedCustomHost } from "@/lib/custom-domain";
 import { prisma } from "@/lib/prisma";
 import { publicProcedure } from "@/orpc/procedures";
 
@@ -46,7 +45,7 @@ type IncidentRow = {
 };
 
 async function resolvePublicPage(
-  where: { slug: string } | { customDomain: string },
+  where: { slug: string },
 ): Promise<ResolvedPublicPage> {
   const page = await prisma.statusPage.findUniqueOrThrow({
     where,
@@ -67,15 +66,6 @@ async function resolvePublicPage(
   }
 
   return page;
-}
-
-function requireTrustedCustomHost(headers: Headers): string {
-  const customHost = getTrustedCustomHost(headers);
-  if (!customHost) {
-    throw new Error("Not found");
-  }
-
-  return customHost;
 }
 
 async function getPublicStatusPage(page: ResolvedPublicPage) {
@@ -299,28 +289,10 @@ export const publicStatusRouter = {
       return getPublicStatusPage(page);
     }),
 
-  getByCustomDomain: publicProcedure
-    .input(z.object({}))
-    .handler(async ({ context }) => {
-      const page = await resolvePublicPage({
-        customDomain: requireTrustedCustomHost(context.headers),
-      });
-      return getPublicStatusPage(page);
-    }),
-
   getIncident: publicProcedure
     .input(z.object({ slug: z.string(), incidentId: z.string() }))
     .handler(async ({ input }) => {
       const page = await resolvePublicPage({ slug: input.slug });
-      return getPublicIncidentPage(page, input.incidentId);
-    }),
-
-  getIncidentByCustomDomain: publicProcedure
-    .input(z.object({ incidentId: z.string() }))
-    .handler(async ({ input, context }) => {
-      const page = await resolvePublicPage({
-        customDomain: requireTrustedCustomHost(context.headers),
-      });
       return getPublicIncidentPage(page, input.incidentId);
     }),
 };

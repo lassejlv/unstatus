@@ -63,7 +63,6 @@ function StatusPagesPage() {
               <TableHead>Slug</TableHead>
               <TableHead>Visibility</TableHead>
               <TableHead>Monitors</TableHead>
-              <TableHead>Custom Domain</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,9 +88,6 @@ function StatusPagesPage() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {p.monitors.length}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {p.customDomain ?? "—"}
                 </TableCell>
               </TableRow>
             ))}
