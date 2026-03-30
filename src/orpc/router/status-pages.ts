@@ -79,18 +79,28 @@ function cloudflareConfigured() {
   );
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 async function getCustomDomainSummary(hostname: string | null) {
   const providerConfigured = cloudflareConfigured();
 
-  return {
-    providerConfigured,
-    cnameTarget: env.CLOUDFLARE_SAAS_TARGET ?? null,
-    hostname,
-    cloudflare:
-      providerConfigured && hostname
-        ? await getCustomHostnameStatus(hostname)
-        : null,
-  };
+  try {
+    return {
+      providerConfigured,
+      cnameTarget: env.CLOUDFLARE_SAAS_TARGET ?? null,
+      hostname,
+      cloudflare:
+        providerConfigured && hostname
+          ? await getCustomHostnameStatus(hostname)
+          : null,
+    };
+  } catch (error) {
+    throw new ORPCError("BAD_GATEWAY", {
+      message: getErrorMessage(error, "Failed to fetch Cloudflare domain status."),
+    });
+  }
 }
 
 export const statusPagesRouter = {
@@ -155,7 +165,13 @@ export const statusPagesRouter = {
       const page = await requireStatusPageAccess(getUserId(context.session), input.id);
 
       if (page.customDomain && cloudflareConfigured()) {
-        await deleteCustomHostname(page.customDomain);
+        try {
+          await deleteCustomHostname(page.customDomain);
+        } catch (error) {
+          throw new ORPCError("BAD_GATEWAY", {
+            message: getErrorMessage(error, "Failed to remove Cloudflare custom hostname."),
+          });
+        }
       }
 
       await prisma.statusPage.delete({ where: { id: input.id } });
@@ -259,7 +275,15 @@ export const statusPagesRouter = {
         });
       }
 
-      const hostname = assertValidCustomHostname(input.hostname);
+      let hostname: string;
+
+      try {
+        hostname = assertValidCustomHostname(input.hostname);
+      } catch (error) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: getErrorMessage(error, "Invalid hostname."),
+        });
+      }
 
       const conflictingPage = await prisma.statusPage.findFirst({
         where: {
@@ -281,7 +305,15 @@ export const statusPagesRouter = {
         });
       }
 
-      const cloudflare = await createCustomHostname(hostname);
+      let cloudflare;
+
+      try {
+        cloudflare = await createCustomHostname(hostname);
+      } catch (error) {
+        throw new ORPCError("BAD_GATEWAY", {
+          message: getErrorMessage(error, "Failed to create Cloudflare custom hostname."),
+        });
+      }
 
       if (page.customDomain !== hostname) {
         await prisma.statusPage.update({
@@ -307,7 +339,13 @@ export const statusPagesRouter = {
       );
 
       if (page.customDomain && cloudflareConfigured()) {
-        await deleteCustomHostname(page.customDomain);
+        try {
+          await deleteCustomHostname(page.customDomain);
+        } catch (error) {
+          throw new ORPCError("BAD_GATEWAY", {
+            message: getErrorMessage(error, "Failed to remove Cloudflare custom hostname."),
+          });
+        }
       }
 
       await prisma.statusPage.update({
