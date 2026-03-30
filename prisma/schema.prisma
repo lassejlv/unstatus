@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -18,6 +19,9 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  members     Member[]
+  invitations Invitation[]
+
   @@unique([email])
   @@map("user")
 }
@@ -32,6 +36,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  activeOrganizationId String?
 
   @@unique([token])
   @@index([userId])
@@ -68,4 +74,180 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+  monitors    Monitor[]
+  statusPages StatusPage[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Monitor {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name        String
+  type        String   // "http" | "tcp"
+  active      Boolean  @default(true)
+  interval    Int      @default(60) // seconds
+  timeout     Int      @default(10) // seconds
+
+  // HTTP-specific
+  url         String?
+  method      String?  @default("GET")
+  headers     Json?    // { "key": "value" }
+  body        String?
+
+  // TCP-specific
+  host        String?
+  port        Int?
+
+  // Assertion rules: [{ type: "status", operator: "eq", value: "200" }]
+  rules       Json?
+
+  // Regions to ping from: ["eu", "us", "asia"]
+  regions     Json     @default("[]")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  checks      MonitorCheck[]
+  statusPageMonitors StatusPageMonitor[]
+  incidents   Incident[]
+
+  @@index([organizationId])
+  @@index([active])
+  @@map("monitor")
+}
+
+model MonitorCheck {
+  id        String   @id @default(cuid())
+  monitorId String
+  monitor   Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  status    String   // "up" | "down" | "degraded"
+  latency   Int      // ms
+  statusCode Int?
+  message   String?
+  region    String?
+  checkedAt DateTime @default(now())
+
+  @@index([monitorId, checkedAt])
+  @@map("monitor_check")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
+}
+
+model StatusPage {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name        String
+  slug        String
+  customDomain String?
+  isPublic    Boolean  @default(true)
+
+  // Customization
+  logoUrl     String?
+  faviconUrl  String?
+  brandColor  String?  @default("#000000")
+  headerText  String?
+  footerText  String?
+  customCss   String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  monitors    StatusPageMonitor[]
+
+  @@unique([slug])
+  @@unique([customDomain])
+  @@index([organizationId])
+  @@map("status_page")
+}
+
+model StatusPageMonitor {
+  id           String     @id @default(cuid())
+  statusPageId String
+  statusPage   StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  monitorId    String
+  monitor      Monitor    @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  sortOrder    Int        @default(0)
+  displayName  String?
+
+  @@unique([statusPageId, monitorId])
+  @@index([statusPageId])
+  @@map("status_page_monitor")
+}
+
+model Incident {
+  id        String   @id @default(cuid())
+  monitorId String
+  monitor   Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  title     String
+  status    String   @default("investigating") // investigating | identified | monitoring | resolved
+  severity  String   @default("minor")         // minor | major | critical
+  startedAt DateTime @default(now())
+  resolvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updates   IncidentUpdate[]
+
+  @@index([monitorId])
+  @@index([status])
+  @@map("incident")
+}
+
+model IncidentUpdate {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  status     String   // investigating | identified | monitoring | resolved
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([incidentId])
+  @@map("incident_update")
 }

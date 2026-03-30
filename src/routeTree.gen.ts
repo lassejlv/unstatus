@@ -9,14 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
+import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedDashboardStatusPagesRouteImport } from './routes/_authed/dashboard/status-pages'
+import { Route as AuthedDashboardIncidentsRouteImport } from './routes/_authed/dashboard/incidents'
+import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors.index'
+import { Route as AuthedDashboardMonitorsMonitorIdRouteImport } from './routes/_authed/dashboard/monitors.$monitorId'
 
-const IndexRoute = IndexRouteImport.update({
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedIndexRoute = AuthedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedDashboardRoute,
 } as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
@@ -28,45 +55,150 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedDashboardStatusPagesRoute =
+  AuthedDashboardStatusPagesRouteImport.update({
+    id: '/status-pages',
+    path: '/status-pages',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardIncidentsRoute =
+  AuthedDashboardIncidentsRouteImport.update({
+    id: '/incidents',
+    path: '/incidents',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardMonitorsIndexRoute =
+  AuthedDashboardMonitorsIndexRouteImport.update({
+    id: '/monitors/',
+    path: '/monitors/',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardMonitorsMonitorIdRoute =
+  AuthedDashboardMonitorsMonitorIdRouteImport.update({
+    id: '/monitors/$monitorId',
+    path: '/monitors/$monitorId',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthedIndexRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
+  '/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/dashboard/': typeof AuthedDashboardIndexRoute
+  '/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/dashboard/monitors/': typeof AuthedDashboardMonitorsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/': typeof AuthedIndexRoute
+  '/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
+  '/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/dashboard': typeof AuthedDashboardIndexRoute
+  '/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/dashboard/monitors': typeof AuthedDashboardMonitorsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/_authed/': typeof AuthedIndexRoute
+  '/_authed/dashboard/incidents': typeof AuthedDashboardIncidentsRoute
+  '/_authed/dashboard/status-pages': typeof AuthedDashboardStatusPagesRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
+  '/_authed/dashboard/monitors/$monitorId': typeof AuthedDashboardMonitorsMonitorIdRoute
+  '/_authed/dashboard/monitors/': typeof AuthedDashboardMonitorsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/auth/$' | '/api/rpc/$'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/dashboard/incidents'
+    | '/dashboard/status-pages'
+    | '/api/auth/$'
+    | '/api/rpc/$'
+    | '/dashboard/'
+    | '/dashboard/monitors/$monitorId'
+    | '/dashboard/monitors/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/auth/$' | '/api/rpc/$'
-  id: '__root__' | '/' | '/api/auth/$' | '/api/rpc/$'
+  to:
+    | '/login'
+    | '/'
+    | '/dashboard/incidents'
+    | '/dashboard/status-pages'
+    | '/api/auth/$'
+    | '/api/rpc/$'
+    | '/dashboard'
+    | '/dashboard/monitors/$monitorId'
+    | '/dashboard/monitors'
+  id:
+    | '__root__'
+    | '/_authed'
+    | '/login'
+    | '/_authed/dashboard'
+    | '/_authed/'
+    | '/_authed/dashboard/incidents'
+    | '/_authed/dashboard/status-pages'
+    | '/api/auth/$'
+    | '/api/rpc/$'
+    | '/_authed/dashboard/'
+    | '/_authed/dashboard/monitors/$monitorId'
+    | '/_authed/dashboard/monitors/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthedRoute: typeof AuthedRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/': {
+      id: '/_authed/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthedIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard': {
+      id: '/_authed/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthedDashboardRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/': {
+      id: '/_authed/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthedDashboardIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
     }
     '/api/rpc/$': {
       id: '/api/rpc/$'
@@ -82,11 +214,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/dashboard/status-pages': {
+      id: '/_authed/dashboard/status-pages'
+      path: '/status-pages'
+      fullPath: '/dashboard/status-pages'
+      preLoaderRoute: typeof AuthedDashboardStatusPagesRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/incidents': {
+      id: '/_authed/dashboard/incidents'
+      path: '/incidents'
+      fullPath: '/dashboard/incidents'
+      preLoaderRoute: typeof AuthedDashboardIncidentsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/monitors/': {
+      id: '/_authed/dashboard/monitors/'
+      path: '/monitors'
+      fullPath: '/dashboard/monitors/'
+      preLoaderRoute: typeof AuthedDashboardMonitorsIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/monitors/$monitorId': {
+      id: '/_authed/dashboard/monitors/$monitorId'
+      path: '/monitors/$monitorId'
+      fullPath: '/dashboard/monitors/$monitorId'
+      preLoaderRoute: typeof AuthedDashboardMonitorsMonitorIdRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
   }
 }
 
+interface AuthedDashboardRouteChildren {
+  AuthedDashboardIncidentsRoute: typeof AuthedDashboardIncidentsRoute
+  AuthedDashboardStatusPagesRoute: typeof AuthedDashboardStatusPagesRoute
+  AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+  AuthedDashboardMonitorsMonitorIdRoute: typeof AuthedDashboardMonitorsMonitorIdRoute
+  AuthedDashboardMonitorsIndexRoute: typeof AuthedDashboardMonitorsIndexRoute
+}
+
+const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
+  AuthedDashboardIncidentsRoute: AuthedDashboardIncidentsRoute,
+  AuthedDashboardStatusPagesRoute: AuthedDashboardStatusPagesRoute,
+  AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+  AuthedDashboardMonitorsMonitorIdRoute: AuthedDashboardMonitorsMonitorIdRoute,
+  AuthedDashboardMonitorsIndexRoute: AuthedDashboardMonitorsIndexRoute,
+}
+
+const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
+  AuthedDashboardRouteChildren,
+)
+
+interface AuthedRouteChildren {
+  AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
+  AuthedIndexRoute: typeof AuthedIndexRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
+  AuthedIndexRoute: AuthedIndexRoute,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  LoginRoute: LoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
 }

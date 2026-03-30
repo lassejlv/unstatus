@@ -1,171 +1,58 @@
 # AGENTS.md - Coding Agent Guidelines
 
-## Build Commands
+## Context7 
 
-```bash
-# Install dependencies
-bun install
+Use mcp tool context7 to search up new tech or current if you do not know how to use them!
 
-# Development server (port 3000)
-bun --bun run dev
+# Prisma and migrations
 
-# Production build
-bun --bun run build
+YOU DONT DARE FKN TOUCHING MY PRISMA COMMANDS OR WRITING ANY SQL CODE INTO PRISMA/MIGRATIONS, AT ALL IF YOU DO I WILL FIND YOU AND MURDER YOU WITH A FORK
 
-# Preview production build
-bun --bun run preview
-```
+# Routes
 
-## Test Commands
+When navigating to /dashboard remember to add search tab => overview
+Example `navigate({ to: '/dashboard', search: { tab: "overview"} })`
 
-```bash
-# Run all tests
-bun --bun run test
+If you need to add components folder or any other file/folder that is not a route inside `/src/routes/**` you need to attach -<filename>.<ext> so it gets ignored
 
-# Run a single test file
-bun --bun run test -- src/components/button.test.tsx
+# orpc
 
-# Run tests in watch mode
-bun --bun run test -- --watch
+Use this for backend stuff. src/orpc. Client rpc routes like: src/orpc/routers/<something>.ts
 
-# Run tests with coverage
-bun --bun run test -- --coverage
-```
+# Env
 
-## Database Commands
+Use type-safe env, by adding them in `src/lib/env.ts`. Wich uses zod **v4**
+Then import it and use env.<thing>
 
-```bash
-# Better Auth CLI
-bunx --bun @better-auth/cli
+## Data Fetching & Mutations
 
-# Generate Better Auth secret
-bunx --bun @better-auth/cli secret
+Use **TanStack Query** for all data fetching and mutations.
 
-# Run Better Auth migrations
-bunx --bun @better-auth/cli migrate
+- Use `useQuery` for fetching data
+- Use `useMutation` for creating, updating, or deleting data
+- Query client is already configured in the root provider
 
-# Prisma commands (if needed)
-npx prisma generate
-npx prisma migrate dev
-```
 
-## Code Style Guidelines
+## Package Manager
 
-### General
+Stop running build and use lint command idiot.
 
-- **Runtime**: Bun (always use `--bun` flag)
-- **Module system**: ES modules (`"type": "module"`)
-- **Path aliases**: Use `@/` prefix for imports from `src/` (e.g., `@/lib/utils`)
+Use **Bun** as the package manager for this project.
 
-### TypeScript
+- `bun install` - Install dependencies
+- `bun run <script>` - Run scripts
+- `bun test` - Run tests
+- `bunx <package>` - Execute packages
 
-- **Strict mode**: Enabled - always write proper types
-- **No unused locals/parameters**: Keep code clean
-- **Target**: ES2022
-- **JSX**: `react-jsx` transform
-- Use explicit return types on public functions when ambiguous
-- Define interfaces for component props
+## Known TypeScript Issue
 
-### Formatting
+There is a known TypeScript configuration error in this project:
 
-- **Quotes**: Double quotes for strings ("")
-- **Semicolons**: Use semicolons
-- **Trailing commas**: Use where appropriate
-- **Indentation**: 2 spaces
-- **Max line length**: ~100 characters (be reasonable)
+- `TS5102: Option 'baseUrl' has been removed`
 
-### Imports
+When running lint/typecheck commands, ignore this specific error for now unless the task is explicitly to fix TypeScript configuration.
 
-- Group imports: React/libraries first, then `@/` aliases, then relative
-- Use `type` imports where applicable: `import { type ClassValue } from "clsx"`
-- Prefer named imports over default imports when available
+## Frontend Style Rule
 
-### Components
-
-- Use function declarations (not arrow functions) for components
-- Destructure props in function parameters
-- Use `cn()` utility from `@/lib/utils` for className merging
-- Use `data-slot` attributes for component identification
-- Follow shadcn/ui patterns for UI components
-
-Example:
-```tsx
-function Button({
-  className,
-  variant = "default",
-  ...props
-}: React.ComponentProps<"button"> & {
-  variant?: "default" | "outline"
-}) {
-  return (
-    <button
-      data-slot="button"
-      className={cn("base-classes", className)}
-      {...props}
-    />
-  )
-}
-```
-
-### Naming Conventions
-
-- **Components**: PascalCase (e.g., `Button`, `CardHeader`)
-- **Files**: Lowercase for routes, PascalCase for components
-- **Hooks**: camelCase starting with `use` (e.g., `useSession`)
-- **Constants**: UPPER_SNAKE_CASE for true constants
-- **Variables/functions**: camelCase
-
-### Error Handling
-
-- Use explicit error types when available
-- Handle async errors with try/catch
-- Use Zod for runtime validation
-- Prefer early returns over nested conditionals
-
-### Styling
-
-- **Tailwind CSS v4** with `@theme` inline configuration
-- Use `oklch()` color format in CSS variables
-- CSS variables follow shadcn convention: `--color-*`
-- Dark mode via `.dark` class
-- Use `dark:` prefix for dark mode styles
-
-### Project Structure
-
-```
-src/
-  components/      # React components (UI, shared)
-  components/ui/   # shadcn/ui components
-  routes/          # TanStack Router file-based routes
-  lib/             # Utilities, configurations (auth, prisma)
-  hooks/           # Custom React hooks
-  integrations/    # Third-party integrations
-  orpc/            # oRPC server functions
-  generated/       # Generated code (Prisma, etc.)
-```
-
-### Testing
-
-- Uses Vitest with jsdom environment
-- Use `@testing-library/react` for component tests
-- No tests exist yet - create patterns for new features
-
-### Key Libraries
-
-- **Framework**: TanStack Start + TanStack Router
-- **ORM**: Prisma v7 with PostgreSQL adapter
-- **Auth**: Better Auth with Prisma adapter
-- **Server**: oRPC for type-safe server functions
-- **Query**: TanStack Query
-- **UI**: shadcn/ui (radix-mira style), Radix UI primitives
-- **Icons**: Hugeicons
-- **Charts**: Recharts
-- **Forms**: React Hook Form (if needed)
-
-### Important Notes
-
-- Always use `bun --bun` for scripts, not `bun run` alone
-- File-based routing: files in `src/routes/` become routes
-- Route tree is auto-generated (`routeTree.gen.ts`) - exclude from search
-- Environment variables: Use `.env.local` (already ignored)
-- Server functions: Use `createServerFn` from `@tanstack/react-start`
+Keep UI styling plain and practical, closer to PlanetScale's visual tone.
+Avoid vibe-coded aesthetics or trendy decorative effects.

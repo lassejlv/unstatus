@@ -31,8 +31,8 @@ export * from "./enums.ts"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Todos
- * const todos = await prisma.todo.findMany()
+ * // Fetch zero or more Users
+ * const users = await prisma.user.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -42,7 +42,67 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model Todo
+ * Model User
  * 
  */
-export type Todo = Prisma.TodoModel
+export type User = Prisma.UserModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel
+/**
+ * Model Account
+ * 
+ */
+export type Account = Prisma.AccountModel
+/**
+ * Model Verification
+ * 
+ */
+export type Verification = Prisma.VerificationModel
+/**
+ * Model Organization
+ * 
+ */
+export type Organization = Prisma.OrganizationModel
+/**
+ * Model Monitor
+ * 
+ */
+export type Monitor = Prisma.MonitorModel
+/**
+ * Model MonitorCheck
+ * 
+ */
+export type MonitorCheck = Prisma.MonitorCheckModel
+/**
+ * Model Member
+ * 
+ */
+export type Member = Prisma.MemberModel
+/**
+ * Model Invitation
+ * 
+ */
+export type Invitation = Prisma.InvitationModel
+/**
+ * Model StatusPage
+ * 
+ */
+export type StatusPage = Prisma.StatusPageModel
+/**
+ * Model StatusPageMonitor
+ * 
+ */
+export type StatusPageMonitor = Prisma.StatusPageMonitorModel
+/**
+ * Model Incident
+ * 
+ */
+export type Incident = Prisma.IncidentModel
+/**
+ * Model IncidentUpdate
+ * 
+ */
+export type IncidentUpdate = Prisma.IncidentUpdateModel
