@@ -33,7 +33,6 @@ export type PublicStatusIncidentSummary = {
 export type PublicStatusPageData = {
   name: string;
   slug: string;
-  customDomain?: string | null;
   logoUrl: string | null;
   brandColor: string | null;
   headerText: string | null;
@@ -46,7 +45,6 @@ export type PublicStatusPageData = {
 export type PublicIncidentData = {
   pageName: string;
   pageSlug: string;
-  pageCustomDomain?: string | null;
   id: string;
   title: string;
   status: string;

@@ -1,42 +1,18 @@
-import { ORPCError } from "@orpc/server";
 import z from "zod";
 
-import {
-  customDomainsFeatureEnabled,
-  getRequestHostname,
-  isPlatformHost,
-  normalizeHostname,
-} from "@/lib/hostnames";
 import { prisma } from "@/lib/prisma";
 import { publicProcedure } from "@/orpc/procedures";
 
-export type ResolvedPublicPage = {
+type ResolvedPublicPage = {
   id: string;
   name: string;
   slug: string;
-  customDomain: string | null;
   isPublic: boolean;
   logoUrl: string | null;
   brandColor: string | null;
   headerText: string | null;
   footerText: string | null;
 };
-
-export type RequestHostInfo =
-  | {
-      mode: "platform";
-      host: string | null;
-    }
-  | {
-      mode: "custom";
-      host: string;
-      pageId: string;
-      slug: string;
-    }
-  | {
-      mode: "unknown";
-      host: string;
-    };
 
 type MonitorRow = {
   monitorId: string;
@@ -68,20 +44,15 @@ type IncidentRow = {
   lastMessage: string | null;
 };
 
-async function findPublicPage(where: {
-  slug?: string;
-  customDomain?: string;
-}): Promise<ResolvedPublicPage | null> {
-  return prisma.statusPage.findFirst({
-    where: {
-      ...where,
-      isPublic: true,
-    },
+async function resolvePublicPage(
+  where: { slug: string },
+): Promise<ResolvedPublicPage> {
+  const page = await prisma.statusPage.findUniqueOrThrow({
+    where,
     select: {
       id: true,
       name: true,
       slug: true,
-      customDomain: true,
       isPublic: true,
       logoUrl: true,
       brandColor: true,
@@ -89,77 +60,15 @@ async function findPublicPage(where: {
       footerText: true,
     },
   });
-}
 
-export async function findPublicPageBySlug(slug: string) {
-  return findPublicPage({ slug });
-}
-
-export async function findPublicPageByHost(host: string) {
-  const normalizedHost = normalizeHostname(host);
-  if (!normalizedHost) return null;
-  return findPublicPage({ customDomain: normalizedHost });
-}
-
-export async function resolvePublicPageBySlug(
-  slug: string,
-): Promise<ResolvedPublicPage> {
-  const page = await findPublicPageBySlug(slug);
-
-  if (!page) {
-    throw new ORPCError("NOT_FOUND", {
-      message: "Status page not found.",
-    });
+  if (!page.isPublic) {
+    throw new Error("Not found");
   }
 
   return page;
 }
 
-export async function resolvePublicPageByHost(
-  host: string,
-): Promise<ResolvedPublicPage> {
-  const page = await findPublicPageByHost(host);
-
-  if (!page) {
-    throw new ORPCError("NOT_FOUND", {
-      message: "Status page not found.",
-    });
-  }
-
-  return page;
-}
-
-export async function resolveRequestHostInfo(
-  headers: Headers,
-): Promise<RequestHostInfo> {
-  const host = getRequestHostname(headers);
-
-  if (!host) {
-    return { mode: "platform", host: null };
-  }
-
-  if (isPlatformHost(host)) {
-    return { mode: "platform", host };
-  }
-
-  const page = await findPublicPageByHost(host);
-  if (page) {
-    return {
-      mode: "custom",
-      host,
-      pageId: page.id,
-      slug: page.slug,
-    };
-  }
-
-  if (customDomainsFeatureEnabled()) {
-    return { mode: "unknown", host };
-  }
-
-  return { mode: "platform", host };
-}
-
-export async function getPublicStatusPage(page: ResolvedPublicPage) {
+async function getPublicStatusPage(page: ResolvedPublicPage) {
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
 
@@ -277,8 +186,7 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
     const uptimePercent =
       daily.length > 0
         ? Math.round(
-            (daily.reduce((sum, day) => sum + day.uptime, 0) / daily.length) *
-              100,
+            (daily.reduce((sum, day) => sum + day.uptime, 0) / daily.length) * 100,
           ) / 100
         : 100;
 
@@ -317,7 +225,6 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
   return {
     name: page.name,
     slug: page.slug,
-    customDomain: page.customDomain,
     logoUrl: page.logoUrl,
     brandColor: page.brandColor,
     headerText: page.headerText,
@@ -336,7 +243,7 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
   };
 }
 
-export async function getPublicIncidentPage(
+async function getPublicIncidentPage(
   page: ResolvedPublicPage,
   incidentId: string,
 ) {
@@ -358,7 +265,6 @@ export async function getPublicIncidentPage(
   return {
     pageName: page.name,
     pageSlug: page.slug,
-    pageCustomDomain: page.customDomain,
     id: incident.id,
     title: incident.title,
     status: incident.status,
@@ -376,61 +282,17 @@ export async function getPublicIncidentPage(
 }
 
 export const publicStatusRouter = {
-  getRequestHostInfo: publicProcedure
-    .input(z.object({}))
-    .handler(async ({ context }) => {
-      return resolveRequestHostInfo(context.headers);
-    }),
-
-  getCurrentHostPage: publicProcedure
-    .input(z.object({}))
-    .handler(async ({ context }) => {
-      const hostInfo = await resolveRequestHostInfo(context.headers);
-      if (hostInfo.mode !== "custom") {
-        return null;
-      }
-
-      const page = await resolvePublicPageByHost(hostInfo.host);
-      return getPublicStatusPage(page);
-    }),
-
-  getCurrentHostIncident: publicProcedure
-    .input(z.object({ incidentId: z.string() }))
-    .handler(async ({ input, context }) => {
-      const hostInfo = await resolveRequestHostInfo(context.headers);
-      if (hostInfo.mode !== "custom") {
-        return null;
-      }
-
-      const page = await resolvePublicPageByHost(hostInfo.host);
-      return getPublicIncidentPage(page, input.incidentId);
-    }),
-
   getBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .handler(async ({ input }) => {
-      const page = await resolvePublicPageBySlug(input.slug);
-      return getPublicStatusPage(page);
-    }),
-
-  getByHost: publicProcedure
-    .input(z.object({ host: z.string() }))
-    .handler(async ({ input }) => {
-      const page = await resolvePublicPageByHost(input.host);
+      const page = await resolvePublicPage({ slug: input.slug });
       return getPublicStatusPage(page);
     }),
 
   getIncident: publicProcedure
     .input(z.object({ slug: z.string(), incidentId: z.string() }))
     .handler(async ({ input }) => {
-      const page = await resolvePublicPageBySlug(input.slug);
-      return getPublicIncidentPage(page, input.incidentId);
-    }),
-
-  getIncidentByHost: publicProcedure
-    .input(z.object({ host: z.string(), incidentId: z.string() }))
-    .handler(async ({ input }) => {
-      const page = await resolvePublicPageByHost(input.host);
+      const page = await resolvePublicPage({ slug: input.slug });
       return getPublicIncidentPage(page, input.incidentId);
     }),
 };

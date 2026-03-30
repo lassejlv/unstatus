@@ -1,30 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
-
-import {
-  CenteredMessage,
-  PublicStatusPageView,
-} from "@/components/public-status-view";
 import { Button } from "@/components/ui/button";
-import { orpc } from "@/orpc/client";
+import { motion } from "motion/react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/")({
-  loader: async ({ context }) => {
-    const hostInfo = await context.queryClient.ensureQueryData(
-      orpc.publicStatus.getRequestHostInfo.queryOptions({ input: {} }),
-    );
-
-    if (hostInfo.mode === "custom") {
-      await context.queryClient.ensureQueryData(
-        orpc.publicStatus.getCurrentHostPage.queryOptions({ input: {} }),
-      );
-    }
-
-    return { hostInfo };
-  },
-  component: IndexPage,
+  component: HomePage,
 });
 
 const containerVariants = {
@@ -104,37 +84,6 @@ function TypewriterTitle() {
         className="inline-block w-[2px] h-[1em] bg-current ml-1 align-middle"
       />
     </span>
-  );
-}
-
-function IndexPage() {
-  const { hostInfo } = Route.useLoaderData();
-
-  if (hostInfo.mode === "custom") {
-    return <CustomHostIndexPage />;
-  }
-
-  return <HomePage />;
-}
-
-function CustomHostIndexPage() {
-  const { data: statusPage } = useQuery(
-    orpc.publicStatus.getCurrentHostPage.queryOptions({ input: {} }),
-  );
-
-  if (!statusPage) {
-    return <CenteredMessage message="Status page not found." />;
-  }
-
-  return (
-    <PublicStatusPageView
-      data={statusPage}
-      renderIncidentLink={(incident, content) => (
-        <Link to="/incidents/$incidentId" params={{ incidentId: incident.id }}>
-          {content}
-        </Link>
-      )}
-    />
   );
 }
 

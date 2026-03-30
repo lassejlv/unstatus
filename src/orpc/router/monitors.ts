@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { authedProcedure } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
@@ -73,19 +72,13 @@ export const monitorsRouter = {
     .handler(async ({ input }) => {
       const workerUrl = env.WORKER_EU_URL ?? env.WORKER_URL;
       if (!workerUrl || !env.WORKER_SECRET) {
-        throw new ORPCError("PRECONDITION_FAILED", {
-          message: "Worker not configured",
-        });
+        throw new Error("Worker not configured");
       }
       const res = await fetch(`${workerUrl}/run/${input.monitorId}`, {
         method: "POST",
         headers: { "x-worker-secret": env.WORKER_SECRET },
       });
-      if (!res.ok) {
-        throw new ORPCError("BAD_GATEWAY", {
-          message: "Worker check failed",
-        });
-      }
+      if (!res.ok) throw new Error("Worker check failed");
       return res.json();
     }),
 };
