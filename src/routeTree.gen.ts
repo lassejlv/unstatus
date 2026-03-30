@@ -13,6 +13,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IncidentsIncidentIdRouteImport } from './routes/incidents/$incidentId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
@@ -44,6 +45,11 @@ const AuthedRoute = AuthedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentsIncidentIdRoute = IncidentsIncidentIdRouteImport.update({
+  id: '/incidents/$incidentId',
+  path: '/incidents/$incidentId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/incidents/$incidentId': typeof IncidentsIncidentIdRoute
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/dashboard'
+    | '/incidents/$incidentId'
     | '/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pricing'
+    | '/incidents/$incidentId'
     | '/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/_authed/dashboard'
+    | '/incidents/$incidentId'
     | '/_authed/dashboard/settings'
     | '/api/auth/$'
     | '/api/rpc/$'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  IncidentsIncidentIdRoute: typeof IncidentsIncidentIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
@@ -269,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incidents/$incidentId': {
+      id: '/incidents/$incidentId'
+      path: '/incidents/$incidentId'
+      fullPath: '/incidents/$incidentId'
+      preLoaderRoute: typeof IncidentsIncidentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/dashboard': {
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  IncidentsIncidentIdRoute: IncidentsIncidentIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,

@@ -15,5 +15,12 @@ export const env = z
     WORKER_EU_URL: z.url().optional(),
     WORKER_US_URL: z.url().optional(),
     WORKER_ASIA_URL: z.url().optional(),
+    CLOUDFLARE_API_TOKEN: z.string().optional(),
+    CLOUDFLARE_ZONE_ID: z.string().optional(),
+    CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+    CLOUDFLARE_SAAS_TARGET: z.string().optional(),
+    PLATFORM_HOSTS: z.string().optional(),
+    APP_ORIGIN: z.url().optional(),
+    CLOUDFLARE_WEBHOOK_SECRET: z.string().optional(),
   })
   .parse(process.env);

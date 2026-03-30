@@ -1,5 +1,12 @@
 import z from "zod";
 
+import {
+  createCustomHostname,
+  deleteCustomHostname,
+  getCustomHostnameStatus,
+} from "@/lib/cloudflare/custom-hostnames";
+import { env } from "@/lib/env";
+import { assertValidCustomHostname } from "@/lib/hostnames";
 import { prisma } from "@/lib/prisma";
 import { authedProcedure } from "@/orpc/procedures";
 
@@ -18,9 +25,77 @@ const createInput = z.object({
 
 const updateInput = createInput.partial().extend({ id: z.string() });
 
+function getUserId(session: { user: { id: string } }) {
+  return session.user.id;
+}
+
+async function requireOrganizationAccess(userId: string, organizationId: string) {
+  const organization = await prisma.organization.findFirst({
+    where: {
+      id: organizationId,
+      members: {
+        some: { userId },
+      },
+    },
+    select: { id: true },
+  });
+
+  if (!organization) {
+    throw new Error("Organization not found.");
+  }
+
+  return organization;
+}
+
+async function requireStatusPageAccess(userId: string, pageId: string) {
+  const page = await prisma.statusPage.findFirst({
+    where: {
+      id: pageId,
+      organization: {
+        members: {
+          some: { userId },
+        },
+      },
+    },
+  });
+
+  if (!page) {
+    throw new Error("Status page not found.");
+  }
+
+  return page;
+}
+
+function cloudflareConfigured() {
+  return Boolean(
+    env.CLOUDFLARE_API_TOKEN &&
+      env.CLOUDFLARE_ZONE_ID &&
+      env.CLOUDFLARE_SAAS_TARGET,
+  );
+}
+
+async function getCustomDomainSummary(hostname: string | null) {
+  const providerConfigured = cloudflareConfigured();
+
+  return {
+    providerConfigured,
+    cnameTarget: env.CLOUDFLARE_SAAS_TARGET ?? null,
+    hostname,
+    cloudflare:
+      providerConfigured && hostname
+        ? await getCustomHostnameStatus(hostname)
+        : null,
+  };
+}
+
 export const statusPagesRouter = {
   list: authedProcedure.input(z.object({ organizationId: z.string() })).handler(
-    async ({ input }) => {
+    async ({ input, context }) => {
+      await requireOrganizationAccess(
+        getUserId(context.session),
+        input.organizationId,
+      );
+
       return prisma.statusPage.findMany({
         where: { organizationId: input.organizationId },
         include: {
@@ -35,7 +110,9 @@ export const statusPagesRouter = {
   ),
 
   get: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
+    async ({ input, context }) => {
+      await requireStatusPageAccess(getUserId(context.session), input.id);
+
       return prisma.statusPage.findUniqueOrThrow({
         where: { id: input.id },
         include: {
@@ -48,12 +125,19 @@ export const statusPagesRouter = {
     },
   ),
 
-  create: authedProcedure.input(createInput).handler(async ({ input }) => {
+  create: authedProcedure.input(createInput).handler(async ({ input, context }) => {
+    await requireOrganizationAccess(
+      getUserId(context.session),
+      input.organizationId,
+    );
+
     return prisma.statusPage.create({ data: input });
   }),
 
-  update: authedProcedure.input(updateInput).handler(async ({ input }) => {
-    const { id, ...data } = input;
+  update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
+    await requireStatusPageAccess(getUserId(context.session), input.id);
+
+    const { id, organizationId: _organizationId, ...data } = input;
 
     return prisma.statusPage.update({
       where: { id },
@@ -62,7 +146,13 @@ export const statusPagesRouter = {
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
+    async ({ input, context }) => {
+      const page = await requireStatusPageAccess(getUserId(context.session), input.id);
+
+      if (page.customDomain && cloudflareConfigured()) {
+        await deleteCustomHostname(page.customDomain);
+      }
+
       await prisma.statusPage.delete({ where: { id: input.id } });
     },
   ),
@@ -76,13 +166,145 @@ export const statusPagesRouter = {
         sortOrder: z.number().int().default(0),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const userId = getUserId(context.session);
+      const page = await requireStatusPageAccess(userId, input.statusPageId);
+
+      const monitor = await prisma.monitor.findFirst({
+        where: {
+          id: input.monitorId,
+          organizationId: page.organizationId,
+          organization: {
+            members: {
+              some: { userId },
+            },
+          },
+        },
+        select: { id: true },
+      });
+
+      if (!monitor) {
+        throw new Error("Monitor not found.");
+      }
+
       return prisma.statusPageMonitor.create({ data: input });
     }),
 
   removeMonitor: authedProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const monitor = await prisma.statusPageMonitor.findFirst({
+        where: {
+          id: input.id,
+          statusPage: {
+            organization: {
+              members: {
+                some: { userId: getUserId(context.session) },
+              },
+            },
+          },
+        },
+        select: { id: true },
+      });
+
+      if (!monitor) {
+        throw new Error("Monitor not found.");
+      }
+
       await prisma.statusPageMonitor.delete({ where: { id: input.id } });
+    }),
+
+  getCustomDomainStatus: authedProcedure
+    .input(z.object({ pageId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const page = await requireStatusPageAccess(
+        getUserId(context.session),
+        input.pageId,
+      );
+
+      return getCustomDomainSummary(page.customDomain);
+    }),
+
+  connectCustomDomain: authedProcedure
+    .input(
+      z.object({
+        pageId: z.string(),
+        hostname: z.string(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      if (!cloudflareConfigured()) {
+        throw new Error("Cloudflare custom domains are not configured.");
+      }
+
+      const page = await requireStatusPageAccess(
+        getUserId(context.session),
+        input.pageId,
+      );
+
+      if (!page.isPublic) {
+        throw new Error("Custom domains are only available for public status pages.");
+      }
+
+      const hostname = assertValidCustomHostname(input.hostname);
+
+      const conflictingPage = await prisma.statusPage.findFirst({
+        where: {
+          customDomain: hostname,
+          NOT: { id: page.id },
+        },
+        select: { id: true },
+      });
+
+      if (conflictingPage) {
+        throw new Error("That custom domain is already connected to another status page.");
+      }
+
+      if (page.customDomain && page.customDomain !== hostname) {
+        throw new Error(
+          "Remove the current custom domain before connecting a new one.",
+        );
+      }
+
+      const cloudflare = await createCustomHostname(hostname);
+
+      if (page.customDomain !== hostname) {
+        await prisma.statusPage.update({
+          where: { id: page.id },
+          data: { customDomain: hostname },
+        });
+      }
+
+      return {
+        providerConfigured: true,
+        cnameTarget: env.CLOUDFLARE_SAAS_TARGET ?? null,
+        hostname,
+        cloudflare,
+      };
+    }),
+
+  removeCustomDomain: authedProcedure
+    .input(z.object({ pageId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const page = await requireStatusPageAccess(
+        getUserId(context.session),
+        input.pageId,
+      );
+
+      if (page.customDomain && cloudflareConfigured()) {
+        await deleteCustomHostname(page.customDomain);
+      }
+
+      await prisma.statusPage.update({
+        where: { id: page.id },
+        data: { customDomain: null },
+      });
+
+      return {
+        providerConfigured: cloudflareConfigured(),
+        cnameTarget: env.CLOUDFLARE_SAAS_TARGET ?? null,
+        hostname: null,
+        cloudflare: null,
+      };
     }),
 };
