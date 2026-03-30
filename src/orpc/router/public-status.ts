@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import z from "zod";
 
 import {
@@ -106,7 +107,9 @@ export async function resolvePublicPageBySlug(
   const page = await findPublicPageBySlug(slug);
 
   if (!page) {
-    throw new Error("Not found");
+    throw new ORPCError("NOT_FOUND", {
+      message: "Status page not found.",
+    });
   }
 
   return page;
@@ -118,7 +121,9 @@ export async function resolvePublicPageByHost(
   const page = await findPublicPageByHost(host);
 
   if (!page) {
-    throw new Error("Not found");
+    throw new ORPCError("NOT_FOUND", {
+      message: "Status page not found.",
+    });
   }
 
   return page;

@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import z from "zod";
 
 import {
@@ -41,7 +42,9 @@ async function requireOrganizationAccess(userId: string, organizationId: string)
   });
 
   if (!organization) {
-    throw new Error("Organization not found.");
+    throw new ORPCError("NOT_FOUND", {
+      message: "Organization not found.",
+    });
   }
 
   return organization;
@@ -60,7 +63,9 @@ async function requireStatusPageAccess(userId: string, pageId: string) {
   });
 
   if (!page) {
-    throw new Error("Status page not found.");
+    throw new ORPCError("NOT_FOUND", {
+      message: "Status page not found.",
+    });
   }
 
   return page;
@@ -184,7 +189,9 @@ export const statusPagesRouter = {
       });
 
       if (!monitor) {
-        throw new Error("Monitor not found.");
+        throw new ORPCError("NOT_FOUND", {
+          message: "Monitor not found.",
+        });
       }
 
       return prisma.statusPageMonitor.create({ data: input });
@@ -208,7 +215,9 @@ export const statusPagesRouter = {
       });
 
       if (!monitor) {
-        throw new Error("Monitor not found.");
+        throw new ORPCError("NOT_FOUND", {
+          message: "Monitor not found.",
+        });
       }
 
       await prisma.statusPageMonitor.delete({ where: { id: input.id } });
@@ -234,7 +243,9 @@ export const statusPagesRouter = {
     )
     .handler(async ({ input, context }) => {
       if (!cloudflareConfigured()) {
-        throw new Error("Cloudflare custom domains are not configured.");
+        throw new ORPCError("PRECONDITION_FAILED", {
+          message: "Cloudflare custom domains are not configured.",
+        });
       }
 
       const page = await requireStatusPageAccess(
@@ -243,7 +254,9 @@ export const statusPagesRouter = {
       );
 
       if (!page.isPublic) {
-        throw new Error("Custom domains are only available for public status pages.");
+        throw new ORPCError("PRECONDITION_FAILED", {
+          message: "Custom domains are only available for public status pages.",
+        });
       }
 
       const hostname = assertValidCustomHostname(input.hostname);
@@ -257,13 +270,15 @@ export const statusPagesRouter = {
       });
 
       if (conflictingPage) {
-        throw new Error("That custom domain is already connected to another status page.");
+        throw new ORPCError("CONFLICT", {
+          message: "That custom domain is already connected to another status page.",
+        });
       }
 
       if (page.customDomain && page.customDomain !== hostname) {
-        throw new Error(
-          "Remove the current custom domain before connecting a new one.",
-        );
+        throw new ORPCError("PRECONDITION_FAILED", {
+          message: "Remove the current custom domain before connecting a new one.",
+        });
       }
 
       const cloudflare = await createCustomHostname(hostname);
