@@ -5,10 +5,7 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "paths": {
-      "@/*": ["../src/*"]
-    }
+    "noEmit": true
   },
   "include": ["src/**/*.ts"]
 }

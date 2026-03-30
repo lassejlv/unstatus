@@ -1,4 +1,4 @@
-import type { Monitor } from "../../src/generated/prisma/client.js";
+import type { Monitor } from "@unstatus/db";
 
 type Rule = { type: string; operator: string; value: string };
 

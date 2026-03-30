@@ -1,236 +1,246 @@
-Welcome to your new TanStack Start app! 
+# unstatus
 
-# Getting Started
+Monorepo for the app, workers, and shared Prisma/db package.
 
-To run this application:
+## Structure
+
+```txt
+apps/
+  web/      TanStack Start app
+  worker/   Hono worker that runs checks
+packages/
+  db/       Prisma config, schema, migrations, generated client
+```
+
+## Env files
+
+You do **not** need a bunch of env files.
+
+### Recommended setup
+
+Use **one root env file**:
+
+```bash
+.env.local
+```
+
+That is what local `web` and `db` scripts use.
+
+### Optional worker env
+
+If you want the worker to have its own local overrides, you can also use:
+
+```bash
+apps/worker/.env
+```
+
+But that is optional. If you keep everything in the root `.env.local`, that is fine.
+
+## Local development
+
+Install dependencies from the repo root:
 
 ```bash
 bun install
-bun --bun run dev
 ```
 
-# Building For Production
-
-To build this application for production:
+Run both app and worker:
 
 ```bash
-bun --bun run build
+bun run dev
 ```
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+Or run them separately:
 
 ```bash
-bun --bun run test
+bun run dev:web
+bun run dev:worker
 ```
 
-## Styling
+## Prisma
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Prisma lives in `packages/db`.
 
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+Useful commands:
 
 ```bash
-pnpm dlx shadcn@latest add button
+bun run db:generate
+bun run db:migrate:deploy
 ```
 
+The generated client is written to:
 
-## Setting up Better Auth
+```txt
+packages/db/generated
+```
 
-1. Generate and set the `BETTER_AUTH_SECRET` environment variable in your `.env.local`:
+## Main env vars
 
-   ```bash
-   bunx --bun @better-auth/cli secret
+### Web (`apps/web`)
+
+Required in practice:
+
+- `DATABASE_PUBLIC_URL`
+- `DATABASE_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `POLAR_MODE`
+- `POLAR_ACCESS_TOKEN`
+- `POLAR_WEBHOOK_SECRET`
+- `POLAR_PRO_ID`
+
+Optional worker integration vars:
+
+- `WORKER_SECRET`
+- `WORKER_URL`
+- `WORKER_EU_URL`
+- `WORKER_US_URL`
+- `WORKER_ASIA_URL`
+
+### Worker (`apps/worker`)
+
+- `DATABASE_URL`
+- `WORKER_SECRET`
+- `REGION` (`eu`, `us`, `asia`, etc.)
+- `POLL_INTERVAL`
+- `PORT`
+
+## Deploying
+
+This repo is set up for Railway.
+
+### Step-by-step: deploy the web app
+
+1. Create a new Railway service from this GitHub repo.
+2. Leave the service rooted at the **repo root**.
+3. Railway will use the root `railway.json`.
+4. Add the required web env vars:
+   - `DATABASE_PUBLIC_URL`
+   - `DATABASE_URL`
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `POLAR_MODE`
+   - `POLAR_ACCESS_TOKEN`
+   - `POLAR_WEBHOOK_SECRET`
+   - `POLAR_PRO_ID`
+5. If the web app should call workers, also add:
+   - `WORKER_SECRET`
+   - `WORKER_URL` or `WORKER_EU_URL` / `WORKER_US_URL` / `WORKER_ASIA_URL`
+6. Deploy.
+
+Railway will run:
+
+```bash
+bun run build
+bun run start
+```
+
+During the web build it will:
+
+1. run Prisma migrations
+2. generate the Prisma client from `packages/db`
+3. build the TanStack app in `apps/web`
+
+### Step-by-step: deploy one worker
+
+1. Create another Railway service from the **same GitHub repo**.
+2. Set the service **Root Directory** to:
+
+   ```txt
+   apps/worker
    ```
 
-2. Visit the [Better Auth documentation](https://www.better-auth.com) to unlock the full potential of authentication in your app.
+3. Railway will use `apps/worker/railway.json`.
+4. Add these env vars to the worker service:
 
-### Adding a Database (Optional)
+   ```bash
+   DATABASE_URL=...
+   WORKER_SECRET=...
+   REGION=eu
+   POLL_INTERVAL=10
+   ```
 
-Better Auth can work in stateless mode, but to persist user data, add a database:
+   `PORT` is usually injected by Railway automatically, so you normally do not need to set it yourself.
 
-```typescript
-// src/lib/auth.ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+5. Deploy.
 
-export const auth = betterAuth({
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-  }),
-  // ... rest of config
-});
-```
+The worker build will:
 
-Then run migrations:
+1. go back to the monorepo root
+2. install workspace dependencies
+3. generate Prisma client from `packages/db`
+4. build the worker binary
+
+The worker starts with:
 
 ```bash
-bunx --bun @better-auth/cli migrate
+./worker
 ```
 
+After deploy, check it by opening:
 
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+```txt
+https://your-worker-url/health
 ```
 
-Then anywhere in your JSX you can use it like so:
+You should get:
 
-```tsx
-<Link to="/about">About</Link>
+```json
+{"status":"ok"}
 ```
 
-This will create a link that will navigate to the `/about` route.
+### Step-by-step: deploy multiple workers
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+If you want multiple workers, deploy multiple copies of `apps/worker`.
 
-### Using A Layout
+#### Example worker envs
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
+##### EU worker
 
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
+```bash
+DATABASE_URL=...
+WORKER_SECRET=same-secret
+REGION=eu
+POLL_INTERVAL=10
 ```
 
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+##### US worker
 
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
+```bash
+DATABASE_URL=...
+WORKER_SECRET=same-secret
+REGION=us
+POLL_INTERVAL=10
 ```
 
-## API Routes
+##### Asia worker
 
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
+```bash
+DATABASE_URL=...
+WORKER_SECRET=same-secret
+REGION=asia
+POLL_INTERVAL=10
 ```
 
-## Data Fetching
+Then configure the web service with the worker URLs:
 
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
+```bash
+WORKER_SECRET=same-secret
+WORKER_EU_URL=https://worker-eu.up.railway.app
+WORKER_US_URL=https://worker-us.up.railway.app
+WORKER_ASIA_URL=https://worker-asia.up.railway.app
 ```
 
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+If you only run one worker, set:
 
-# Demo files
+```bash
+WORKER_SECRET=same-secret
+WORKER_URL=https://worker.up.railway.app
+```
 
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+## Notes
 
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+- Web deploy handles migrations.
+- Workers do **not** run migrations.
+- Workers only need the generated Prisma client and runtime env vars.
+- Use the **same** `WORKER_SECRET` on the web service and every worker service.

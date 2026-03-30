@@ -1,5 +1,5 @@
 node_modules
-worker/node_modules
+apps/*/node_modules
 .DS_Store
 dist
 dist-ssr
@@ -12,3 +12,4 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+apps/worker/worker

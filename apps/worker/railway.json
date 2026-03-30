@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "bun build --compile --minify src/index.ts --outfile worker"
+    "buildCommand": "cd ../.. && bun install --frozen-lockfile && bun run db:generate && bun run --filter worker build"
   },
   "deploy": {
     "startCommand": "./worker",

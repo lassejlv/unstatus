@@ -51,6 +51,7 @@ export type MonitorMinAggregateOutputType = {
   body: string | null
   host: string | null
   port: number | null
+  autoIncidents: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   lastCheckedAt: Date | null
@@ -69,6 +70,7 @@ export type MonitorMaxAggregateOutputType = {
   body: string | null
   host: string | null
   port: number | null
+  autoIncidents: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   lastCheckedAt: Date | null
@@ -90,6 +92,7 @@ export type MonitorCountAggregateOutputType = {
   port: number
   rules: number
   regions: number
+  autoIncidents: number
   createdAt: number
   updatedAt: number
   lastCheckedAt: number
@@ -122,6 +125,7 @@ export type MonitorMinAggregateInputType = {
   body?: true
   host?: true
   port?: true
+  autoIncidents?: true
   createdAt?: true
   updatedAt?: true
   lastCheckedAt?: true
@@ -140,6 +144,7 @@ export type MonitorMaxAggregateInputType = {
   body?: true
   host?: true
   port?: true
+  autoIncidents?: true
   createdAt?: true
   updatedAt?: true
   lastCheckedAt?: true
@@ -161,6 +166,7 @@ export type MonitorCountAggregateInputType = {
   port?: true
   rules?: true
   regions?: true
+  autoIncidents?: true
   createdAt?: true
   updatedAt?: true
   lastCheckedAt?: true
@@ -269,6 +275,7 @@ export type MonitorGroupByOutputType = {
   port: number | null
   rules: runtime.JsonValue | null
   regions: runtime.JsonValue
+  autoIncidents: boolean
   createdAt: Date
   updatedAt: Date
   lastCheckedAt: Date | null
@@ -313,6 +320,7 @@ export type MonitorWhereInput = {
   port?: Prisma.IntNullableFilter<"Monitor"> | number | null
   rules?: Prisma.JsonNullableFilter<"Monitor">
   regions?: Prisma.JsonFilter<"Monitor">
+  autoIncidents?: Prisma.BoolFilter<"Monitor"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
@@ -338,6 +346,7 @@ export type MonitorOrderByWithRelationInput = {
   port?: Prisma.SortOrderInput | Prisma.SortOrder
   rules?: Prisma.SortOrderInput | Prisma.SortOrder
   regions?: Prisma.SortOrder
+  autoIncidents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -366,6 +375,7 @@ export type MonitorWhereUniqueInput = Prisma.AtLeast<{
   port?: Prisma.IntNullableFilter<"Monitor"> | number | null
   rules?: Prisma.JsonNullableFilter<"Monitor">
   regions?: Prisma.JsonFilter<"Monitor">
+  autoIncidents?: Prisma.BoolFilter<"Monitor"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
@@ -391,6 +401,7 @@ export type MonitorOrderByWithAggregationInput = {
   port?: Prisma.SortOrderInput | Prisma.SortOrder
   rules?: Prisma.SortOrderInput | Prisma.SortOrder
   regions?: Prisma.SortOrder
+  autoIncidents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -420,6 +431,7 @@ export type MonitorScalarWhereWithAggregatesInput = {
   port?: Prisma.IntNullableWithAggregatesFilter<"Monitor"> | number | null
   rules?: Prisma.JsonNullableWithAggregatesFilter<"Monitor">
   regions?: Prisma.JsonWithAggregatesFilter<"Monitor">
+  autoIncidents?: Prisma.BoolWithAggregatesFilter<"Monitor"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Monitor"> | Date | string
   lastCheckedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Monitor"> | Date | string | null
@@ -440,6 +452,7 @@ export type MonitorCreateInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -465,6 +478,7 @@ export type MonitorUncheckedCreateInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -488,6 +502,7 @@ export type MonitorUpdateInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -513,6 +528,7 @@ export type MonitorUncheckedUpdateInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -537,6 +553,7 @@ export type MonitorCreateManyInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -557,6 +574,7 @@ export type MonitorUpdateManyMutationInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -578,6 +596,7 @@ export type MonitorUncheckedUpdateManyInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -609,6 +628,7 @@ export type MonitorCountOrderByAggregateInput = {
   port?: Prisma.SortOrder
   rules?: Prisma.SortOrder
   regions?: Prisma.SortOrder
+  autoIncidents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
@@ -633,6 +653,7 @@ export type MonitorMaxOrderByAggregateInput = {
   body?: Prisma.SortOrder
   host?: Prisma.SortOrder
   port?: Prisma.SortOrder
+  autoIncidents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
@@ -651,6 +672,7 @@ export type MonitorMinOrderByAggregateInput = {
   body?: Prisma.SortOrder
   host?: Prisma.SortOrder
   port?: Prisma.SortOrder
+  autoIncidents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
@@ -782,6 +804,7 @@ export type MonitorCreateWithoutOrganizationInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -805,6 +828,7 @@ export type MonitorUncheckedCreateWithoutOrganizationInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -858,6 +882,7 @@ export type MonitorScalarWhereInput = {
   port?: Prisma.IntNullableFilter<"Monitor"> | number | null
   rules?: Prisma.JsonNullableFilter<"Monitor">
   regions?: Prisma.JsonFilter<"Monitor">
+  autoIncidents?: Prisma.BoolFilter<"Monitor"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Monitor"> | Date | string
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Monitor"> | Date | string | null
@@ -878,6 +903,7 @@ export type MonitorCreateWithoutChecksInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -902,6 +928,7 @@ export type MonitorUncheckedCreateWithoutChecksInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -940,6 +967,7 @@ export type MonitorUpdateWithoutChecksInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -964,6 +992,7 @@ export type MonitorUncheckedUpdateWithoutChecksInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -986,6 +1015,7 @@ export type MonitorCreateWithoutStatusPageMonitorsInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -1010,6 +1040,7 @@ export type MonitorUncheckedCreateWithoutStatusPageMonitorsInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -1048,6 +1079,7 @@ export type MonitorUpdateWithoutStatusPageMonitorsInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1072,6 +1104,7 @@ export type MonitorUncheckedUpdateWithoutStatusPageMonitorsInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1094,6 +1127,7 @@ export type MonitorCreateWithoutIncidentsInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -1118,6 +1152,7 @@ export type MonitorUncheckedCreateWithoutIncidentsInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -1156,6 +1191,7 @@ export type MonitorUpdateWithoutIncidentsInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1180,6 +1216,7 @@ export type MonitorUncheckedUpdateWithoutIncidentsInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1202,6 +1239,7 @@ export type MonitorCreateManyOrganizationInput = {
   port?: number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   lastCheckedAt?: Date | string | null
@@ -1222,6 +1260,7 @@ export type MonitorUpdateWithoutOrganizationInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1245,6 +1284,7 @@ export type MonitorUncheckedUpdateWithoutOrganizationInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1268,6 +1308,7 @@ export type MonitorUncheckedUpdateManyWithoutOrganizationInput = {
   port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1338,6 +1379,7 @@ export type MonitorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   port?: boolean
   rules?: boolean
   regions?: boolean
+  autoIncidents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   lastCheckedAt?: boolean
@@ -1364,6 +1406,7 @@ export type MonitorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   port?: boolean
   rules?: boolean
   regions?: boolean
+  autoIncidents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   lastCheckedAt?: boolean
@@ -1386,6 +1429,7 @@ export type MonitorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   port?: boolean
   rules?: boolean
   regions?: boolean
+  autoIncidents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   lastCheckedAt?: boolean
@@ -1408,12 +1452,13 @@ export type MonitorSelectScalar = {
   port?: boolean
   rules?: boolean
   regions?: boolean
+  autoIncidents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   lastCheckedAt?: boolean
 }
 
-export type MonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "active" | "interval" | "timeout" | "url" | "method" | "headers" | "body" | "host" | "port" | "rules" | "regions" | "createdAt" | "updatedAt" | "lastCheckedAt", ExtArgs["result"]["monitor"]>
+export type MonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "active" | "interval" | "timeout" | "url" | "method" | "headers" | "body" | "host" | "port" | "rules" | "regions" | "autoIncidents" | "createdAt" | "updatedAt" | "lastCheckedAt", ExtArgs["result"]["monitor"]>
 export type MonitorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   checks?: boolean | Prisma.Monitor$checksArgs<ExtArgs>
@@ -1452,6 +1497,7 @@ export type $MonitorPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     port: number | null
     rules: runtime.JsonValue | null
     regions: runtime.JsonValue
+    autoIncidents: boolean
     createdAt: Date
     updatedAt: Date
     lastCheckedAt: Date | null
@@ -1897,6 +1943,7 @@ export interface MonitorFieldRefs {
   readonly port: Prisma.FieldRef<"Monitor", 'Int'>
   readonly rules: Prisma.FieldRef<"Monitor", 'Json'>
   readonly regions: Prisma.FieldRef<"Monitor", 'Json'>
+  readonly autoIncidents: Prisma.FieldRef<"Monitor", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Monitor", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Monitor", 'DateTime'>
   readonly lastCheckedAt: Prisma.FieldRef<"Monitor", 'DateTime'>

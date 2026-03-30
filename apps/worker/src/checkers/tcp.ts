@@ -1,4 +1,4 @@
-import type { Monitor } from "../../src/generated/prisma/client.js";
+import type { Monitor } from "@unstatus/db";
 import { connect } from "net";
 
 export async function checkTcp(monitor: Monitor) {

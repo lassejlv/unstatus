@@ -169,6 +169,7 @@ export const MonitorScalarFieldEnum = {
   port: 'port',
   rules: 'rules',
   regions: 'regions',
+  autoIncidents: 'autoIncidents',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   lastCheckedAt: 'lastCheckedAt'

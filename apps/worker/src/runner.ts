@@ -1,7 +1,7 @@
 import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
-import type { Monitor } from "../src/generated/prisma/client.js";
+import type { Monitor } from "@unstatus/db";
 
 const region = process.env.REGION ?? "eu";
 
