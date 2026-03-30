@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +32,13 @@ function IncidentDetailPage() {
 
   const del = useMutation({
     ...orpc.incidents.delete.mutationOptions(),
-    onSuccess: () => window.history.back(),
+    onSuccess: () => {
+      toast.success("Incident deleted");
+      window.history.back();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete incident");
+    },
   });
 
   if (!incident) return null;
@@ -131,6 +138,10 @@ function PostUpdateForm({
     onSuccess: () => {
       onSuccess();
       setMessage("");
+      toast.success("Update posted");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to post update");
     },
   });
 

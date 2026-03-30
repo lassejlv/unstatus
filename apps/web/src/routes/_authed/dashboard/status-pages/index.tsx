@@ -8,6 +8,7 @@ import {
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -128,6 +129,10 @@ function CreateStatusPageDialog({
       setOpen(false);
       setName("");
       setSlug("");
+      toast.success("Status page created");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to create status page");
     },
   });
 

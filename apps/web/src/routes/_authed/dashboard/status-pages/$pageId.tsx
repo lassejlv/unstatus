@@ -8,6 +8,7 @@ import {
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -58,12 +59,24 @@ function StatusPageDetailPage() {
 
   const del = useMutation({
     ...orpc.statusPages.delete.mutationOptions(),
-    onSuccess: () => window.history.back(),
+    onSuccess: () => {
+      toast.success("Status page deleted");
+      window.history.back();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete status page");
+    },
   });
 
   const removeMonitor = useMutation({
     ...orpc.statusPages.removeMonitor.mutationOptions(),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success("Monitor removed");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to remove monitor");
+    },
   });
 
   if (!page) return null;
@@ -207,6 +220,10 @@ function EditPageDialog({
     onSuccess: () => {
       onSuccess();
       setOpen(false);
+      toast.success("Status page updated");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update status page");
     },
   });
 
@@ -315,6 +332,10 @@ function AddMonitorDialog({
       setMonitorId("");
       setDisplayName("");
       setSortOrder("0");
+      toast.success("Monitor added");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to add monitor");
     },
   });
 

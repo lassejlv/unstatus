@@ -38,6 +38,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const REGIONS = [
   { id: "eu", label: "Europe" },
@@ -61,17 +62,35 @@ function MonitorDetailPage() {
 
   const toggle = useMutation({
     ...orpc.monitors.update.mutationOptions(),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success("Monitor updated");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update monitor");
+    },
   });
 
   const del = useMutation({
     ...orpc.monitors.delete.mutationOptions(),
-    onSuccess: () => window.history.back(),
+    onSuccess: () => {
+      toast.success("Monitor deleted");
+      window.history.back();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete monitor");
+    },
   });
 
   const runCheck = useMutation({
     ...orpc.monitors.runCheck.mutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: checksOpts.queryKey }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: checksOpts.queryKey });
+      toast.success("Check completed");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to run check");
+    },
   });
 
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
@@ -324,6 +343,10 @@ function EditMonitorDialog({
     onSuccess: () => {
       onSuccess();
       setOpen(false);
+      toast.success("Monitor updated");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update monitor");
     },
   });
 
