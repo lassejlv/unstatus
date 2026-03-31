@@ -92,7 +92,14 @@ export const monitorsRouter = {
       }
       runCheckLimiter.set(context.session.user.id, now);
 
-      const workerUrl = env.WORKER_EU_URL ?? env.WORKER_URL;
+      const regions = (monitor.regions as string[]) ?? ["eu"];
+      const primaryRegion = regions[0] ?? "eu";
+      const workerUrlMap: Record<string, string | undefined> = {
+        eu: env.WORKER_EU_URL,
+        us: env.WORKER_US_URL,
+        asia: env.WORKER_ASIA_URL,
+      };
+      const workerUrl = workerUrlMap[primaryRegion] ?? env.WORKER_EU_URL ?? env.WORKER_URL;
       if (!workerUrl || !env.WORKER_SECRET) {
         throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Worker not configured" });
       }

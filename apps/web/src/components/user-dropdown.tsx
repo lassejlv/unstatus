@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/sidebar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { UnfoldMoreIcon } from "@hugeicons/core-free-icons";
+import { Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 
 export function UserDropdown({
   user,
@@ -23,6 +25,7 @@ export function UserDropdown({
   user: { name: string; email: string; image?: string | null };
 }) {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   return (
     <SidebarMenu>
@@ -51,6 +54,23 @@ export function UserDropdown({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="top" className="w-56">
             <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Theme</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <Sun className="size-4 mr-2" />
+              Light
+              {theme === "light" && <span className="ml-auto text-xs text-muted-foreground">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <Moon className="size-4 mr-2" />
+              Dark
+              {theme === "dark" && <span className="ml-auto text-xs text-muted-foreground">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("auto")}>
+              <Monitor className="size-4 mr-2" />
+              System
+              {theme === "auto" && <span className="ml-auto text-xs text-muted-foreground">✓</span>}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
