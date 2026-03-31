@@ -1,12 +1,54 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { Globe, Bell, Activity } from "lucide-react";
+import {
+  CenteredMessage,
+  PublicStatusPageView,
+} from "@/components/public-status-view";
+import { orpc } from "@/orpc/client";
+import { useCustomDomain } from "@/lib/use-custom-domain";
 
 export const Route = createFileRoute("/")({
-  component: HomePage,
+  component: RootPage,
 });
+
+function RootPage() {
+  const customDomain = useCustomDomain();
+  // undefined = still determining (SSR or pre-hydration)
+  if (customDomain === undefined) return null;
+  if (customDomain) {
+    return <CustomDomainStatusPage domain={customDomain} />;
+  }
+  return <HomePage />;
+}
+
+function CustomDomainStatusPage({ domain }: { domain: string }) {
+  const { data, isLoading, error } = useQuery(
+    orpc.publicStatus.getByDomain.queryOptions({ input: { domain } }),
+  );
+
+  if (isLoading) {
+    return <CenteredMessage message="Loading…" />;
+  }
+
+  if (error || !data) {
+    return <CenteredMessage message="Status page not found." />;
+  }
+
+  return (
+    <PublicStatusPageView
+      data={data}
+      renderIncidentLink={(incident, content) => (
+        <Link to="/$incidentId" params={{ incidentId: incident.id }}>
+          {content}
+        </Link>
+      )}
+    />
+  );
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },

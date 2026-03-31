@@ -1,13 +1,26 @@
 import z from "zod";
 import { ORPCError } from "@orpc/server";
+import { Prisma } from "@unstatus/db";
 
 import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
+
+const domainSchema = z
+  .string()
+  .transform((v) => v.replace(/^https?:\/\//, "").replace(/\/+$/, "").toLowerCase())
+  .refine((v) => /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(v), {
+    message: "Invalid domain format",
+  })
+  .refine((v) => v !== env.APP_DOMAIN && !v.endsWith(`.${env.APP_DOMAIN}`), {
+    message: "Cannot use the application's own domain",
+  });
 
 const createInput = z.object({
   organizationId: z.string(),
   name: z.string(),
   slug: z.string(),
+  customDomain: domainSchema.nullable().optional(),
   isPublic: z.boolean().default(true),
   logoUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
@@ -58,7 +71,14 @@ export const statusPagesRouter = {
     const { id, organizationId: _orgId, ...data } = input;
     const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id } });
     await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
-    return prisma.statusPage.update({ where: { id }, data });
+    try {
+      return await prisma.statusPage.update({ where: { id }, data });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ORPCError("CONFLICT", { message: "This custom domain is already in use" });
+      }
+      throw err;
+    }
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(

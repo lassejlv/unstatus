@@ -119,7 +119,39 @@ function StatusPageDetailPage() {
         <p className="mt-1 text-xs text-muted-foreground">
           /status/{page.slug}
         </p>
+        {page.customDomain && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Custom domain: https://{page.customDomain}
+          </p>
+        )}
       </div>
+
+      {/* Custom domain DNS instructions */}
+      {page.customDomain && (
+        <div className="rounded-md border p-4">
+          <h2 className="text-xs font-medium mb-2">DNS Configuration</h2>
+          <p className="text-xs text-muted-foreground mb-3">
+            Add the following DNS record to point your custom domain to this
+            status page. SSL is provisioned automatically on the first request.
+          </p>
+          <div className="rounded bg-muted p-3 font-mono text-xs space-y-1">
+            <div className="flex gap-4">
+              <span className="text-muted-foreground w-12">Type</span>
+              <span>A</span>
+            </div>
+            <div className="flex gap-4">
+              <span className="text-muted-foreground w-12">Name</span>
+              <span>{page.customDomain}</span>
+            </div>
+            <div className="flex gap-4">
+              <span className="text-muted-foreground w-12">Value</span>
+              <span className="select-all">
+                {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Monitors section */}
       <div className="flex flex-col gap-3">
@@ -183,6 +215,7 @@ type PageData = {
   id: string;
   name: string;
   slug: string;
+  customDomain: string | null;
   isPublic: boolean;
   brandColor: string | null;
   headerText: string | null;
@@ -199,6 +232,7 @@ function EditPageDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
+  const [customDomain, setCustomDomain] = useState(page.customDomain ?? "");
   const [isPublic, setIsPublic] = useState(page.isPublic);
   const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
@@ -208,6 +242,7 @@ function EditPageDialog({
     if (open) {
       setName(page.name);
       setSlug(page.slug);
+      setCustomDomain(page.customDomain ?? "");
       setIsPublic(page.isPublic);
       setBrandColor(page.brandColor ?? "#000000");
       setHeaderText(page.headerText ?? "");
@@ -247,6 +282,17 @@ function EditPageDialog({
             <Label>Slug</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Custom domain</Label>
+            <Input
+              value={customDomain}
+              onChange={(e) => setCustomDomain(e.target.value)}
+              placeholder="status.example.com"
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to disable custom domain
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
             <Label>Public</Label>
@@ -285,6 +331,7 @@ function EditPageDialog({
                 id: page.id,
                 name,
                 slug,
+                customDomain: customDomain || null,
                 isPublic,
                 brandColor,
                 headerText: headerText || undefined,

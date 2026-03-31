@@ -45,7 +45,7 @@ type IncidentRow = {
 };
 
 async function resolvePublicPage(
-  where: { slug: string },
+  where: { slug: string } | { customDomain: string },
 ): Promise<ResolvedPublicPage> {
   const page = await prisma.statusPage.findUniqueOrThrow({
     where,
@@ -292,10 +292,24 @@ export const publicStatusRouter = {
       return getPublicStatusPage(page);
     }),
 
+  getByDomain: publicProcedure
+    .input(z.object({ domain: z.string() }))
+    .handler(async ({ input }) => {
+      const page = await resolvePublicPage({ customDomain: input.domain });
+      return getPublicStatusPage(page);
+    }),
+
   getIncident: publicProcedure
     .input(z.object({ slug: z.string(), incidentId: z.string() }))
     .handler(async ({ input }) => {
       const page = await resolvePublicPage({ slug: input.slug });
+      return getPublicIncidentPage(page, input.incidentId);
+    }),
+
+  getIncidentByDomain: publicProcedure
+    .input(z.object({ domain: z.string(), incidentId: z.string() }))
+    .handler(async ({ input }) => {
+      const page = await resolvePublicPage({ customDomain: input.domain });
       return getPublicIncidentPage(page, input.incidentId);
     }),
 };
