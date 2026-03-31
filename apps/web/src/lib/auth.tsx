@@ -4,6 +4,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { organization } from "better-auth/plugins";
 import { env } from "./env";
+import { email } from "./email";
+import { InvitationEmail } from "@unstatus/email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -38,5 +40,27 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [tanstackStartCookies(), organization()],
+  plugins: [
+    tanstackStartCookies(),
+    organization({
+      sendInvitationEmail: async (data) => {
+        const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
+        const invitationUrl = `${domain}/accept-invitation/${data.id}`;
+
+        await email.emails.send({
+          from: env.INBOUND_FROM,
+          to: data.email,
+          subject: `You're invited to join ${data.organization.name} on Unstatus`,
+          react: (
+            <InvitationEmail
+              organizationName={data.organization.name}
+              inviterName={data.inviter.user.name}
+              role={data.role}
+              invitationUrl={invitationUrl}
+            />
+          ),
+        });
+      },
+    }),
+  ],
 });

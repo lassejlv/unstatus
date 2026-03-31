@@ -256,6 +256,7 @@ export type StatusPageWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   monitors?: Prisma.StatusPageMonitorListRelationFilter
+  subscribers?: Prisma.StatusPageSubscriberListRelationFilter
 }
 
 export type StatusPageOrderByWithRelationInput = {
@@ -275,6 +276,7 @@ export type StatusPageOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   monitors?: Prisma.StatusPageMonitorOrderByRelationAggregateInput
+  subscribers?: Prisma.StatusPageSubscriberOrderByRelationAggregateInput
 }
 
 export type StatusPageWhereUniqueInput = Prisma.AtLeast<{
@@ -297,6 +299,7 @@ export type StatusPageWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   monitors?: Prisma.StatusPageMonitorListRelationFilter
+  subscribers?: Prisma.StatusPageSubscriberListRelationFilter
 }, "id" | "slug" | "customDomain">
 
 export type StatusPageOrderByWithAggregationInput = {
@@ -355,6 +358,7 @@ export type StatusPageCreateInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutStatusPagesInput
   monitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutStatusPageInput
+  subscribers?: Prisma.StatusPageSubscriberCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageUncheckedCreateInput = {
@@ -373,6 +377,7 @@ export type StatusPageUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   monitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutStatusPageInput
+  subscribers?: Prisma.StatusPageSubscriberUncheckedCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageUpdateInput = {
@@ -391,6 +396,7 @@ export type StatusPageUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutStatusPagesNestedInput
   monitors?: Prisma.StatusPageMonitorUpdateManyWithoutStatusPageNestedInput
+  subscribers?: Prisma.StatusPageSubscriberUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageUncheckedUpdateInput = {
@@ -409,6 +415,7 @@ export type StatusPageUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutStatusPageNestedInput
+  subscribers?: Prisma.StatusPageSubscriberUncheckedUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageCreateManyInput = {
@@ -569,6 +576,20 @@ export type StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.StatusPageScalarWhereInput | Prisma.StatusPageScalarWhereInput[]
 }
 
+export type StatusPageCreateNestedOneWithoutSubscribersInput = {
+  create?: Prisma.XOR<Prisma.StatusPageCreateWithoutSubscribersInput, Prisma.StatusPageUncheckedCreateWithoutSubscribersInput>
+  connectOrCreate?: Prisma.StatusPageCreateOrConnectWithoutSubscribersInput
+  connect?: Prisma.StatusPageWhereUniqueInput
+}
+
+export type StatusPageUpdateOneRequiredWithoutSubscribersNestedInput = {
+  create?: Prisma.XOR<Prisma.StatusPageCreateWithoutSubscribersInput, Prisma.StatusPageUncheckedCreateWithoutSubscribersInput>
+  connectOrCreate?: Prisma.StatusPageCreateOrConnectWithoutSubscribersInput
+  upsert?: Prisma.StatusPageUpsertWithoutSubscribersInput
+  connect?: Prisma.StatusPageWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StatusPageUpdateToOneWithWhereWithoutSubscribersInput, Prisma.StatusPageUpdateWithoutSubscribersInput>, Prisma.StatusPageUncheckedUpdateWithoutSubscribersInput>
+}
+
 export type StatusPageCreateNestedOneWithoutMonitorsInput = {
   create?: Prisma.XOR<Prisma.StatusPageCreateWithoutMonitorsInput, Prisma.StatusPageUncheckedCreateWithoutMonitorsInput>
   connectOrCreate?: Prisma.StatusPageCreateOrConnectWithoutMonitorsInput
@@ -598,6 +619,7 @@ export type StatusPageCreateWithoutOrganizationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   monitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutStatusPageInput
+  subscribers?: Prisma.StatusPageSubscriberCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageUncheckedCreateWithoutOrganizationInput = {
@@ -615,6 +637,7 @@ export type StatusPageUncheckedCreateWithoutOrganizationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   monitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutStatusPageInput
+  subscribers?: Prisma.StatusPageSubscriberUncheckedCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageCreateOrConnectWithoutOrganizationInput = {
@@ -663,6 +686,94 @@ export type StatusPageScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
 }
 
+export type StatusPageCreateWithoutSubscribersInput = {
+  id?: string
+  name: string
+  slug: string
+  customDomain?: string | null
+  isPublic?: boolean
+  logoUrl?: string | null
+  faviconUrl?: string | null
+  brandColor?: string | null
+  headerText?: string | null
+  footerText?: string | null
+  customCss?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutStatusPagesInput
+  monitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutStatusPageInput
+}
+
+export type StatusPageUncheckedCreateWithoutSubscribersInput = {
+  id?: string
+  organizationId: string
+  name: string
+  slug: string
+  customDomain?: string | null
+  isPublic?: boolean
+  logoUrl?: string | null
+  faviconUrl?: string | null
+  brandColor?: string | null
+  headerText?: string | null
+  footerText?: string | null
+  customCss?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  monitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutStatusPageInput
+}
+
+export type StatusPageCreateOrConnectWithoutSubscribersInput = {
+  where: Prisma.StatusPageWhereUniqueInput
+  create: Prisma.XOR<Prisma.StatusPageCreateWithoutSubscribersInput, Prisma.StatusPageUncheckedCreateWithoutSubscribersInput>
+}
+
+export type StatusPageUpsertWithoutSubscribersInput = {
+  update: Prisma.XOR<Prisma.StatusPageUpdateWithoutSubscribersInput, Prisma.StatusPageUncheckedUpdateWithoutSubscribersInput>
+  create: Prisma.XOR<Prisma.StatusPageCreateWithoutSubscribersInput, Prisma.StatusPageUncheckedCreateWithoutSubscribersInput>
+  where?: Prisma.StatusPageWhereInput
+}
+
+export type StatusPageUpdateToOneWithWhereWithoutSubscribersInput = {
+  where?: Prisma.StatusPageWhereInput
+  data: Prisma.XOR<Prisma.StatusPageUpdateWithoutSubscribersInput, Prisma.StatusPageUncheckedUpdateWithoutSubscribersInput>
+}
+
+export type StatusPageUpdateWithoutSubscribersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  customDomain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faviconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brandColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutStatusPagesNestedInput
+  monitors?: Prisma.StatusPageMonitorUpdateManyWithoutStatusPageNestedInput
+}
+
+export type StatusPageUncheckedUpdateWithoutSubscribersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  customDomain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faviconUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brandColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  monitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutStatusPageNestedInput
+}
+
 export type StatusPageCreateWithoutMonitorsInput = {
   id?: string
   name: string
@@ -678,6 +789,7 @@ export type StatusPageCreateWithoutMonitorsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutStatusPagesInput
+  subscribers?: Prisma.StatusPageSubscriberCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageUncheckedCreateWithoutMonitorsInput = {
@@ -695,6 +807,7 @@ export type StatusPageUncheckedCreateWithoutMonitorsInput = {
   customCss?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  subscribers?: Prisma.StatusPageSubscriberUncheckedCreateNestedManyWithoutStatusPageInput
 }
 
 export type StatusPageCreateOrConnectWithoutMonitorsInput = {
@@ -728,6 +841,7 @@ export type StatusPageUpdateWithoutMonitorsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutStatusPagesNestedInput
+  subscribers?: Prisma.StatusPageSubscriberUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageUncheckedUpdateWithoutMonitorsInput = {
@@ -745,6 +859,7 @@ export type StatusPageUncheckedUpdateWithoutMonitorsInput = {
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscribers?: Prisma.StatusPageSubscriberUncheckedUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageCreateManyOrganizationInput = {
@@ -778,6 +893,7 @@ export type StatusPageUpdateWithoutOrganizationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monitors?: Prisma.StatusPageMonitorUpdateManyWithoutStatusPageNestedInput
+  subscribers?: Prisma.StatusPageSubscriberUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageUncheckedUpdateWithoutOrganizationInput = {
@@ -795,6 +911,7 @@ export type StatusPageUncheckedUpdateWithoutOrganizationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutStatusPageNestedInput
+  subscribers?: Prisma.StatusPageSubscriberUncheckedUpdateManyWithoutStatusPageNestedInput
 }
 
 export type StatusPageUncheckedUpdateManyWithoutOrganizationInput = {
@@ -820,10 +937,12 @@ export type StatusPageUncheckedUpdateManyWithoutOrganizationInput = {
 
 export type StatusPageCountOutputType = {
   monitors: number
+  subscribers: number
 }
 
 export type StatusPageCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   monitors?: boolean | StatusPageCountOutputTypeCountMonitorsArgs
+  subscribers?: boolean | StatusPageCountOutputTypeCountSubscribersArgs
 }
 
 /**
@@ -841,6 +960,13 @@ export type StatusPageCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type StatusPageCountOutputTypeCountMonitorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.StatusPageMonitorWhereInput
+}
+
+/**
+ * StatusPageCountOutputType without action
+ */
+export type StatusPageCountOutputTypeCountSubscribersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StatusPageSubscriberWhereInput
 }
 
 
@@ -861,6 +987,7 @@ export type StatusPageSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   monitors?: boolean | Prisma.StatusPage$monitorsArgs<ExtArgs>
+  subscribers?: boolean | Prisma.StatusPage$subscribersArgs<ExtArgs>
   _count?: boolean | Prisma.StatusPageCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusPage"]>
 
@@ -921,6 +1048,7 @@ export type StatusPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type StatusPageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   monitors?: boolean | Prisma.StatusPage$monitorsArgs<ExtArgs>
+  subscribers?: boolean | Prisma.StatusPage$subscribersArgs<ExtArgs>
   _count?: boolean | Prisma.StatusPageCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type StatusPageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -935,6 +1063,7 @@ export type $StatusPagePayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     organization: Prisma.$OrganizationPayload<ExtArgs>
     monitors: Prisma.$StatusPageMonitorPayload<ExtArgs>[]
+    subscribers: Prisma.$StatusPageSubscriberPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1347,6 +1476,7 @@ export interface Prisma__StatusPageClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   monitors<T extends Prisma.StatusPage$monitorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StatusPage$monitorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusPageMonitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subscribers<T extends Prisma.StatusPage$subscribersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StatusPage$subscribersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusPageSubscriberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1812,6 +1942,30 @@ export type StatusPage$monitorsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.StatusPageMonitorScalarFieldEnum | Prisma.StatusPageMonitorScalarFieldEnum[]
+}
+
+/**
+ * StatusPage.subscribers
+ */
+export type StatusPage$subscribersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StatusPageSubscriber
+   */
+  select?: Prisma.StatusPageSubscriberSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StatusPageSubscriber
+   */
+  omit?: Prisma.StatusPageSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StatusPageSubscriberInclude<ExtArgs> | null
+  where?: Prisma.StatusPageSubscriberWhereInput
+  orderBy?: Prisma.StatusPageSubscriberOrderByWithRelationInput | Prisma.StatusPageSubscriberOrderByWithRelationInput[]
+  cursor?: Prisma.StatusPageSubscriberWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StatusPageSubscriberScalarFieldEnum | Prisma.StatusPageSubscriberScalarFieldEnum[]
 }
 
 /**

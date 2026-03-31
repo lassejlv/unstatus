@@ -15,6 +15,8 @@ export const env = z
     WORKER_EU_URL: z.url().optional(),
     WORKER_US_URL: z.url().optional(),
     WORKER_ASIA_URL: z.url().optional(),
+    INBOUND_API_KEY: z.string(),
+    INBOUND_FROM: z.string(),
     APP_DOMAIN: z.string().default("localhost"),
   })
   .parse(process.env);

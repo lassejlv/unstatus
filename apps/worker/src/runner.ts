@@ -2,7 +2,7 @@ import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
-import { sendNotifications } from "./notify.js";
+import { sendNotifications } from "./notify";
 import type { Monitor } from "@unstatus/db";
 
 const region = process.env.REGION ?? "eu";

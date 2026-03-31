@@ -30,6 +30,7 @@ export type NotificationChannelMinAggregateOutputType = {
   name: string | null
   type: string | null
   webhookUrl: string | null
+  recipientEmail: string | null
   enabled: boolean | null
   onIncidentCreated: boolean | null
   onIncidentResolved: boolean | null
@@ -46,6 +47,7 @@ export type NotificationChannelMaxAggregateOutputType = {
   name: string | null
   type: string | null
   webhookUrl: string | null
+  recipientEmail: string | null
   enabled: boolean | null
   onIncidentCreated: boolean | null
   onIncidentResolved: boolean | null
@@ -62,6 +64,7 @@ export type NotificationChannelCountAggregateOutputType = {
   name: number
   type: number
   webhookUrl: number
+  recipientEmail: number
   enabled: number
   onIncidentCreated: number
   onIncidentResolved: number
@@ -80,6 +83,7 @@ export type NotificationChannelMinAggregateInputType = {
   name?: true
   type?: true
   webhookUrl?: true
+  recipientEmail?: true
   enabled?: true
   onIncidentCreated?: true
   onIncidentResolved?: true
@@ -96,6 +100,7 @@ export type NotificationChannelMaxAggregateInputType = {
   name?: true
   type?: true
   webhookUrl?: true
+  recipientEmail?: true
   enabled?: true
   onIncidentCreated?: true
   onIncidentResolved?: true
@@ -112,6 +117,7 @@ export type NotificationChannelCountAggregateInputType = {
   name?: true
   type?: true
   webhookUrl?: true
+  recipientEmail?: true
   enabled?: true
   onIncidentCreated?: true
   onIncidentResolved?: true
@@ -200,7 +206,8 @@ export type NotificationChannelGroupByOutputType = {
   organizationId: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl: string | null
+  recipientEmail: string | null
   enabled: boolean
   onIncidentCreated: boolean
   onIncidentResolved: boolean
@@ -237,7 +244,8 @@ export type NotificationChannelWhereInput = {
   organizationId?: Prisma.StringFilter<"NotificationChannel"> | string
   name?: Prisma.StringFilter<"NotificationChannel"> | string
   type?: Prisma.StringFilter<"NotificationChannel"> | string
-  webhookUrl?: Prisma.StringFilter<"NotificationChannel"> | string
+  webhookUrl?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
+  recipientEmail?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
   enabled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentCreated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentResolved?: Prisma.BoolFilter<"NotificationChannel"> | boolean
@@ -254,7 +262,8 @@ export type NotificationChannelOrderByWithRelationInput = {
   organizationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  webhookUrl?: Prisma.SortOrder
+  webhookUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  recipientEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   enabled?: Prisma.SortOrder
   onIncidentCreated?: Prisma.SortOrder
   onIncidentResolved?: Prisma.SortOrder
@@ -274,7 +283,8 @@ export type NotificationChannelWhereUniqueInput = Prisma.AtLeast<{
   organizationId?: Prisma.StringFilter<"NotificationChannel"> | string
   name?: Prisma.StringFilter<"NotificationChannel"> | string
   type?: Prisma.StringFilter<"NotificationChannel"> | string
-  webhookUrl?: Prisma.StringFilter<"NotificationChannel"> | string
+  webhookUrl?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
+  recipientEmail?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
   enabled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentCreated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentResolved?: Prisma.BoolFilter<"NotificationChannel"> | boolean
@@ -291,7 +301,8 @@ export type NotificationChannelOrderByWithAggregationInput = {
   organizationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  webhookUrl?: Prisma.SortOrder
+  webhookUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  recipientEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   enabled?: Prisma.SortOrder
   onIncidentCreated?: Prisma.SortOrder
   onIncidentResolved?: Prisma.SortOrder
@@ -313,7 +324,8 @@ export type NotificationChannelScalarWhereWithAggregatesInput = {
   organizationId?: Prisma.StringWithAggregatesFilter<"NotificationChannel"> | string
   name?: Prisma.StringWithAggregatesFilter<"NotificationChannel"> | string
   type?: Prisma.StringWithAggregatesFilter<"NotificationChannel"> | string
-  webhookUrl?: Prisma.StringWithAggregatesFilter<"NotificationChannel"> | string
+  webhookUrl?: Prisma.StringNullableWithAggregatesFilter<"NotificationChannel"> | string | null
+  recipientEmail?: Prisma.StringNullableWithAggregatesFilter<"NotificationChannel"> | string | null
   enabled?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
   onIncidentCreated?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
   onIncidentResolved?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
@@ -328,7 +340,8 @@ export type NotificationChannelCreateInput = {
   id?: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -345,7 +358,8 @@ export type NotificationChannelUncheckedCreateInput = {
   organizationId: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -360,7 +374,8 @@ export type NotificationChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -377,7 +392,8 @@ export type NotificationChannelUncheckedUpdateInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -393,7 +409,8 @@ export type NotificationChannelCreateManyInput = {
   organizationId: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -408,7 +425,8 @@ export type NotificationChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -424,7 +442,8 @@ export type NotificationChannelUncheckedUpdateManyInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -451,6 +470,7 @@ export type NotificationChannelCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   webhookUrl?: Prisma.SortOrder
+  recipientEmail?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   onIncidentCreated?: Prisma.SortOrder
   onIncidentResolved?: Prisma.SortOrder
@@ -467,6 +487,7 @@ export type NotificationChannelMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   webhookUrl?: Prisma.SortOrder
+  recipientEmail?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   onIncidentCreated?: Prisma.SortOrder
   onIncidentResolved?: Prisma.SortOrder
@@ -483,6 +504,7 @@ export type NotificationChannelMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   webhookUrl?: Prisma.SortOrder
+  recipientEmail?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   onIncidentCreated?: Prisma.SortOrder
   onIncidentResolved?: Prisma.SortOrder
@@ -539,7 +561,8 @@ export type NotificationChannelCreateWithoutOrganizationInput = {
   id?: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -554,7 +577,8 @@ export type NotificationChannelUncheckedCreateWithoutOrganizationInput = {
   id?: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -599,7 +623,8 @@ export type NotificationChannelScalarWhereInput = {
   organizationId?: Prisma.StringFilter<"NotificationChannel"> | string
   name?: Prisma.StringFilter<"NotificationChannel"> | string
   type?: Prisma.StringFilter<"NotificationChannel"> | string
-  webhookUrl?: Prisma.StringFilter<"NotificationChannel"> | string
+  webhookUrl?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
+  recipientEmail?: Prisma.StringNullableFilter<"NotificationChannel"> | string | null
   enabled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentCreated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onIncidentResolved?: Prisma.BoolFilter<"NotificationChannel"> | boolean
@@ -614,7 +639,8 @@ export type NotificationChannelCreateManyOrganizationInput = {
   id?: string
   name: string
   type: string
-  webhookUrl: string
+  webhookUrl?: string | null
+  recipientEmail?: string | null
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -629,7 +655,8 @@ export type NotificationChannelUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -644,7 +671,8 @@ export type NotificationChannelUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -659,7 +687,8 @@ export type NotificationChannelUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  webhookUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recipientEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentCreated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onIncidentResolved?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -678,6 +707,7 @@ export type NotificationChannelSelect<ExtArgs extends runtime.Types.Extensions.I
   name?: boolean
   type?: boolean
   webhookUrl?: boolean
+  recipientEmail?: boolean
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -695,6 +725,7 @@ export type NotificationChannelSelectCreateManyAndReturn<ExtArgs extends runtime
   name?: boolean
   type?: boolean
   webhookUrl?: boolean
+  recipientEmail?: boolean
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -712,6 +743,7 @@ export type NotificationChannelSelectUpdateManyAndReturn<ExtArgs extends runtime
   name?: boolean
   type?: boolean
   webhookUrl?: boolean
+  recipientEmail?: boolean
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -729,6 +761,7 @@ export type NotificationChannelSelectScalar = {
   name?: boolean
   type?: boolean
   webhookUrl?: boolean
+  recipientEmail?: boolean
   enabled?: boolean
   onIncidentCreated?: boolean
   onIncidentResolved?: boolean
@@ -739,7 +772,7 @@ export type NotificationChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type NotificationChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "webhookUrl" | "enabled" | "onIncidentCreated" | "onIncidentResolved" | "onIncidentUpdated" | "onMonitorDown" | "onMonitorRecovered" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationChannel"]>
+export type NotificationChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "webhookUrl" | "recipientEmail" | "enabled" | "onIncidentCreated" | "onIncidentResolved" | "onIncidentUpdated" | "onMonitorDown" | "onMonitorRecovered" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationChannel"]>
 export type NotificationChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
@@ -760,7 +793,8 @@ export type $NotificationChannelPayload<ExtArgs extends runtime.Types.Extensions
     organizationId: string
     name: string
     type: string
-    webhookUrl: string
+    webhookUrl: string | null
+    recipientEmail: string | null
     enabled: boolean
     onIncidentCreated: boolean
     onIncidentResolved: boolean
@@ -1198,6 +1232,7 @@ export interface NotificationChannelFieldRefs {
   readonly name: Prisma.FieldRef<"NotificationChannel", 'String'>
   readonly type: Prisma.FieldRef<"NotificationChannel", 'String'>
   readonly webhookUrl: Prisma.FieldRef<"NotificationChannel", 'String'>
+  readonly recipientEmail: Prisma.FieldRef<"NotificationChannel", 'String'>
   readonly enabled: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
   readonly onIncidentCreated: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
   readonly onIncidentResolved: Prisma.FieldRef<"NotificationChannel", 'Boolean'>

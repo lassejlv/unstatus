@@ -1,7 +1,10 @@
 import z from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { email } from "@/lib/email";
+import { env } from "@/lib/env";
 import { publicProcedure } from "@/orpc/procedures";
+import { SubscriptionVerifyEmail } from "@unstatus/email";
 
 type ResolvedPublicPage = {
   id: string;
@@ -44,6 +47,13 @@ type IncidentRow = {
   lastMessage: string | null;
 };
 
+type HourlyRow = {
+  monitorId: string;
+  hour: Date;
+  avg_latency: number;
+  check_count: bigint;
+};
+
 async function resolvePublicPage(
   where: { slug: string } | { customDomain: string },
 ): Promise<ResolvedPublicPage> {
@@ -71,8 +81,9 @@ async function resolvePublicPage(
 async function getPublicStatusPage(page: ResolvedPublicPage) {
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
 
-  const [monitorRows, statsRows, latestRows, incidentRows] = await Promise.all([
+  const [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await Promise.all([
     prisma.$queryRawUnsafe<MonitorRow[]>(
       `SELECT spm."monitorId", m.name as "monitorName", spm."displayName"
       FROM status_page_monitor spm
@@ -112,6 +123,19 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       page.id,
       ninetyDaysAgo,
     ),
+    prisma.$queryRawUnsafe<HourlyRow[]>(
+      `SELECT mc."monitorId",
+        date_trunc('hour', mc."checkedAt") as hour,
+        ROUND(AVG(mc.latency))::float as avg_latency,
+        COUNT(*)::bigint as check_count
+      FROM monitor_check mc
+      JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
+      WHERE spm."statusPageId" = $1 AND mc."checkedAt" >= $2
+      GROUP BY mc."monitorId", date_trunc('hour', mc."checkedAt")
+      ORDER BY hour ASC`,
+      page.id,
+      twentyFourHoursAgo,
+    ),
   ]);
 
   const dailyByMonitor = new Map<
@@ -135,6 +159,20 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     });
   }
 
+  const hourlyByMonitor = new Map<string, { hour: string; avgLatency: number; checkCount: number }[]>();
+  for (const row of hourlyRows) {
+    let series = hourlyByMonitor.get(row.monitorId);
+    if (!series) {
+      series = [];
+      hourlyByMonitor.set(row.monitorId, series);
+    }
+    series.push({
+      hour: new Date(row.hour).toISOString(),
+      avgLatency: row.avg_latency,
+      checkCount: Number(row.check_count),
+    });
+  }
+
   const latestByMonitor = new Map(
     latestRows.map((row) => [row.monitorId, row.status]),
   );
@@ -147,7 +185,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
 
     let latencySum = 0;
     let latencyDays = 0;
-    const daily: { date: string; uptime: number }[] = [];
+    const daily: { date: string; uptime: number; totalChecks: number }[] = [];
 
     for (let dayOffset = 89; dayOffset >= 0; dayOffset -= 1) {
       const date = new Date(now.getTime() - dayOffset * 86_400_000)
@@ -183,13 +221,14 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
         }
       }
 
-      daily.push({ date, uptime });
+      daily.push({ date, uptime, totalChecks: total });
     }
 
+    const daysWithData = daily.filter((d) => d.totalChecks > 0);
     const uptimePercent =
-      daily.length > 0
+      daysWithData.length > 0
         ? Math.round(
-            (daily.reduce((sum, day) => sum + day.uptime, 0) / daily.length) * 100,
+            (daysWithData.reduce((sum, day) => sum + day.uptime, 0) / daysWithData.length) * 100,
           ) / 100
         : 100;
 
@@ -200,6 +239,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       uptimePercent,
       avgLatency: latencyDays > 0 ? Math.round(latencySum / latencyDays) : 0,
       daily,
+      responseTimeSeries: hourlyByMonitor.get(monitor.monitorId) ?? [],
     };
   });
 
@@ -311,5 +351,61 @@ export const publicStatusRouter = {
     .handler(async ({ input }) => {
       const page = await resolvePublicPage({ customDomain: input.domain });
       return getPublicIncidentPage(page, input.incidentId);
+    }),
+
+  subscribe: publicProcedure
+    .input(z.object({
+      slug: z.string(),
+      email: z.string().email(),
+      monitorIds: z.array(z.string()).optional(),
+    }))
+    .handler(async ({ input }) => {
+      const page = await resolvePublicPage({ slug: input.slug });
+
+      const subscriber = await prisma.statusPageSubscriber.upsert({
+        where: {
+          statusPageId_email: { statusPageId: page.id, email: input.email },
+        },
+        create: {
+          statusPageId: page.id,
+          email: input.email,
+          monitorIds: input.monitorIds ?? [],
+        },
+        update: {
+          monitorIds: input.monitorIds ?? [],
+          verified: false,
+        },
+      });
+
+      const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
+      const verifyUrl = `${domain}/status/${page.slug}/verify?token=${subscriber.token}`;
+
+      await email.emails.send({
+        from: env.INBOUND_FROM,
+        to: input.email,
+        subject: `Confirm your subscription to ${page.name} status updates`,
+        react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} />,
+      });
+
+      return { success: true };
+    }),
+
+  verifySubscription: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .handler(async ({ input }) => {
+      await prisma.statusPageSubscriber.update({
+        where: { token: input.token },
+        data: { verified: true },
+      });
+      return { success: true };
+    }),
+
+  unsubscribe: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .handler(async ({ input }) => {
+      await prisma.statusPageSubscriber.delete({
+        where: { token: input.token },
+      });
+      return { success: true };
     }),
 };

@@ -4,10 +4,32 @@ import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { motion, useMotionValue, useTransform, animate } from "motion/react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
+import { Activity, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardIndex,
+});
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 8 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
 });
 
 function DashboardIndex() {
@@ -42,60 +64,70 @@ function DashboardIndex() {
   const downCount = monitors.filter((m) => m.currentStatus === "down").length;
   const openIncidents = incidents?.filter((i) => i.status !== "resolved") ?? [];
 
+  const dotColorClass =
+    downCount > 0
+      ? "bg-red-500"
+      : openIncidents.length > 0
+        ? "bg-yellow-500"
+        : "bg-emerald-500";
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
       {/* Overall status banner */}
-      <div
-        className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
-          downCount > 0
-            ? "border-red-500/30 bg-red-500/5"
-            : openIncidents.length > 0
-              ? "border-yellow-500/30 bg-yellow-500/5"
-              : "border-emerald-500/30 bg-emerald-500/5"
-        }`}
-      >
+      <motion.div {...fadeUp(0)}>
         <div
-          className={`size-2.5 rounded-full ${
+          className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
             downCount > 0
-              ? "bg-red-500"
+              ? "border-red-500/30 bg-red-500/5"
               : openIncidents.length > 0
-                ? "bg-yellow-500"
-                : "bg-emerald-500"
+                ? "border-yellow-500/30 bg-yellow-500/5"
+                : "border-emerald-500/30 bg-emerald-500/5"
           }`}
-        />
-        <span className="text-sm font-medium">
-          {downCount > 0
-            ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
-            : openIncidents.length > 0
-              ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
-              : "All systems operational"}
-        </span>
-      </div>
+        >
+          <span className="relative flex size-2.5">
+            <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 ${dotColorClass}`} />
+            <span className={`relative inline-flex size-2.5 rounded-full ${dotColorClass}`} />
+          </span>
+          <span className="text-sm font-medium">
+            {downCount > 0
+              ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
+              : openIncidents.length > 0
+                ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
+                : "All systems operational"}
+          </span>
+        </div>
+      </motion.div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-3">
+      <motion.div {...fadeUp(0.05)} className="grid grid-cols-4 gap-3">
         <StatCard label="Monitors" value={monitors.length}>
           <span className="text-muted-foreground">
             {active} active · {paused} paused
           </span>
         </StatCard>
-        <StatCard label="Up" value={monitors.filter((m) => m.currentStatus === "up").length}>
+        <StatCard label="Up" value={monitors.filter((m) => m.currentStatus === "up").length} accent="border-l-emerald-500">
           <span className="text-emerald-500">operational</span>
         </StatCard>
         <StatCard label="Status Pages" value={pages?.length ?? 0} />
-        <StatCard label="Incidents" value={incidents?.length ?? 0}>
+        <StatCard
+          label="Incidents"
+          value={incidents?.length ?? 0}
+          accent={downCount > 0 ? "border-l-red-500" : openIncidents.length > 0 ? "border-l-yellow-500" : undefined}
+        >
           <span className={openIncidents.length > 0 ? "text-yellow-500" : "text-muted-foreground"}>
             {openIncidents.length} open
           </span>
         </StatCard>
-      </div>
+      </motion.div>
 
       {/* Response time chart */}
       {(overview?.responseTimeSeries?.length ?? 0) > 0 && (
-        <ResponseTimeChart data={overview!.responseTimeSeries} />
+        <motion.div {...fadeUp(0.1)}>
+          <ResponseTimeChart data={overview!.responseTimeSeries} />
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-2 gap-5">
+      <motion.div {...fadeUp(0.15)} className="grid flex-1 grid-cols-2 gap-5">
         {/* Monitor status list */}
         <div className="flex flex-col rounded-lg border bg-card">
           <div className="border-b px-4 py-3">
@@ -154,9 +186,13 @@ function DashboardIndex() {
                 </div>
               ))
             ) : (
-              <div className="px-4 py-6 text-center">
-                <p className="text-xs text-muted-foreground">No monitors configured yet.</p>
-              </div>
+              <Empty className="py-8">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><Activity className="size-4" /></EmptyMedia>
+                  <EmptyTitle>No monitors yet</EmptyTitle>
+                  <EmptyDescription>Add a monitor to start tracking uptime.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
           </div>
         </div>
@@ -219,34 +255,70 @@ function DashboardIndex() {
               </div>
             ))}
             {openIncidents.length === 0 && (overview?.recentChecks?.length ?? 0) === 0 && (
-              <div className="px-4 py-6 text-center">
-                <p className="text-xs text-muted-foreground">No recent activity.</p>
-              </div>
+              <Empty className="py-8">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><Clock className="size-4" /></EmptyMedia>
+                  <EmptyTitle>No recent activity</EmptyTitle>
+                  <EmptyDescription>Activity from monitors and incidents will appear here.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
+}
+
+function AnimatedNumber({ value }: { value: number }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.6, ease: "easeOut" });
+    const unsub = rounded.on("change", (v) => setDisplay(v));
+    return () => {
+      controls.stop();
+      unsub();
+    };
+  }, [value, count, rounded]);
+
+  return <>{display}</>;
 }
 
 function StatCard({
   label,
   value,
+  accent,
   children,
 }: {
   label: string;
   value: number;
+  accent?: string;
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border bg-card p-3">
+    <motion.div
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.15 }}
+      className={`flex flex-col gap-1 rounded-lg border bg-card p-3 ${accent ? `border-l-2 ${accent}` : ""}`}
+    >
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-lg font-medium">{value}</span>
+      <span className="text-lg font-medium">
+        <AnimatedNumber value={value} />
+      </span>
       {children && <div className="text-[0.625rem]">{children}</div>}
-    </div>
+    </motion.div>
   );
 }
+
+const chartConfig = {
+  avgLatency: {
+    label: "Avg Latency",
+    color: "oklch(0.765 0.177 163.22)",
+  },
+} satisfies ChartConfig;
 
 function ResponseTimeChart({
   data,
@@ -256,7 +328,11 @@ function ResponseTimeChart({
   if (data.length === 0) return null;
 
   const maxLatency = Math.max(...data.map((d) => d.avgLatency), 1);
-  const chartHeight = 120;
+
+  const chartData = data.map((d) => ({
+    ...d,
+    hour: new Date(d.hour).getTime(),
+  }));
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -280,36 +356,54 @@ function ResponseTimeChart({
           </span>
         </div>
       </div>
-      <div className="flex items-end gap-[3px]" style={{ height: chartHeight }}>
-        {data.map((d, i) => {
-          const height = Math.max((d.avgLatency / maxLatency) * chartHeight, 2);
-          const hour = new Date(d.hour);
-          return (
-            <div
-              key={i}
-              className="group relative flex-1 flex items-end"
-              style={{ height: chartHeight }}
-            >
-              <div
-                className="w-full rounded-t-sm bg-emerald-500/70 transition-colors group-hover:bg-emerald-500"
-                style={{ height }}
+      <ChartContainer config={chartConfig} className="aspect-[4/1] w-full">
+        <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="latencyGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="var(--color-avgLatency)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="hour"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            minTickGap={40}
+            tickFormatter={(value) =>
+              new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            }
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            width={45}
+            tickFormatter={(value) => `${value}ms`}
+          />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                labelFormatter={(_, payload) => {
+                  if (!payload?.[0]?.payload) return "";
+                  const d = payload[0].payload;
+                  const time = new Date(d.hour).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  return `${time} · ${d.checkCount} checks`;
+                }}
+                formatter={(value) => [`${Math.round(Number(value))}ms`, "Latency"]}
               />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-10">
-                <div className="rounded border bg-popover px-2 py-1 text-[10px] shadow-md whitespace-nowrap">
-                  <div className="font-medium">{Math.round(d.avgLatency)}ms</div>
-                  <div className="text-muted-foreground">
-                    {hour.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {d.checkCount} checks
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex justify-between mt-1.5 text-[10px] text-muted-foreground">
-        <span>24h ago</span>
-        <span>Now</span>
-      </div>
+            }
+          />
+          <Area
+            type="monotone"
+            dataKey="avgLatency"
+            stroke="var(--color-avgLatency)"
+            strokeWidth={2}
+            fill="url(#latencyGradient)"
+          />
+        </AreaChart>
+      </ChartContainer>
     </div>
   );
 }

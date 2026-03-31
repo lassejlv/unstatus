@@ -68,6 +68,11 @@ export type Invitation = Prisma.InvitationModel
  */
 export type StatusPage = Prisma.StatusPageModel
 /**
+ * Model StatusPageSubscriber
+ * 
+ */
+export type StatusPageSubscriber = Prisma.StatusPageSubscriberModel
+/**
  * Model StatusPageMonitor
  * 
  */

@@ -61,6 +61,7 @@ export const ModelName = {
   Member: 'Member',
   Invitation: 'Invitation',
   StatusPage: 'StatusPage',
+  StatusPageSubscriber: 'StatusPageSubscriber',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
@@ -240,6 +241,19 @@ export const StatusPageScalarFieldEnum = {
 export type StatusPageScalarFieldEnum = (typeof StatusPageScalarFieldEnum)[keyof typeof StatusPageScalarFieldEnum]
 
 
+export const StatusPageSubscriberScalarFieldEnum = {
+  id: 'id',
+  statusPageId: 'statusPageId',
+  email: 'email',
+  monitorIds: 'monitorIds',
+  verified: 'verified',
+  token: 'token',
+  createdAt: 'createdAt'
+} as const
+
+export type StatusPageSubscriberScalarFieldEnum = (typeof StatusPageSubscriberScalarFieldEnum)[keyof typeof StatusPageSubscriberScalarFieldEnum]
+
+
 export const StatusPageMonitorScalarFieldEnum = {
   id: 'id',
   statusPageId: 'statusPageId',
@@ -283,6 +297,7 @@ export const NotificationChannelScalarFieldEnum = {
   name: 'name',
   type: 'type',
   webhookUrl: 'webhookUrl',
+  recipientEmail: 'recipientEmail',
   enabled: 'enabled',
   onIncidentCreated: 'onIncidentCreated',
   onIncidentResolved: 'onIncidentResolved',

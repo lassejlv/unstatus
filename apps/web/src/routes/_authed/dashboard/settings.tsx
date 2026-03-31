@@ -226,7 +226,7 @@ function NotificationsSection({ orgId }: { orgId: string }) {
     ...orpc.notifications.delete.mutationOptions(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryOpts.queryKey });
-      toast.success("Webhook deleted");
+      toast.success("Channel deleted");
     },
     onError: (err) => toast.error(err.message || "Failed to delete"),
   });
@@ -249,10 +249,10 @@ function NotificationsSection({ orgId }: { orgId: string }) {
         <div>
           <h2 className="text-sm font-medium">Notifications</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Configure Discord webhooks to receive alerts.
+            Configure channels to receive alerts via Discord or email.
           </p>
         </div>
-        <AddWebhookDialog orgId={orgId} />
+        <AddNotificationDialog orgId={orgId} />
       </div>
       {channels?.length ? (
         <div>
@@ -264,11 +264,13 @@ function NotificationsSection({ orgId }: { orgId: string }) {
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{ch.name}</span>
-                  <Badge variant="outline">Discord</Badge>
+                  <Badge variant="outline">{ch.type === "discord" ? "Discord" : "Email"}</Badge>
                   {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
                 </div>
                 <span className="text-[11px] text-muted-foreground font-mono truncate max-w-xs">
-                  {ch.webhookUrl.replace(/\/webhooks\/\d+\/.*/, "/webhooks/***")}
+                  {ch.type === "discord"
+                    ? ch.webhookUrl?.replace(/\/webhooks\/\d+\/.*/, "/webhooks/***")
+                    : ch.recipientEmail}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -301,7 +303,7 @@ function NotificationsSection({ orgId }: { orgId: string }) {
       ) : (
         <div className="px-4 py-6 text-center">
           <p className="text-xs text-muted-foreground">
-            No webhooks configured. Add a Discord webhook to receive notifications.
+            No notification channels configured. Add a Discord webhook or email to receive alerts.
           </p>
         </div>
       )}
@@ -309,25 +311,29 @@ function NotificationsSection({ orgId }: { orgId: string }) {
   );
 }
 
-function AddWebhookDialog({ orgId }: { orgId: string }) {
+function AddNotificationDialog({ orgId }: { orgId: string }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [type, setType] = useState<"discord" | "email">("discord");
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   const queryOpts = orpc.notifications.list.queryOptions({
     input: { organizationId: orgId },
   });
 
+  const isValid = name && (type === "discord" ? webhookUrl : recipientEmail);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Add webhook</Button>
+        <Button size="sm">Add channel</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Discord webhook</DialogTitle>
+          <DialogTitle>Add notification channel</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
@@ -335,40 +341,67 @@ function AddWebhookDialog({ orgId }: { orgId: string }) {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Alerts channel"
+              placeholder="Alerts"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Webhook URL</Label>
-            <Input
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://discord.com/api/webhooks/..."
-            />
+            <Label>Type</Label>
+            <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="discord">Discord</SelectItem>
+                <SelectItem value="email">Email</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          {type === "discord" ? (
+            <div className="flex flex-col gap-1.5">
+              <Label>Webhook URL</Label>
+              <Input
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                placeholder="https://discord.com/api/webhooks/..."
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <Label>Recipient emails</Label>
+              <Input
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="alerts@example.com, team@example.com"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Separate multiple emails with commas
+              </p>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!name || !webhookUrl || loading}
+            disabled={!isValid || loading}
             onClick={async () => {
               setLoading(true);
               try {
                 await client.notifications.create({
                   organizationId: orgId,
                   name,
-                  type: "discord",
-                  webhookUrl,
+                  type,
+                  ...(type === "discord" ? { webhookUrl } : { recipientEmail }),
                 });
                 qc.invalidateQueries({ queryKey: queryOpts.queryKey });
-                toast.success("Webhook added");
+                toast.success("Channel added");
                 setOpen(false);
                 setName("");
                 setWebhookUrl("");
+                setRecipientEmail("");
               } catch (err: any) {
-                toast.error(err.message || "Failed to add webhook");
+                toast.error(err.message || "Failed to add channel");
               } finally {
                 setLoading(false);
               }

@@ -1,4 +1,9 @@
 import { prisma } from "./db.js";
+import { createEmailClient, NotificationEmail, type NotificationEmailProps } from "@unstatus/email";
+
+const email = process.env.INBOUND_API_KEY
+  ? createEmailClient(process.env.INBOUND_API_KEY)
+  : null;
 
 type NotifyEvent =
   | { type: "monitor.down"; monitorName: string; message?: string }
@@ -69,6 +74,36 @@ function buildEmbed(event: NotifyEvent) {
   }
 }
 
+function buildEmailSubject(event: NotifyEvent): string {
+  switch (event.type) {
+    case "monitor.down":
+      return `[Unstatus] ${event.monitorName} is down`;
+    case "monitor.recovered":
+      return `[Unstatus] ${event.monitorName} recovered`;
+    case "incident.created":
+      return `[Unstatus] Incident: ${event.title}`;
+    case "incident.resolved":
+      return `[Unstatus] Resolved: ${event.title}`;
+    case "incident.updated":
+      return `[Unstatus] Updated: ${event.title}`;
+  }
+}
+
+function eventToEmailProps(event: NotifyEvent): NotificationEmailProps {
+  switch (event.type) {
+    case "monitor.down":
+      return { eventType: event.type, monitorName: event.monitorName, message: event.message };
+    case "monitor.recovered":
+      return { eventType: event.type, monitorName: event.monitorName };
+    case "incident.created":
+      return { eventType: event.type, monitorName: event.monitorName, title: event.title, severity: event.severity, message: event.message };
+    case "incident.resolved":
+      return { eventType: event.type, monitorName: event.monitorName, title: event.title };
+    case "incident.updated":
+      return { eventType: event.type, monitorName: event.monitorName, title: event.title, status: event.status, message: event.message };
+  }
+}
+
 export async function sendNotifications(organizationId: string, event: NotifyEvent) {
   const flag = EVENT_TO_FLAG[event.type];
   const channels = await prisma.notificationChannel.findMany({
@@ -79,16 +114,28 @@ export async function sendNotifications(organizationId: string, event: NotifyEve
     },
   });
 
+  const inboundFrom = process.env.INBOUND_FROM;
+
   await Promise.allSettled(
     channels.map(async (channel) => {
-      const embed = buildEmbed(event);
-      const res = await fetch(channel.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embeds: [embed] }),
-      });
-      if (!res.ok) {
-        console.error(`Discord webhook failed for channel ${channel.id}: ${res.status}`);
+      if (channel.type === "discord" && channel.webhookUrl) {
+        const embed = buildEmbed(event);
+        const res = await fetch(channel.webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ embeds: [embed] }),
+        });
+        if (!res.ok) {
+          console.error(`Discord webhook failed for channel ${channel.id}: ${res.status}`);
+        }
+      } else if (channel.type === "email" && channel.recipientEmail && inboundFrom && email) {
+        const recipients = channel.recipientEmail.split(",").map((e) => e.trim()).filter(Boolean);
+        await email.emails.send({
+          from: inboundFrom,
+          to: recipients,
+          subject: buildEmailSubject(event),
+          react: <NotificationEmail {...eventToEmailProps(event)} />,
+        });
       }
     }),
   );

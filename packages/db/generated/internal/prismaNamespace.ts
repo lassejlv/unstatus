@@ -394,6 +394,7 @@ export const ModelName = {
   Member: 'Member',
   Invitation: 'Invitation',
   StatusPage: 'StatusPage',
+  StatusPageSubscriber: 'StatusPageSubscriber',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "member" | "invitation" | "statusPage" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1157,6 +1158,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    StatusPageSubscriber: {
+      payload: Prisma.$StatusPageSubscriberPayload<ExtArgs>
+      fields: Prisma.StatusPageSubscriberFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StatusPageSubscriberFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StatusPageSubscriberFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        findFirst: {
+          args: Prisma.StatusPageSubscriberFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StatusPageSubscriberFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        findMany: {
+          args: Prisma.StatusPageSubscriberFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>[]
+        }
+        create: {
+          args: Prisma.StatusPageSubscriberCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        createMany: {
+          args: Prisma.StatusPageSubscriberCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StatusPageSubscriberCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>[]
+        }
+        delete: {
+          args: Prisma.StatusPageSubscriberDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        update: {
+          args: Prisma.StatusPageSubscriberUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        deleteMany: {
+          args: Prisma.StatusPageSubscriberDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StatusPageSubscriberUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StatusPageSubscriberUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>[]
+        }
+        upsert: {
+          args: Prisma.StatusPageSubscriberUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatusPageSubscriberPayload>
+        }
+        aggregate: {
+          args: Prisma.StatusPageSubscriberAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStatusPageSubscriber>
+        }
+        groupBy: {
+          args: Prisma.StatusPageSubscriberGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatusPageSubscriberGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StatusPageSubscriberCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatusPageSubscriberCountAggregateOutputType> | number
+        }
+      }
+    }
     StatusPageMonitor: {
       payload: Prisma.$StatusPageMonitorPayload<ExtArgs>
       fields: Prisma.StatusPageMonitorFieldRefs
@@ -1649,6 +1724,19 @@ export const StatusPageScalarFieldEnum = {
 export type StatusPageScalarFieldEnum = (typeof StatusPageScalarFieldEnum)[keyof typeof StatusPageScalarFieldEnum]
 
 
+export const StatusPageSubscriberScalarFieldEnum = {
+  id: 'id',
+  statusPageId: 'statusPageId',
+  email: 'email',
+  monitorIds: 'monitorIds',
+  verified: 'verified',
+  token: 'token',
+  createdAt: 'createdAt'
+} as const
+
+export type StatusPageSubscriberScalarFieldEnum = (typeof StatusPageSubscriberScalarFieldEnum)[keyof typeof StatusPageSubscriberScalarFieldEnum]
+
+
 export const StatusPageMonitorScalarFieldEnum = {
   id: 'id',
   statusPageId: 'statusPageId',
@@ -1692,6 +1780,7 @@ export const NotificationChannelScalarFieldEnum = {
   name: 'name',
   type: 'type',
   webhookUrl: 'webhookUrl',
+  recipientEmail: 'recipientEmail',
   enabled: 'enabled',
   onIncidentCreated: 'onIncidentCreated',
   onIncidentResolved: 'onIncidentResolved',
@@ -1940,6 +2029,7 @@ export type GlobalOmitConfig = {
   member?: Prisma.MemberOmit
   invitation?: Prisma.InvitationOmit
   statusPage?: Prisma.StatusPageOmit
+  statusPageSubscriber?: Prisma.StatusPageSubscriberOmit
   statusPageMonitor?: Prisma.StatusPageMonitorOmit
   incident?: Prisma.IncidentOmit
   incidentUpdate?: Prisma.IncidentUpdateOmit

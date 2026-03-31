@@ -59,6 +59,7 @@ export const incidentsRouter = {
     });
     sendNotifications(monitor.organizationId, {
       type: "incident.created",
+      monitorId: monitor.id,
       monitorName: monitor.name,
       title: input.title,
       severity: input.severity,
@@ -72,7 +73,7 @@ export const incidentsRouter = {
     .handler(async ({ input, context }) => {
       const incident = await prisma.incident.findUniqueOrThrow({
         where: { id: input.id },
-        include: { monitor: { select: { organizationId: true, name: true } } },
+        include: { monitor: { select: { id: true, organizationId: true, name: true } } },
       });
       await verifyOrgMembership(context.session.user.id, incident.monitor.organizationId);
       const resolvedAt = input.status === "resolved" ? new Date() : undefined;
@@ -87,8 +88,8 @@ export const incidentsRouter = {
       });
       const eventType = input.status === "resolved" ? "incident.resolved" as const : "incident.updated" as const;
       const event = eventType === "incident.resolved"
-        ? { type: eventType, monitorName: incident.monitor.name, title: incident.title }
-        : { type: eventType, monitorName: incident.monitor.name, title: incident.title, status: input.status, message: input.message };
+        ? { type: eventType, monitorId: incident.monitor.id, monitorName: incident.monitor.name, title: incident.title }
+        : { type: eventType, monitorId: incident.monitor.id, monitorName: incident.monitor.name, title: incident.title, status: input.status, message: input.message };
       sendNotifications(incident.monitor.organizationId, event)
         .catch((e) => console.error("Notification failed:", e));
       return updated;

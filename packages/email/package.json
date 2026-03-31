@@ -1,0 +1,14 @@
+{
+  "name": "@unstatus/email",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./templates": "./src/emails/notification.tsx"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.10",
+    "inboundemail": "^0.20.0",
+    "react": "^19.0.0"
+  }
+}

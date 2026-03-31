@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@unstatus/db": "workspace:*",
+    "@unstatus/email": "workspace:*",
     "hono": "^4.7.0"
   }
 }

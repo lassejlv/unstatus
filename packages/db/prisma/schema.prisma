@@ -204,11 +204,27 @@ model StatusPage {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   monitors    StatusPageMonitor[]
+  subscribers StatusPageSubscriber[]
 
   @@unique([slug])
   @@unique([customDomain])
   @@index([organizationId])
   @@map("status_page")
+}
+
+model StatusPageSubscriber {
+  id           String     @id @default(cuid())
+  statusPageId String
+  statusPage   StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  email        String
+  monitorIds   Json       @default("[]")
+  verified     Boolean    @default(false)
+  token        String     @unique @default(cuid())
+  createdAt    DateTime   @default(now())
+
+  @@unique([statusPageId, email])
+  @@index([statusPageId])
+  @@map("status_page_subscriber")
 }
 
 model StatusPageMonitor {
@@ -263,10 +279,11 @@ model NotificationChannel {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  name        String
-  type        String   // "discord"
-  webhookUrl  String
-  enabled     Boolean  @default(true)
+  name           String
+  type           String   // "discord" | "email"
+  webhookUrl     String?  // Required for discord
+  recipientEmail String?  // Required for email
+  enabled        Boolean  @default(true)
 
   // Events to notify on
   onIncidentCreated  Boolean @default(true)
