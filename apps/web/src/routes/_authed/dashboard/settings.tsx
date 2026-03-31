@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useSubscription } from "@/hooks/use-subscription";
+import { ProBadge } from "@/components/upgrade-badge";
 
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
@@ -44,6 +46,9 @@ function SettingsPage() {
 
       {/* Notifications */}
       {activeOrg && <NotificationsSection orgId={activeOrg.id} />}
+
+      {/* Billing */}
+      {activeOrg && <BillingSection orgId={activeOrg.id} />}
 
       {/* Organizations */}
       <OrgSection />
@@ -153,6 +158,8 @@ function MembersSection({ orgId }: { orgId: string }) {
 }
 
 function InviteMemberDialog({ orgId }: { orgId: string }) {
+  const { isPro } = useSubscription();
+  // TODO: Check member count against free-tier limit (3 members) and gate invites for non-Pro orgs
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -161,7 +168,7 @@ function InviteMemberDialog({ orgId }: { orgId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Invite member</Button>
+        <Button size="sm">Invite member {!isPro && <ProBadge />}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -312,6 +319,7 @@ function NotificationsSection({ orgId }: { orgId: string }) {
 }
 
 function AddNotificationDialog({ orgId }: { orgId: string }) {
+  const { isPro } = useSubscription();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -351,7 +359,7 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="discord">Discord</SelectItem>
+                <SelectItem value="discord" disabled={!isPro}>Discord {!isPro && " "}{!isPro && <ProBadge />}</SelectItem>
                 <SelectItem value="email">Email</SelectItem>
               </SelectContent>
             </Select>
@@ -412,6 +420,87 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BillingSection({ orgId }: { orgId: string }) {
+  const [loading, setLoading] = useState(false);
+  const { data: subscription } = useQuery(
+    orpc.billing.getSubscription.queryOptions({ input: { organizationId: orgId } }),
+  );
+
+  const isActive = subscription?.subscriptionActive ?? false;
+  const planName = subscription?.subscriptionPlanName ?? "Free";
+
+  return (
+    <div className="rounded-lg border bg-card">
+      <div className="border-b px-4 py-3">
+        <h2 className="text-sm font-medium">Billing</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Manage your subscription and billing.
+        </p>
+      </div>
+      <div className="flex items-center justify-between p-4">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{isActive ? planName : "Free"}</span>
+            <Badge variant={isActive ? "default" : "secondary"}>
+              {isActive ? "Active" : "Free"}
+            </Badge>
+          </div>
+          {isActive && (
+            <span className="text-xs text-muted-foreground">
+              {subscription?.cancelAtPeriodEnd
+                ? "Cancels at end of billing period"
+                : "$15/month"}
+            </span>
+          )}
+          {!isActive && (
+            <span className="text-xs text-muted-foreground">
+              Upgrade to unlock all features
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isActive && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  await authClient.customer.portal();
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Manage subscription
+            </Button>
+          )}
+          {!isActive && (
+            <Button
+              size="sm"
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  await authClient.checkout({
+                    slug: "pro",
+                    referenceId: orgId,
+                  });
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Upgrade to Pro
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

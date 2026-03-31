@@ -1,4 +1,4 @@
-import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
+import { authedProcedure, orgProcedure, verifyOrgMembership, getOrgSubscription, requirePro } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
@@ -50,6 +50,10 @@ export const notificationsRouter = {
   ),
 
   create: orgProcedure.input(createInput).handler(async ({ input }) => {
+    if (input.type === "discord") {
+      const { isPro } = await getOrgSubscription(input.organizationId);
+      if (!isPro) requirePro(false, "Discord notifications");
+    }
     return prisma.notificationChannel.create({ data: input });
   }),
 

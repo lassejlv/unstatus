@@ -31,6 +31,11 @@ export type OrganizationMinAggregateOutputType = {
   logo: string | null
   createdAt: Date | null
   metadata: string | null
+  polarCustomerId: string | null
+  subscriptionId: string | null
+  subscriptionActive: boolean | null
+  subscriptionPlanName: string | null
+  cancelAtPeriodEnd: boolean | null
 }
 
 export type OrganizationMaxAggregateOutputType = {
@@ -40,6 +45,11 @@ export type OrganizationMaxAggregateOutputType = {
   logo: string | null
   createdAt: Date | null
   metadata: string | null
+  polarCustomerId: string | null
+  subscriptionId: string | null
+  subscriptionActive: boolean | null
+  subscriptionPlanName: string | null
+  cancelAtPeriodEnd: boolean | null
 }
 
 export type OrganizationCountAggregateOutputType = {
@@ -49,6 +59,11 @@ export type OrganizationCountAggregateOutputType = {
   logo: number
   createdAt: number
   metadata: number
+  polarCustomerId: number
+  subscriptionId: number
+  subscriptionActive: number
+  subscriptionPlanName: number
+  cancelAtPeriodEnd: number
   _all: number
 }
 
@@ -60,6 +75,11 @@ export type OrganizationMinAggregateInputType = {
   logo?: true
   createdAt?: true
   metadata?: true
+  polarCustomerId?: true
+  subscriptionId?: true
+  subscriptionActive?: true
+  subscriptionPlanName?: true
+  cancelAtPeriodEnd?: true
 }
 
 export type OrganizationMaxAggregateInputType = {
@@ -69,6 +89,11 @@ export type OrganizationMaxAggregateInputType = {
   logo?: true
   createdAt?: true
   metadata?: true
+  polarCustomerId?: true
+  subscriptionId?: true
+  subscriptionActive?: true
+  subscriptionPlanName?: true
+  cancelAtPeriodEnd?: true
 }
 
 export type OrganizationCountAggregateInputType = {
@@ -78,6 +103,11 @@ export type OrganizationCountAggregateInputType = {
   logo?: true
   createdAt?: true
   metadata?: true
+  polarCustomerId?: true
+  subscriptionId?: true
+  subscriptionActive?: true
+  subscriptionPlanName?: true
+  cancelAtPeriodEnd?: true
   _all?: true
 }
 
@@ -160,6 +190,11 @@ export type OrganizationGroupByOutputType = {
   logo: string | null
   createdAt: Date
   metadata: string | null
+  polarCustomerId: string | null
+  subscriptionId: string | null
+  subscriptionActive: boolean
+  subscriptionPlanName: string | null
+  cancelAtPeriodEnd: boolean
   _count: OrganizationCountAggregateOutputType | null
   _min: OrganizationMinAggregateOutputType | null
   _max: OrganizationMaxAggregateOutputType | null
@@ -190,6 +225,11 @@ export type OrganizationWhereInput = {
   logo?: Prisma.StringNullableFilter<"Organization"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
   metadata?: Prisma.StringNullableFilter<"Organization"> | string | null
+  polarCustomerId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  subscriptionId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  subscriptionActive?: Prisma.BoolFilter<"Organization"> | boolean
+  subscriptionPlanName?: Prisma.StringNullableFilter<"Organization"> | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFilter<"Organization"> | boolean
   members?: Prisma.MemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   monitors?: Prisma.MonitorListRelationFilter
@@ -204,6 +244,11 @@ export type OrganizationOrderByWithRelationInput = {
   logo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
+  polarCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionActive?: Prisma.SortOrder
+  subscriptionPlanName?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   members?: Prisma.MemberOrderByRelationAggregateInput
   invitations?: Prisma.InvitationOrderByRelationAggregateInput
   monitors?: Prisma.MonitorOrderByRelationAggregateInput
@@ -221,6 +266,11 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   logo?: Prisma.StringNullableFilter<"Organization"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
   metadata?: Prisma.StringNullableFilter<"Organization"> | string | null
+  polarCustomerId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  subscriptionId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  subscriptionActive?: Prisma.BoolFilter<"Organization"> | boolean
+  subscriptionPlanName?: Prisma.StringNullableFilter<"Organization"> | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFilter<"Organization"> | boolean
   members?: Prisma.MemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   monitors?: Prisma.MonitorListRelationFilter
@@ -235,6 +285,11 @@ export type OrganizationOrderByWithAggregationInput = {
   logo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
+  polarCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionActive?: Prisma.SortOrder
+  subscriptionPlanName?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   _count?: Prisma.OrganizationCountOrderByAggregateInput
   _max?: Prisma.OrganizationMaxOrderByAggregateInput
   _min?: Prisma.OrganizationMinOrderByAggregateInput
@@ -250,6 +305,11 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   logo?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Organization"> | Date | string
   metadata?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  polarCustomerId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  subscriptionId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  subscriptionActive?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
+  subscriptionPlanName?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  cancelAtPeriodEnd?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
 }
 
 export type OrganizationCreateInput = {
@@ -259,6 +319,11 @@ export type OrganizationCreateInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
@@ -273,6 +338,11 @@ export type OrganizationUncheckedCreateInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
@@ -287,6 +357,11 @@ export type OrganizationUpdateInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
@@ -301,6 +376,11 @@ export type OrganizationUncheckedUpdateInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -315,6 +395,11 @@ export type OrganizationCreateManyInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
 }
 
 export type OrganizationUpdateManyMutationInput = {
@@ -324,6 +409,11 @@ export type OrganizationUpdateManyMutationInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrganizationUncheckedUpdateManyInput = {
@@ -333,6 +423,11 @@ export type OrganizationUncheckedUpdateManyInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type OrganizationCountOrderByAggregateInput = {
@@ -342,6 +437,11 @@ export type OrganizationCountOrderByAggregateInput = {
   logo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
+  polarCustomerId?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionActive?: Prisma.SortOrder
+  subscriptionPlanName?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
 }
 
 export type OrganizationMaxOrderByAggregateInput = {
@@ -351,6 +451,11 @@ export type OrganizationMaxOrderByAggregateInput = {
   logo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
+  polarCustomerId?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionActive?: Prisma.SortOrder
+  subscriptionPlanName?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
 }
 
 export type OrganizationMinOrderByAggregateInput = {
@@ -360,6 +465,11 @@ export type OrganizationMinOrderByAggregateInput = {
   logo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
+  polarCustomerId?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionActive?: Prisma.SortOrder
+  subscriptionPlanName?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
 }
 
 export type OrganizationScalarRelationFilter = {
@@ -444,6 +554,11 @@ export type OrganizationCreateWithoutMonitorsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
@@ -457,6 +572,11 @@ export type OrganizationUncheckedCreateWithoutMonitorsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
@@ -486,6 +606,11 @@ export type OrganizationUpdateWithoutMonitorsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
@@ -499,6 +624,11 @@ export type OrganizationUncheckedUpdateWithoutMonitorsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -512,6 +642,11 @@ export type OrganizationCreateWithoutMembersInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
@@ -525,6 +660,11 @@ export type OrganizationUncheckedCreateWithoutMembersInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
@@ -554,6 +694,11 @@ export type OrganizationUpdateWithoutMembersInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
@@ -567,6 +712,11 @@ export type OrganizationUncheckedUpdateWithoutMembersInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -580,6 +730,11 @@ export type OrganizationCreateWithoutInvitationsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
@@ -593,6 +748,11 @@ export type OrganizationUncheckedCreateWithoutInvitationsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
@@ -622,6 +782,11 @@ export type OrganizationUpdateWithoutInvitationsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
@@ -635,6 +800,11 @@ export type OrganizationUncheckedUpdateWithoutInvitationsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -648,6 +818,11 @@ export type OrganizationCreateWithoutStatusPagesInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
@@ -661,6 +836,11 @@ export type OrganizationUncheckedCreateWithoutStatusPagesInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
@@ -690,6 +870,11 @@ export type OrganizationUpdateWithoutStatusPagesInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
@@ -703,6 +888,11 @@ export type OrganizationUncheckedUpdateWithoutStatusPagesInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -716,6 +906,11 @@ export type OrganizationCreateWithoutNotificationChannelsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
@@ -729,6 +924,11 @@ export type OrganizationUncheckedCreateWithoutNotificationChannelsInput = {
   logo?: string | null
   createdAt: Date | string
   metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
@@ -758,6 +958,11 @@ export type OrganizationUpdateWithoutNotificationChannelsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
@@ -771,6 +976,11 @@ export type OrganizationUncheckedUpdateWithoutNotificationChannelsInput = {
   logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -851,6 +1061,11 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   logo?: boolean
   createdAt?: boolean
   metadata?: boolean
+  polarCustomerId?: boolean
+  subscriptionId?: boolean
+  subscriptionActive?: boolean
+  subscriptionPlanName?: boolean
+  cancelAtPeriodEnd?: boolean
   members?: boolean | Prisma.Organization$membersArgs<ExtArgs>
   invitations?: boolean | Prisma.Organization$invitationsArgs<ExtArgs>
   monitors?: boolean | Prisma.Organization$monitorsArgs<ExtArgs>
@@ -866,6 +1081,11 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   logo?: boolean
   createdAt?: boolean
   metadata?: boolean
+  polarCustomerId?: boolean
+  subscriptionId?: boolean
+  subscriptionActive?: boolean
+  subscriptionPlanName?: boolean
+  cancelAtPeriodEnd?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -875,6 +1095,11 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   logo?: boolean
   createdAt?: boolean
   metadata?: boolean
+  polarCustomerId?: boolean
+  subscriptionId?: boolean
+  subscriptionActive?: boolean
+  subscriptionPlanName?: boolean
+  cancelAtPeriodEnd?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectScalar = {
@@ -884,9 +1109,14 @@ export type OrganizationSelectScalar = {
   logo?: boolean
   createdAt?: boolean
   metadata?: boolean
+  polarCustomerId?: boolean
+  subscriptionId?: boolean
+  subscriptionActive?: boolean
+  subscriptionPlanName?: boolean
+  cancelAtPeriodEnd?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "logo" | "createdAt" | "metadata", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "logo" | "createdAt" | "metadata" | "polarCustomerId" | "subscriptionId" | "subscriptionActive" | "subscriptionPlanName" | "cancelAtPeriodEnd", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.Organization$membersArgs<ExtArgs>
   invitations?: boolean | Prisma.Organization$invitationsArgs<ExtArgs>
@@ -914,6 +1144,11 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     logo: string | null
     createdAt: Date
     metadata: string | null
+    polarCustomerId: string | null
+    subscriptionId: string | null
+    subscriptionActive: boolean
+    subscriptionPlanName: string | null
+    cancelAtPeriodEnd: boolean
   }, ExtArgs["result"]["organization"]>
   composites: {}
 }
@@ -1348,6 +1583,11 @@ export interface OrganizationFieldRefs {
   readonly logo: Prisma.FieldRef<"Organization", 'String'>
   readonly createdAt: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly metadata: Prisma.FieldRef<"Organization", 'String'>
+  readonly polarCustomerId: Prisma.FieldRef<"Organization", 'String'>
+  readonly subscriptionId: Prisma.FieldRef<"Organization", 'String'>
+  readonly subscriptionActive: Prisma.FieldRef<"Organization", 'Boolean'>
+  readonly subscriptionPlanName: Prisma.FieldRef<"Organization", 'String'>
+  readonly cancelAtPeriodEnd: Prisma.FieldRef<"Organization", 'Boolean'>
 }
     
 

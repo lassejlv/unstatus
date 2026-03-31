@@ -1632,7 +1632,12 @@ export const OrganizationScalarFieldEnum = {
   slug: 'slug',
   logo: 'logo',
   createdAt: 'createdAt',
-  metadata: 'metadata'
+  metadata: 'metadata',
+  polarCustomerId: 'polarCustomerId',
+  subscriptionId: 'subscriptionId',
+  subscriptionActive: 'subscriptionActive',
+  subscriptionPlanName: 'subscriptionPlanName',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]

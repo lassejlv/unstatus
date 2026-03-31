@@ -28,6 +28,22 @@ export async function verifyOrgMembership(userId: string, organizationId: string
   return member.role;
 }
 
+export async function getOrgSubscription(organizationId: string) {
+  const org = await prisma.organization.findUniqueOrThrow({
+    where: { id: organizationId },
+    select: { subscriptionActive: true },
+  });
+  return { isPro: org.subscriptionActive };
+}
+
+export function requirePro(isPro: boolean, feature: string) {
+  if (!isPro) {
+    throw new ORPCError("FORBIDDEN", {
+      message: `${feature} is available on the Pro plan. Upgrade to unlock this feature.`,
+    });
+  }
+}
+
 export const orgProcedure = authedProcedure.use(
   async ({ context, next, input }) => {
     const { organizationId } = input as { organizationId: string };

@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { X, ChevronLeft, Pencil, ExternalLink, Trash2, Globe } from "lucide-react";
+import { useSubscription } from "@/hooks/use-subscription";
+import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/")({
   component: StatusPagesPage,
@@ -50,7 +52,9 @@ function StatusPagesPage() {
     input: orgId ? { organizationId: orgId } : skipToken,
   });
   const { data: pages, isLoading } = useQuery(pagesQuery);
+  const { isPro } = useSubscription();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const canCreateMore = isPro || !pages?.length;
 
   if (isLoading) {
     return (
@@ -65,7 +69,7 @@ function StatusPagesPage() {
       <div className="flex flex-1 flex-col gap-4 min-w-0">
         <div className="flex items-center justify-between">
           <h1 className="text-sm font-medium">Status Pages</h1>
-          {activeOrg && <CreateStatusPageDialog organizationId={activeOrg.id} />}
+          {activeOrg && <CreateStatusPageDialog organizationId={activeOrg.id} disabled={!canCreateMore} />}
         </div>
         {pages?.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +108,7 @@ function StatusPagesPage() {
                 Create a status page to share your uptime with users.
               </EmptyDescription>
             </EmptyHeader>
-            {activeOrg && <CreateStatusPageDialog organizationId={activeOrg.id} />}
+            {activeOrg && <CreateStatusPageDialog organizationId={activeOrg.id} disabled={!canCreateMore} />}
           </Empty>
         )}
       </div>
@@ -411,6 +415,7 @@ function CustomDomainInline({
   currentDomain: string | null;
   onSuccess: () => void;
 }) {
+  const { isPro } = useSubscription();
   const [domain, setDomain] = useState(currentDomain ?? "");
   const [editing, setEditing] = useState(false);
 
@@ -436,8 +441,11 @@ function CustomDomainInline({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">Custom domain</span>
-        {!currentDomain && !editing && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium">Custom domain</span>
+          {!isPro && <ProBadge />}
+        </div>
+        {isPro && !currentDomain && !editing && (
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -448,7 +456,9 @@ function CustomDomainInline({
         )}
       </div>
 
-      {!currentDomain && !editing ? (
+      {!isPro ? (
+        <UpgradePrompt feature="Custom domains" />
+      ) : !currentDomain && !editing ? (
         <div className="rounded-lg border border-dashed px-3 py-3 flex items-center gap-2">
           <Globe className="size-3.5 text-muted-foreground shrink-0" />
           <span className="text-xs text-muted-foreground">
@@ -780,7 +790,7 @@ function AddMonitorOverlay({
   );
 }
 
-function CreateStatusPageDialog({ organizationId }: { organizationId: string }) {
+function CreateStatusPageDialog({ organizationId, disabled }: { organizationId: string; disabled?: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -803,6 +813,17 @@ function CreateStatusPageDialog({ organizationId }: { organizationId: string }) 
       toast.error(err.message || "Failed to create status page");
     },
   });
+
+  if (disabled) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <Button size="sm" disabled>
+          New status page
+        </Button>
+        <ProBadge />
+      </div>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

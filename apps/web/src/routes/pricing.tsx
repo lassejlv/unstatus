@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Minus } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -52,6 +53,16 @@ function PricingPage() {
   const [annual, setAnnual] = useState(false);
   const proPrice = annual ? 144 : 15;
   const proPeriod = annual ? "/year" : "/mo";
+  const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+
+  const handleProCheckout = async () => {
+    if (!session) {
+      navigate({ to: "/login" });
+      return;
+    }
+    await authClient.checkout({ slug: "pro" });
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -197,11 +208,9 @@ function PricingPage() {
                 For teams and businesses. Unlimited everything, all features
                 unlocked.
               </p>
-              <Link to="/login" className="mt-8">
-                <Button className="w-full h-11 gap-2">
-                  Get started <ArrowRight className="size-4" />
-                </Button>
-              </Link>
+              <Button className="mt-8 w-full h-11 gap-2" onClick={handleProCheckout}>
+                Get started <ArrowRight className="size-4" />
+              </Button>
               <div className="mt-8 border-t pt-6">
                 <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Everything in Free, plus

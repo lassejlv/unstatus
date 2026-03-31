@@ -83,6 +83,14 @@ model Organization {
   logo        String?
   createdAt   DateTime
   metadata    String?
+
+  // Subscription
+  polarCustomerId       String?
+  subscriptionId        String?
+  subscriptionActive    Boolean  @default(false)
+  subscriptionPlanName  String?
+  cancelAtPeriodEnd     Boolean  @default(false)
+
   members              Member[]
   invitations          Invitation[]
   monitors             Monitor[]

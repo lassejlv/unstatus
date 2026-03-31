@@ -4,7 +4,7 @@ import { Prisma } from "@unstatus/db";
 
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
-import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
+import { authedProcedure, orgProcedure, verifyOrgMembership, getOrgSubscription, requirePro } from "@/orpc/procedures";
 
 const domainSchema = z
   .string()
@@ -70,6 +70,11 @@ export const statusPagesRouter = {
   ),
 
   create: orgProcedure.input(createInput).handler(async ({ input }) => {
+    const { isPro } = await getOrgSubscription(input.organizationId);
+    if (!isPro) {
+      const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
+      if (count >= 1) requirePro(false, "More than 1 status page");
+    }
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -77,6 +82,13 @@ export const statusPagesRouter = {
     const { id, organizationId: _orgId, ...data } = input;
     const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id } });
     await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+
+    const { isPro } = await getOrgSubscription(statusPage.organizationId);
+    if (!isPro) {
+      if (data.customDomain) requirePro(false, "Custom domains");
+      if (data.customCss) requirePro(false, "Custom CSS");
+    }
+
     try {
       return await prisma.statusPage.update({ where: { id }, data });
     } catch (err) {

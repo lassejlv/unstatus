@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { X, ChevronLeft, Pencil } from "lucide-react";
+import { useSubscription } from "@/hooks/use-subscription";
+import { ProBadge } from "@/components/upgrade-badge";
 
 const REGIONS = [
   { id: "eu", label: "🇪🇺 Europe" },
@@ -73,7 +75,7 @@ function MonitorsPage() {
       <div className="flex flex-1 flex-col gap-4 min-w-0">
         <div className="flex items-center justify-between">
           <h1 className="text-sm font-medium">Monitors</h1>
-          {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} />}
+          {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} monitorCount={monitors?.length ?? 0} />}
         </div>
         {monitors?.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -115,7 +117,7 @@ function MonitorsPage() {
                 Create your first monitor to start tracking uptime.
               </EmptyDescription>
             </EmptyHeader>
-            {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} />}
+            {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} monitorCount={monitors?.length ?? 0} />}
           </Empty>
         )}
       </div>
@@ -815,7 +817,8 @@ function formatBody(body: string): string {
   }
 }
 
-function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
+function CreateMonitorDialog({ organizationId, monitorCount }: { organizationId: string; monitorCount: number }) {
+  const { isPro } = useSubscription();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"http" | "tcp" | "ping">("http");
@@ -879,7 +882,9 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
               <SelectContent>
                 <SelectItem value="http">HTTP</SelectItem>
                 <SelectItem value="tcp">TCP</SelectItem>
-                <SelectItem value="ping">Ping</SelectItem>
+                <SelectItem value="ping" disabled={!isPro}>
+                  <span className="flex items-center gap-1.5">Ping{!isPro && <ProBadge />}</span>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -937,27 +942,32 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
             </>
           )}
           <div className="flex items-center gap-2">
-            <Switch checked={autoIncidents} onCheckedChange={setAutoIncidents} />
-            <Label>Auto-create incidents on downtime</Label>
+            <Switch checked={autoIncidents} onCheckedChange={setAutoIncidents} disabled={!isPro} />
+            <Label className="flex items-center gap-1.5">Auto-create incidents on downtime{!isPro && <ProBadge />}</Label>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Regions</Label>
             <div className="flex gap-3">
-              {REGIONS.map((r) => (
-                <label key={r.id} className="flex items-center gap-1.5 text-xs">
-                  <Checkbox
-                    checked={regions.includes(r.id)}
-                    onCheckedChange={(checked) =>
-                      setRegions((prev) =>
-                        checked
-                          ? [...prev, r.id]
-                          : prev.filter((x) => x !== r.id),
-                      )
-                    }
-                  />
-                  {r.label}
-                </label>
-              ))}
+              {REGIONS.map((r) => {
+                const isProRegion = r.id === "us" || r.id === "asia";
+                return (
+                  <label key={r.id} className="flex items-center gap-1.5 text-xs">
+                    <Checkbox
+                      checked={regions.includes(r.id)}
+                      disabled={isProRegion && !isPro}
+                      onCheckedChange={(checked) =>
+                        setRegions((prev) =>
+                          checked
+                            ? [...prev, r.id]
+                            : prev.filter((x) => x !== r.id),
+                        )
+                      }
+                    />
+                    {r.label}
+                    {isProRegion && !isPro && <ProBadge />}
+                  </label>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -966,7 +976,7 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!name || create.isPending}
+            disabled={!name || create.isPending || (monitorCount >= 5 && !isPro)}
             onClick={() =>
               create.mutate({
                 organizationId,

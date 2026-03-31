@@ -38,6 +38,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSubscription } from "@/hooks/use-subscription";
+import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/$pageId")(
   {
@@ -325,6 +327,7 @@ function CustomDomainSection({
   currentDomain: string | null;
   onSuccess: () => void;
 }) {
+  const { isPro } = useSubscription();
   const [domain, setDomain] = useState(currentDomain ?? "");
   const [editing, setEditing] = useState(false);
 
@@ -349,9 +352,14 @@ function CustomDomainSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-xs font-medium">Custom domain</h2>
+      <div className="flex items-center gap-1.5">
+        <h2 className="text-xs font-medium">Custom domain</h2>
+        {!isPro && <ProBadge />}
+      </div>
 
-      {!currentDomain && !editing ? (
+      {!isPro ? (
+        <UpgradePrompt feature="Custom domains" />
+      ) : !currentDomain && !editing ? (
         <div className="rounded-md border border-dashed p-4 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
             Serve this status page on your own domain

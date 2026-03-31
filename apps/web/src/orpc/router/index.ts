@@ -3,6 +3,7 @@ import { incidentsRouter } from "./incidents";
 import { statusPagesRouter } from "./status-pages";
 import { publicStatusRouter } from "./public-status";
 import { notificationsRouter } from "./notifications";
+import { billingRouter } from "./billing";
 
 const router = {
   monitors: monitorsRouter,
@@ -10,6 +11,7 @@ const router = {
   statusPages: statusPagesRouter,
   publicStatus: publicStatusRouter,
   notifications: notificationsRouter,
+  billing: billingRouter,
 };
 
 export default router;
