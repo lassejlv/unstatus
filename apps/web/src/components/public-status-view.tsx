@@ -109,10 +109,12 @@ export function PublicStatusPageView({
   return (
     <TooltipProvider>
       {/* Brand accent bar */}
-      <div
-        className="h-1 w-full"
-        style={{ backgroundColor: accent ?? "var(--primary)" }}
-      />
+      {accent && accent !== "#000000" && (
+        <div
+          className="h-1 w-full"
+          style={{ backgroundColor: accent }}
+        />
+      )}
 
       <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
         {/* Header */}
@@ -302,7 +304,7 @@ function OverallBanner({ status, accent }: { status: string; accent?: string }) 
   return (
     <div
       className={`flex items-center justify-center gap-2.5 rounded-lg border px-5 py-4 ${config.bgClass}`}
-      style={accent ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined}
+      style={accent && accent !== "#000000" ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined}
     >
       <span className="relative flex size-2.5">
         <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 ${config.dotClass}`} />
