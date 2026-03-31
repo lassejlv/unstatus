@@ -79,6 +79,110 @@ export const monitorsRouter = {
       });
     }),
 
+  overview: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
+    async ({ input }) => {
+      const monitors = await prisma.monitor.findMany({
+        where: { organizationId: input.organizationId },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const monitorIds = monitors.map((m) => m.id);
+      if (monitorIds.length === 0) {
+        return { monitors: [], recentChecks: [], responseTimeSeries: [] };
+      }
+
+      // Latest check per monitor
+      const latestChecks = await prisma.$queryRawUnsafe<
+        { monitorId: string; status: string; latency: number; checkedAt: Date }[]
+      >(
+        `SELECT DISTINCT ON (mc."monitorId") mc."monitorId", mc.status, mc.latency, mc."checkedAt"
+        FROM monitor_check mc
+        WHERE mc."monitorId" = ANY($1)
+        ORDER BY mc."monitorId", mc."checkedAt" DESC`,
+        monitorIds,
+      );
+
+      // Avg latency per monitor (last 24h)
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const avgLatencies = await prisma.$queryRawUnsafe<
+        { monitorId: string; avg_latency: number; check_count: bigint }[]
+      >(
+        `SELECT mc."monitorId", ROUND(AVG(mc.latency))::float as avg_latency, COUNT(*)::bigint as check_count
+        FROM monitor_check mc
+        WHERE mc."monitorId" = ANY($1) AND mc."checkedAt" >= $2
+        GROUP BY mc."monitorId"`,
+        monitorIds,
+        twentyFourHoursAgo,
+      );
+
+      // Response time series (hourly avg, last 24h) for all monitors combined
+      const responseTimeSeries = await prisma.$queryRawUnsafe<
+        { hour: Date; avg_latency: number; check_count: bigint }[]
+      >(
+        `SELECT date_trunc('hour', mc."checkedAt") as hour, ROUND(AVG(mc.latency))::float as avg_latency, COUNT(*)::bigint as check_count
+        FROM monitor_check mc
+        WHERE mc."monitorId" = ANY($1) AND mc."checkedAt" >= $2
+        GROUP BY date_trunc('hour', mc."checkedAt")
+        ORDER BY hour ASC`,
+        monitorIds,
+        twentyFourHoursAgo,
+      );
+
+      // Recent checks across all monitors (last 10)
+      const recentChecks = await prisma.monitorCheck.findMany({
+        where: { monitorId: { in: monitorIds } },
+        orderBy: { checkedAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          monitorId: true,
+          status: true,
+          latency: true,
+          region: true,
+          checkedAt: true,
+          monitor: { select: { name: true } },
+        },
+      });
+
+      const latestMap = new Map(latestChecks.map((c) => [c.monitorId, c]));
+      const avgMap = new Map(avgLatencies.map((a) => [a.monitorId, a]));
+
+      const monitorSummaries = monitors.map((m) => {
+        const latest = latestMap.get(m.id);
+        const avg = avgMap.get(m.id);
+        return {
+          id: m.id,
+          name: m.name,
+          type: m.type,
+          active: m.active,
+          currentStatus: latest?.status ?? "unknown",
+          lastLatency: latest?.latency ?? null,
+          lastCheckedAt: latest?.checkedAt ?? null,
+          avgLatency24h: avg?.avg_latency ?? null,
+          checkCount24h: avg ? Number(avg.check_count) : 0,
+        };
+      });
+
+      return {
+        monitors: monitorSummaries,
+        recentChecks: recentChecks.map((c) => ({
+          id: c.id,
+          monitorId: c.monitorId,
+          monitorName: c.monitor.name,
+          status: c.status,
+          latency: c.latency,
+          region: c.region,
+          checkedAt: c.checkedAt,
+        })),
+        responseTimeSeries: responseTimeSeries.map((r) => ({
+          hour: r.hour,
+          avgLatency: r.avg_latency,
+          checkCount: Number(r.check_count),
+        })),
+      };
+    },
+  ),
+
   runCheck: authedProcedure
     .input(z.object({ monitorId: z.string() }))
     .handler(async ({ input, context }) => {
