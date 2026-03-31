@@ -10,6 +10,7 @@
   "dependencies": {
     "@unstatus/db": "workspace:*",
     "@unstatus/email": "workspace:*",
-    "hono": "^4.7.0"
+    "hono": "^4.7.0",
+    "react": "^19.0.0"
   }
 }
