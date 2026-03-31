@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   CenteredMessage,
   PublicStatusPageView,
 } from "@/components/public-status-view";
-import { orpc } from "@/orpc/client";
+import { orpc, client } from "@/orpc/client";
 import { useCustomDomain } from "@/lib/use-custom-domain";
 import {
   ArrowRight,
@@ -37,6 +37,11 @@ function CustomDomainStatusPage({ domain }: { domain: string }) {
     orpc.publicStatus.getByDomain.queryOptions({ input: { domain } }),
   );
 
+  const subscribeMut = useMutation({
+    mutationFn: (input: { email: string; monitorIds?: string[] }) =>
+      client.publicStatus.subscribe({ slug: data?.slug ?? "", ...input }),
+  });
+
   if (isLoading) {
     return <CenteredMessage message="Loading..." />;
   }
@@ -53,6 +58,12 @@ function CustomDomainStatusPage({ domain }: { domain: string }) {
           {content}
         </Link>
       )}
+      onSubscribe={async (email, monitorIds) => {
+        await subscribeMut.mutateAsync({ email, monitorIds });
+      }}
+      subscribeLoading={subscribeMut.isPending}
+      subscribeSuccess={subscribeMut.isSuccess}
+      subscribeError={subscribeMut.error?.message}
     />
   );
 }
