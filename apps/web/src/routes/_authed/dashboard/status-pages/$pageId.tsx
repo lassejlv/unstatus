@@ -119,39 +119,14 @@ function StatusPageDetailPage() {
         <p className="mt-1 text-xs text-muted-foreground">
           /status/{page.slug}
         </p>
-        {page.customDomain && (
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Custom domain: https://{page.customDomain}
-          </p>
-        )}
       </div>
 
-      {/* Custom domain DNS instructions */}
-      {page.customDomain && (
-        <div className="rounded-md border p-4">
-          <h2 className="text-xs font-medium mb-2">DNS Configuration</h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            Add the following DNS record to point your custom domain to this
-            status page. SSL is provisioned automatically on the first request.
-          </p>
-          <div className="rounded bg-muted p-3 font-mono text-xs space-y-1">
-            <div className="flex gap-4">
-              <span className="text-muted-foreground w-12">Type</span>
-              <span>A</span>
-            </div>
-            <div className="flex gap-4">
-              <span className="text-muted-foreground w-12">Name</span>
-              <span>{page.customDomain}</span>
-            </div>
-            <div className="flex gap-4">
-              <span className="text-muted-foreground w-12">Value</span>
-              <span className="select-all">
-                {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Custom domain section */}
+      <CustomDomainSection
+        pageId={page.id}
+        currentDomain={page.customDomain}
+        onSuccess={invalidate}
+      />
 
       {/* Monitors section */}
       <div className="flex flex-col gap-3">
@@ -232,7 +207,6 @@ function EditPageDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
-  const [customDomain, setCustomDomain] = useState(page.customDomain ?? "");
   const [isPublic, setIsPublic] = useState(page.isPublic);
   const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
@@ -242,7 +216,6 @@ function EditPageDialog({
     if (open) {
       setName(page.name);
       setSlug(page.slug);
-      setCustomDomain(page.customDomain ?? "");
       setIsPublic(page.isPublic);
       setBrandColor(page.brandColor ?? "#000000");
       setHeaderText(page.headerText ?? "");
@@ -282,17 +255,6 @@ function EditPageDialog({
             <Label>Slug</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Custom domain</Label>
-            <Input
-              value={customDomain}
-              onChange={(e) => setCustomDomain(e.target.value)}
-              placeholder="status.example.com"
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave empty to disable custom domain
-            </p>
-          </div>
           <div className="flex items-center gap-2">
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
             <Label>Public</Label>
@@ -331,7 +293,6 @@ function EditPageDialog({
                 id: page.id,
                 name,
                 slug,
-                customDomain: customDomain || null,
                 isPublic,
                 brandColor,
                 headerText: headerText || undefined,
@@ -344,6 +305,121 @@ function EditPageDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CustomDomainSection({
+  pageId,
+  currentDomain,
+  onSuccess,
+}: {
+  pageId: string;
+  currentDomain: string | null;
+  onSuccess: () => void;
+}) {
+  const [domain, setDomain] = useState(currentDomain ?? "");
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    setDomain(currentDomain ?? "");
+    setEditing(false);
+  }, [currentDomain]);
+
+  const update = useMutation({
+    ...orpc.statusPages.update.mutationOptions(),
+    onSuccess: () => {
+      onSuccess();
+      setEditing(false);
+      toast.success(
+        domain ? "Custom domain saved" : "Custom domain removed",
+      );
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update custom domain");
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-3">
+      <h2 className="text-xs font-medium">Custom domain</h2>
+
+      {!currentDomain && !editing ? (
+        <div className="rounded-md border border-dashed p-4 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            Serve this status page on your own domain
+          </p>
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            Add domain
+          </Button>
+        </div>
+      ) : (
+        <div className="rounded-md border p-4 flex flex-col gap-3">
+          <div className="flex items-end gap-2">
+            <div className="flex-1 flex flex-col gap-1.5">
+              <Label className="text-xs">Domain</Label>
+              <Input
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="status.example.com"
+              />
+            </div>
+            <Button
+              size="sm"
+              disabled={update.isPending || domain === (currentDomain ?? "")}
+              onClick={() =>
+                update.mutate({
+                  id: pageId,
+                  customDomain: domain || null,
+                })
+              }
+            >
+              {update.isPending ? "Saving..." : "Save"}
+            </Button>
+            {currentDomain && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={update.isPending}
+                onClick={() => {
+                  setDomain("");
+                  update.mutate({ id: pageId, customDomain: null });
+                }}
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+
+          {currentDomain && (
+            <>
+              <div className="border-t pt-3">
+                <p className="text-xs font-medium mb-2">DNS Configuration</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Point your domain to our proxy server. SSL is provisioned
+                  automatically on the first request.
+                </p>
+                <div className="rounded bg-muted p-3 font-mono text-xs space-y-1">
+                  <div className="flex gap-4">
+                    <span className="text-muted-foreground w-12">Type</span>
+                    <span>A</span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-muted-foreground w-12">Name</span>
+                    <span>{currentDomain}</span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-muted-foreground w-12">Value</span>
+                    <span className="select-all">
+                      {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
