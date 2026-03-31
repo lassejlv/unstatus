@@ -492,10 +492,10 @@ function CustomDomainInline({
           {currentDomain && (
             <div className="border-t px-3 py-2.5">
               <p className="text-[10px] text-muted-foreground mb-1.5">
-                Add an A record pointing to:
+                Add a CNAME record pointing to:
               </p>
               <div className="rounded bg-muted px-2 py-1.5 font-mono text-[11px] select-all">
-                {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
+                cname.unstatus.app
               </div>
             </div>
           )}

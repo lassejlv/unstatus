@@ -401,7 +401,7 @@ function CustomDomainSection({
                 <div className="rounded bg-muted p-3 font-mono text-xs space-y-1">
                   <div className="flex gap-4">
                     <span className="text-muted-foreground w-12">Type</span>
-                    <span>A</span>
+                    <span>CNAME</span>
                   </div>
                   <div className="flex gap-4">
                     <span className="text-muted-foreground w-12">Name</span>
@@ -409,9 +409,7 @@ function CustomDomainSection({
                   </div>
                   <div className="flex gap-4">
                     <span className="text-muted-foreground w-12">Value</span>
-                    <span className="select-all">
-                      {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
-                    </span>
+                    <span className="select-all">cname.unstatus.app</span>
                   </div>
                 </div>
               </div>
