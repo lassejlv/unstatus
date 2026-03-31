@@ -7,7 +7,7 @@ COPY package.json bun.lock bunfig.toml ./
 COPY packages/db/ packages/db/
 COPY packages/caddy/ packages/caddy/
 
-RUN bun install --frozen-lockfile
+RUN bun install
 RUN cd packages/db && DATABASE_PUBLIC_URL="postgresql://dummy:dummy@localhost:5432/dummy" bun prisma generate --config prisma.config.ts
 RUN cd packages/caddy && bun run build
 
