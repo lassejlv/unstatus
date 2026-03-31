@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Fragment } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -10,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
 
 export type PublicStatusMonitorData = {
   id: string;
@@ -63,7 +63,7 @@ export type PublicIncidentData = {
 export function CenteredMessage({ message }: { message: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <Spinner className="size-5" />
     </div>
   );
 }
@@ -78,48 +78,63 @@ export function PublicStatusPageView({
     content: ReactNode,
   ) => ReactNode;
 }) {
+  const accent = data.brandColor || undefined;
+
   return (
     <TooltipProvider>
-      <div className="mx-auto min-h-screen max-w-3xl px-4 py-12">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          {data.logoUrl && <img src={data.logoUrl} alt="" className="h-10" />}
-          <h1 className="text-xl font-semibold">{data.name}</h1>
+      {/* Brand accent bar */}
+      <div
+        className="h-1 w-full"
+        style={{ backgroundColor: accent ?? "var(--primary)" }}
+      />
+
+      <div className="mx-auto min-h-screen max-w-2xl px-4 py-10">
+        {/* Header */}
+        <div className="mb-8 flex flex-col items-center gap-2 text-center">
+          {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8" />}
+          <h1 className="text-lg font-semibold tracking-tight">{data.name}</h1>
           {data.headerText && (
             <p className="text-sm text-muted-foreground">{data.headerText}</p>
           )}
         </div>
 
-        <OverallBanner status={data.overallStatus} />
+        {/* Overall status banner */}
+        <OverallBanner status={data.overallStatus} accent={accent} />
 
-        <div className="mt-8 flex flex-col gap-4">
+        {/* Monitors */}
+        <div className="mt-6 flex flex-col gap-3">
           {data.monitors.map((monitor) => (
             <MonitorCard key={monitor.id} monitor={monitor} />
           ))}
         </div>
 
+        {/* Incidents */}
         {data.incidents.length > 0 && (
           <div className="mt-10">
-            <h2 className="mb-4 text-sm font-medium">Recent incidents</h2>
-            <div className="flex flex-col gap-3">
+            <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Recent incidents
+            </h2>
+            <div className="flex flex-col gap-2">
               {[...data.incidents]
                 .sort((a, b) => (a.resolvedAt ? 1 : 0) - (b.resolvedAt ? 1 : 0))
-                .map((incident) => {
-                  const content = <IncidentRow incident={incident} />;
-                  return (
-                    <Fragment key={incident.id}>
-                      {renderIncidentLink(incident, content)}
-                    </Fragment>
-                  );
-                })}
+                .map((incident) => (
+                  <Fragment key={incident.id}>
+                    {renderIncidentLink(incident, <IncidentRow incident={incident} />)}
+                  </Fragment>
+                ))}
             </div>
           </div>
         )}
 
-        {data.footerText && (
-          <p className="mt-12 text-center text-xs text-muted-foreground">
-            {data.footerText}
+        {/* Footer */}
+        <div className="mt-14 flex flex-col items-center gap-1 text-center">
+          {data.footerText && (
+            <p className="text-xs text-muted-foreground">{data.footerText}</p>
+          )}
+          <p className="text-[11px] text-muted-foreground/60">
+            Powered by <span className="font-medium">Unstatus</span>
           </p>
-        )}
+        </div>
       </div>
     </TooltipProvider>
   );
@@ -133,18 +148,18 @@ export function PublicIncidentPageView({
   backLink: ReactNode;
 }) {
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-4 py-12">
+    <div className="mx-auto min-h-screen max-w-2xl px-4 py-10">
       {backLink}
 
       <div className="mt-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">{data.title}</h1>
+          <h1 className="text-lg font-semibold tracking-tight">{data.title}</h1>
           <Badge variant={data.status === "resolved" ? "secondary" : "destructive"}>
             {data.status}
           </Badge>
           <Badge variant="outline">{data.severity}</Badge>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1.5 text-xs text-muted-foreground">
           {data.monitorName} · Started {new Date(data.startedAt).toLocaleString()}
           {data.resolvedAt &&
             ` · Resolved ${new Date(data.resolvedAt).toLocaleString()}`}
@@ -154,96 +169,132 @@ export function PublicIncidentPageView({
       <Separator className="my-6" />
 
       <div className="flex flex-col gap-0">
-        {data.updates.map((update, index) => (
-          <div key={update.id} className="relative flex gap-3 pb-6 last:pb-0">
-            {index < data.updates.length - 1 && (
-              <div className="absolute top-4 bottom-0 left-[7px] w-px bg-border" />
-            )}
-            <div
-              className={`relative z-10 mt-1 h-[15px] w-[15px] shrink-0 rounded-full border-2 ${dotColor(update.status)}`}
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[11px]">
-                  {update.status}
-                </Badge>
-                <span className="text-[11px] text-muted-foreground">
-                  {new Date(update.createdAt).toLocaleString()}
-                </span>
+        {data.updates.map((update, index) => {
+          const isLatest = index === 0 && data.status !== "resolved";
+          return (
+            <div key={update.id} className="relative flex gap-4 pb-8 last:pb-0">
+              {index < data.updates.length - 1 && (
+                <div className="absolute top-5 bottom-0 left-[9px] w-px bg-border" />
+              )}
+              <div className="relative z-10 mt-1 flex items-center justify-center">
+                <div className={`size-[19px] rounded-full border-2 ${dotColor(update.status)}`} />
+                {isLatest && (
+                  <div className={`absolute size-[19px] rounded-full ${dotGlowColor(update.status)} animate-ping`} />
+                )}
               </div>
-              <p className="mt-1 text-xs">{update.message}</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[11px]">
+                    {update.status}
+                  </Badge>
+                  <span className="text-[11px] text-muted-foreground">
+                    {timeAgo(new Date(update.createdAt))}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm leading-relaxed">{update.message}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
+// --- Components ---
+
 const STATUS_CONFIG = {
   operational: {
     label: "All Systems Operational",
-    class: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600",
+    dotClass: "bg-emerald-500",
+    bgClass: "border-emerald-500/20 bg-emerald-500/5",
+    textClass: "text-emerald-600 dark:text-emerald-400",
   },
   degraded: {
     label: "Degraded Performance",
-    class: "border-yellow-500/20 bg-yellow-500/10 text-yellow-600",
+    dotClass: "bg-yellow-500",
+    bgClass: "border-yellow-500/20 bg-yellow-500/5",
+    textClass: "text-yellow-600 dark:text-yellow-400",
   },
   major_outage: {
     label: "Major Outage",
-    class: "border-red-500/20 bg-red-500/10 text-red-600",
+    dotClass: "bg-red-500",
+    bgClass: "border-red-500/20 bg-red-500/5",
+    textClass: "text-red-600 dark:text-red-400",
   },
-  unknown: { label: "No Data", class: "bg-muted text-muted-foreground" },
+  unknown: {
+    label: "No Data",
+    dotClass: "bg-muted-foreground",
+    bgClass: "bg-muted",
+    textClass: "text-muted-foreground",
+  },
 } as const;
 
-function OverallBanner({ status }: { status: string }) {
+function OverallBanner({ status, accent }: { status: string; accent?: string }) {
   const config =
     STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unknown;
 
   return (
     <div
-      className={`rounded-lg border px-4 py-3 text-center text-sm font-medium ${config.class}`}
+      className={`flex items-center justify-center gap-2.5 rounded-lg border px-4 py-3 ${config.bgClass}`}
+      style={accent ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined}
     >
-      {config.label}
+      <span className="relative flex size-2.5">
+        <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 ${config.dotClass}`} />
+        <span className={`relative inline-flex size-2.5 rounded-full ${config.dotClass}`} />
+      </span>
+      <span className={`text-sm font-medium ${config.textClass}`}>
+        {config.label}
+      </span>
     </div>
   );
 }
 
 function MonitorCard({ monitor }: { monitor: PublicStatusMonitorData }) {
+  const statusColor =
+    monitor.currentStatus === "up"
+      ? "bg-emerald-500"
+      : monitor.currentStatus === "degraded"
+        ? "bg-yellow-500"
+        : monitor.currentStatus === "down"
+          ? "bg-red-500"
+          : "bg-muted-foreground";
+
+  const glowColor =
+    monitor.currentStatus === "up"
+      ? "shadow-emerald-500/30"
+      : monitor.currentStatus === "degraded"
+        ? "shadow-yellow-500/30"
+        : monitor.currentStatus === "down"
+          ? "shadow-red-500/30"
+          : "";
+
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between pb-2">
-        <div className="flex items-center gap-2">
-          <StatusDot status={monitor.currentStatus} />
-          <CardTitle className="text-sm font-medium">{monitor.name}</CardTitle>
+    <div className="rounded-lg border p-4">
+      {/* Top row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className={`size-2 rounded-full shadow-sm ${statusColor} ${glowColor}`} />
+          <span className="text-sm font-medium">{monitor.name}</span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {monitor.uptimePercent}% uptime
-        </span>
-      </CardHeader>
-      <CardContent>
+        <div className="flex items-center gap-3 text-right">
+          <span className="text-xs text-muted-foreground">{monitor.avgLatency}ms</span>
+          <span className="text-sm font-semibold tabular-nums">
+            {monitor.uptimePercent}%
+          </span>
+        </div>
+      </div>
+
+      {/* Uptime bar */}
+      <div className="mt-3">
         <UptimeBar daily={monitor.daily} />
-        <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>90 days ago</span>
-          <span>{monitor.avgLatency}ms avg</span>
+        <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
+          <span>90d ago</span>
           <span>Today</span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
-}
-
-function StatusDot({ status }: { status: string }) {
-  const color =
-    status === "up"
-      ? "bg-emerald-500"
-      : status === "degraded"
-        ? "bg-yellow-500"
-        : status === "down"
-          ? "bg-red-500"
-          : "bg-gray-400";
-
-  return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
 }
 
 function UptimeBar({ daily }: { daily: { date: string; uptime: number }[] }) {
@@ -253,12 +304,12 @@ function UptimeBar({ daily }: { daily: { date: string; uptime: number }[] }) {
         <Tooltip key={day.date}>
           <TooltipTrigger asChild>
             <div
-              className={`h-8 flex-1 rounded-sm transition-opacity hover:opacity-80 ${barColor(day.uptime)}`}
+              className={`h-9 flex-1 rounded-sm transition-all hover:opacity-80 hover:scale-y-110 ${barColor(day.uptime)}`}
             />
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
             <p className="font-medium">{formatDate(day.date)}</p>
-            <p>{day.uptime.toFixed(1)}% uptime</p>
+            <p className="tabular-nums">{day.uptime.toFixed(2)}% uptime</p>
           </TooltipContent>
         </Tooltip>
       ))}
@@ -267,34 +318,51 @@ function UptimeBar({ daily }: { daily: { date: string; uptime: number }[] }) {
 }
 
 function IncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
-  const severityColor =
+  const severityBorder =
     incident.severity === "critical"
-      ? "destructive"
+      ? "border-l-red-500"
       : incident.severity === "major"
-        ? "secondary"
-        : "outline";
+        ? "border-l-yellow-500"
+        : "border-l-muted-foreground";
 
   return (
-    <div className="rounded-lg border px-4 py-3">
+    <div
+      className={`rounded-lg border border-l-[3px] px-4 py-3 transition-all hover:bg-accent/50 hover:-translate-y-px ${severityBorder}`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{incident.title}</span>
-          <Badge variant={severityColor as "destructive" | "secondary" | "outline"}>
+          <Badge
+            variant={
+              incident.severity === "critical"
+                ? "destructive"
+                : incident.severity === "major"
+                  ? "secondary"
+                  : "outline"
+            }
+          >
             {incident.severity}
           </Badge>
         </div>
-        <Badge variant={incident.resolvedAt ? "outline" : "default"}>
-          {incident.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-muted-foreground">
+            {timeAgo(new Date(incident.startedAt))}
+          </span>
+          <Badge variant={incident.resolvedAt ? "outline" : "default"}>
+            {incident.status}
+          </Badge>
+        </div>
       </div>
       {incident.lastUpdate && (
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
           {incident.lastUpdate}
         </p>
       )}
     </div>
   );
 }
+
+// --- Utils ---
 
 function barColor(uptime: number): string {
   if (uptime >= 99.5) return "bg-emerald-500";
@@ -318,9 +386,34 @@ function dotColor(status: string): string {
   }
 }
 
+function dotGlowColor(status: string): string {
+  switch (status) {
+    case "monitoring":
+      return "bg-blue-500/40";
+    case "identified":
+      return "bg-yellow-500/40";
+    default:
+      return "bg-red-500/40";
+  }
+}
+
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });
+}
+
+function timeAgo(date: Date): string {
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }

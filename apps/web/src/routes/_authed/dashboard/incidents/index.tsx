@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   skipToken,
   useQuery,
@@ -11,14 +11,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +37,9 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import { X } from "lucide-react";
+
+const STATUSES = ["investigating", "identified", "monitoring", "resolved"] as const;
 
 export const Route = createFileRoute("/_authed/dashboard/incidents/")({
   component: IncidentsPage,
@@ -52,7 +47,6 @@ export const Route = createFileRoute("/_authed/dashboard/incidents/")({
 
 function IncidentsPage() {
   const { activeOrg } = useOrg();
-  const navigate = useNavigate();
   const orgId = activeOrg?.id;
   const monitorsQuery = orpc.monitors.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
@@ -63,6 +57,7 @@ function IncidentsPage() {
 
   const { data: monitors, isLoading: monitorsLoading } = useQuery(monitorsQuery);
   const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (monitorsLoading || incidentsLoading) {
     return (
@@ -73,74 +68,274 @@ function IncidentsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-sm font-medium">Incidents</h1>
-        {monitors?.length ? (
-          <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
-        ) : null}
-      </div>
-      {incidents?.length ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead>Started</TableHead>
-              <TableHead>Resolved</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {incidents.map((i) => (
-              <TableRow
-                key={i.id}
-                className="cursor-pointer"
-                onClick={() =>
-                  navigate({
-                    to: "/dashboard/incidents/$incidentId",
-                    params: { incidentId: i.id },
-                  })
-                }
-              >
-                <TableCell className="font-medium">{i.title}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      i.status === "resolved" ? "secondary" : "destructive"
-                    }
-                  >
-                    {i.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{i.severity}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {new Date(i.startedAt).toLocaleString()}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {i.resolvedAt ? new Date(i.resolvedAt).toLocaleString() : "—"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>No incidents</EmptyTitle>
-            <EmptyDescription>
-              {monitors?.length
-                ? "No incidents have been reported yet."
-                : "Create a monitor first to start reporting incidents."}
-            </EmptyDescription>
-          </EmptyHeader>
+    <div className="flex gap-4">
+      {/* Main content */}
+      <div className="flex flex-1 flex-col gap-4 min-w-0">
+        <div className="flex items-center justify-between">
+          <h1 className="text-sm font-medium">Incidents</h1>
           {monitors?.length ? (
             <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
           ) : null}
-        </Empty>
-      )}
+        </div>
+        {incidents?.length ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {incidents.map((i) => (
+              <button
+                key={i.id}
+                type="button"
+                onClick={() => setSelectedId(selectedId === i.id ? null : i.id)}
+                className={`flex flex-col gap-2.5 rounded-lg border bg-card p-3.5 text-left transition-colors hover:border-foreground/20 ${
+                  selectedId === i.id ? "border-foreground/30 bg-accent" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium truncate">{i.title}</span>
+                  <Badge
+                    variant={i.status === "resolved" ? "secondary" : "destructive"}
+                    className="shrink-0 ml-2"
+                  >
+                    {i.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {i.severity}
+                  </Badge>
+                  <span>{new Date(i.startedAt).toLocaleDateString()}</span>
+                  {i.resolvedAt && (
+                    <span className="ml-auto">Resolved</span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No incidents</EmptyTitle>
+              <EmptyDescription>
+                {monitors?.length
+                  ? "No incidents have been reported yet."
+                  : "Create a monitor first to start reporting incidents."}
+              </EmptyDescription>
+            </EmptyHeader>
+            {monitors?.length ? (
+              <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
+            ) : null}
+          </Empty>
+        )}
+      </div>
+
+      {/* Sidecar panel */}
+      <IncidentSidecar
+        incidentId={selectedId}
+        onClose={() => setSelectedId(null)}
+      />
+    </div>
+  );
+}
+
+function IncidentSidecar({
+  incidentId,
+  onClose,
+}: {
+  incidentId: string | null;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const opts = orpc.incidents.get.queryOptions({
+    input: incidentId ? { id: incidentId } : skipToken,
+  });
+  const { data: incident } = useQuery(opts);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: opts.queryKey });
+
+  const del = useMutation({
+    ...orpc.incidents.delete.mutationOptions(),
+    onSuccess: () => {
+      toast.success("Incident deleted");
+      onClose();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete");
+    },
+  });
+
+  const isOpen = incidentId !== null;
+
+  return (
+    <div
+      className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
+        isOpen ? "w-[380px] opacity-100" : "w-0 opacity-0"
+      }`}
+    >
+      <div className="flex h-full w-[380px] flex-col rounded-lg border bg-card">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <span className="text-sm font-medium truncate">
+            {incident?.title ?? "Loading..."}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        {!incident ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Spinner className="size-5" />
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+            {/* Info */}
+            <div className="rounded-lg border">
+              <div className="flex items-center justify-between border-b px-3 py-2.5">
+                <span className="text-xs text-muted-foreground">Status</span>
+                <Badge variant={incident.status === "resolved" ? "secondary" : "destructive"}>
+                  {incident.status}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between border-b px-3 py-2.5">
+                <span className="text-xs text-muted-foreground">Severity</span>
+                <Badge variant="outline">{incident.severity}</Badge>
+              </div>
+              <div className="flex items-center justify-between border-b px-3 py-2.5">
+                <span className="text-xs text-muted-foreground">Started</span>
+                <span className="text-xs font-medium">
+                  {new Date(incident.startedAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2.5">
+                <span className="text-xs text-muted-foreground">Resolved</span>
+                <span className="text-xs font-medium">
+                  {incident.resolvedAt
+                    ? new Date(incident.resolvedAt).toLocaleString()
+                    : "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Post update */}
+            {incident.status !== "resolved" && (
+              <PostUpdateForm
+                incidentId={incident.id}
+                currentStatus={incident.status}
+                onSuccess={invalidate}
+              />
+            )}
+
+            {/* Timeline */}
+            {incident.updates.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-medium">Timeline</span>
+                <div className="flex flex-col">
+                  {incident.updates.map((u, i) => (
+                    <div key={u.id} className="relative flex gap-3 pb-4 last:pb-0">
+                      {i < incident.updates.length - 1 && (
+                        <div className="absolute left-[5px] top-3 bottom-0 w-px bg-border" />
+                      )}
+                      <div className={`relative z-10 mt-0.5 size-[11px] shrink-0 rounded-full border-2 ${statusDotColor(u.status)}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {u.status}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(u.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">{u.message}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Danger zone */}
+            <div className="mt-auto pt-2 border-t">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full"
+                onClick={() => del.mutate({ id: incident.id })}
+              >
+                Delete incident
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function statusDotColor(status: string): string {
+  switch (status) {
+    case "resolved": return "border-emerald-500 bg-emerald-500";
+    case "monitoring": return "border-blue-500 bg-blue-500";
+    case "identified": return "border-yellow-500 bg-yellow-500";
+    default: return "border-red-500 bg-red-500";
+  }
+}
+
+function PostUpdateForm({
+  incidentId,
+  currentStatus,
+  onSuccess,
+}: {
+  incidentId: string;
+  currentStatus: string;
+  onSuccess: () => void;
+}) {
+  const nextStatus = STATUSES[Math.min(STATUSES.indexOf(currentStatus as typeof STATUSES[number]) + 1, STATUSES.length - 1)];
+  const [status, setStatus] = useState<typeof STATUSES[number]>(nextStatus);
+  const [message, setMessage] = useState("");
+
+  const update = useMutation({
+    ...orpc.incidents.update.mutationOptions(),
+    onSuccess: () => {
+      onSuccess();
+      setMessage("");
+      toast.success("Update posted");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to post update");
+    },
+  });
+
+  return (
+    <div className="rounded-lg border p-3">
+      <span className="text-xs font-medium">Post update</span>
+      <div className="flex flex-col gap-2.5 mt-2.5">
+        <Select value={status} onValueChange={(v) => setStatus(v as typeof STATUSES[number])}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Describe the current situation..."
+          className="min-h-[60px] text-xs"
+        />
+        <Button
+          size="sm"
+          className="self-end h-7 text-xs"
+          disabled={!message || update.isPending}
+          onClick={() => update.mutate({ id: incidentId, status, message })}
+        >
+          Post
+        </Button>
+      </div>
     </div>
   );
 }
@@ -156,9 +351,7 @@ function CreateIncidentDialog({
   const [open, setOpen] = useState(false);
   const [monitorId, setMonitorId] = useState(monitors[0]?.id ?? "");
   const [title, setTitle] = useState("");
-  const [severity, setSeverity] = useState<"minor" | "major" | "critical">(
-    "minor",
-  );
+  const [severity, setSeverity] = useState<"minor" | "major" | "critical">("minor");
   const [message, setMessage] = useState("");
 
   const create = useMutation({

@@ -24,6 +24,7 @@ import {
   Globe,
   Settings,
 } from "lucide-react";
+import { Canvas } from "@/components/canvas";
 
 export const Route = createFileRoute("/_authed/dashboard")({
   component: DashboardLayout,
@@ -90,9 +91,9 @@ function DashboardLayout() {
               </>
             )}
           </header>
-          <div className="flex-1 p-4">
+          <Canvas>
             <Outlet />
-          </div>
+          </Canvas>
         </SidebarInset>
       </SidebarProvider>
     </OrgProvider>
