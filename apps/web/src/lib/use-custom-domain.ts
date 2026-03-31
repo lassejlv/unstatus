@@ -12,9 +12,9 @@ export function useCustomDomain(): string | null {
   const hostname = window.location.hostname;
   if (
     hostname === APP_DOMAIN ||
+    hostname === `www.${APP_DOMAIN}` ||
     hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname.endsWith(`.${APP_DOMAIN}`)
+    hostname === "127.0.0.1"
   ) {
     return null;
   }

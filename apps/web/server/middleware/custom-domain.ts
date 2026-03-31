@@ -14,9 +14,9 @@ function isCustomDomain(hostname: string): boolean {
   if (!APP_DOMAIN) return false;
   return (
     hostname !== APP_DOMAIN &&
+    hostname !== `www.${APP_DOMAIN}` &&
     hostname !== "localhost" &&
-    hostname !== "127.0.0.1" &&
-    !hostname.endsWith(`.${APP_DOMAIN}`)
+    hostname !== "127.0.0.1"
   );
 }
 
