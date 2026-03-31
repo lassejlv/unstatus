@@ -17,8 +17,6 @@ export const Route = createFileRoute("/")({
 
 function RootPage() {
   const customDomain = useCustomDomain();
-  // undefined = still determining (SSR or pre-hydration)
-  if (customDomain === undefined) return null;
   if (customDomain) {
     return <CustomDomainStatusPage domain={customDomain} />;
   }

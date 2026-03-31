@@ -16,8 +16,6 @@ function CustomDomainIncidentPage() {
   const customDomain = useCustomDomain();
   const { incidentId } = Route.useParams();
 
-  // undefined = still determining (SSR or pre-hydration)
-  if (customDomain === undefined) return null;
   if (!customDomain) {
     return <CenteredMessage message="Page not found." />;
   }
