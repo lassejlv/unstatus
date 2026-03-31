@@ -5,11 +5,11 @@ type Theme = "light" | "dark" | "auto";
 function getSnapshot(): Theme {
   const stored = localStorage.getItem("theme");
   if (stored === "light" || stored === "dark" || stored === "auto") return stored;
-  return "auto";
+  return "light";
 }
 
 function getServerSnapshot(): Theme {
-  return "auto";
+  return "light";
 }
 
 function subscribe(callback: () => void) {
