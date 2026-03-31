@@ -9,7 +9,7 @@ const REGIONS = ["eu", "us", "asia"] as const;
 const createInput = z.object({
   organizationId: z.string(),
   name: z.string(),
-  type: z.enum(["http", "tcp"]),
+  type: z.enum(["http", "tcp", "ping"]),
   interval: z.number().int().min(10).default(60),
   timeout: z.number().int().min(1).default(10),
   url: z.string().optional(),

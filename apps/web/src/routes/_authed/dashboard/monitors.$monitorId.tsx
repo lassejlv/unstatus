@@ -42,9 +42,9 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 
 const REGIONS = [
-  { id: "eu", label: "Europe" },
-  { id: "us", label: "US" },
-  { id: "asia", label: "Asia" },
+  { id: "eu", label: "🇪🇺 Europe" },
+  { id: "us", label: "🇺🇸 US" },
+  { id: "asia", label: "🇸🇬 Singapore" },
 ] as const;
 
 export const Route = createFileRoute("/_authed/dashboard/monitors/$monitorId")({
@@ -153,7 +153,9 @@ function MonitorDetailPage() {
       <p className="text-xs text-muted-foreground">
         {monitor.type === "http"
           ? `${monitor.method} ${monitor.url}`
-          : `${monitor.host}:${monitor.port}`}
+          : monitor.type === "ping"
+            ? `ping ${monitor.host}`
+            : `${monitor.host}:${monitor.port}`}
         {" · "}
         {monitor.interval}s interval · {monitor.timeout}s timeout
       </p>
@@ -415,7 +417,7 @@ function EditMonitorDialog({
                 </Select>
               </div>
             </>
-          ) : (
+          ) : monitor.type === "tcp" ? (
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1.5">
                 <Label>Host</Label>
@@ -432,6 +434,14 @@ function EditMonitorDialog({
                   onChange={(e) => setPort(e.target.value)}
                 />
               </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <Label>Host</Label>
+              <Input
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+              />
             </div>
           )}
           {monitor.type === "http" && (
@@ -509,7 +519,9 @@ function EditMonitorDialog({
                       body: body || undefined,
                       rules: rules.length ? rules : undefined,
                     }
-                  : { host, port: Number(port) }),
+                  : monitor.type === "tcp"
+                    ? { host, port: Number(port) }
+                    : { host }),
               })
             }
           >

@@ -1,6 +1,7 @@
 import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
+import { checkPing } from "./checkers/ping.js";
 import { sendNotifications } from "./notify.js";
 import type { Monitor } from "@unstatus/db";
 
@@ -56,7 +57,9 @@ export async function runSingleCheck(monitorId: string) {
     where: { id: monitorId },
   });
   const result =
-    monitor.type === "tcp" ? await checkTcp(monitor) : await checkHttp(monitor);
+    monitor.type === "tcp" ? await checkTcp(monitor)
+    : monitor.type === "ping" ? await checkPing(monitor)
+    : await checkHttp(monitor);
 
   const [check] = await prisma.$transaction([
     prisma.monitorCheck.create({

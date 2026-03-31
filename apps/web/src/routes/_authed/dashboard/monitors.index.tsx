@@ -41,9 +41,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { X, ChevronLeft, Pencil } from "lucide-react";
 
 const REGIONS = [
-  { id: "eu", label: "Europe" },
-  { id: "us", label: "US" },
-  { id: "asia", label: "Asia" },
+  { id: "eu", label: "🇪🇺 Europe" },
+  { id: "us", label: "🇺🇸 US" },
+  { id: "asia", label: "🇸🇬 Singapore" },
 ] as const;
 
 export const Route = createFileRoute("/_authed/dashboard/monitors/")({
@@ -93,7 +93,7 @@ function MonitorsPage() {
                   </Badge>
                 </div>
                 <span className="text-xs text-muted-foreground truncate">
-                  {m.type === "http" ? m.url : `${m.host}:${m.port}`}
+                  {m.type === "http" ? m.url : m.type === "ping" ? `ping ${m.host}` : `${m.host}:${m.port}`}
                 </span>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0">
@@ -245,7 +245,7 @@ function MonitorSidecar({
               <div className="flex items-center justify-between border-b px-3 py-2.5">
                 <span className="text-xs text-muted-foreground">Target</span>
                 <span className="text-xs font-mono truncate ml-4 text-right">
-                  {monitor.type === "http" ? monitor.url : `${monitor.host}:${monitor.port}`}
+                  {monitor.type === "http" ? monitor.url : monitor.type === "ping" ? `ping ${monitor.host}` : `${monitor.host}:${monitor.port}`}
                 </span>
               </div>
               <div className="flex items-center justify-between border-b px-3 py-2.5">
@@ -588,7 +588,7 @@ function EditMonitorOverlay({
               </Select>
             </div>
           </>
-        ) : (
+        ) : monitor.type === "tcp" ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Host</Label>
@@ -598,6 +598,11 @@ function EditMonitorOverlay({
               <Label className="text-xs">Port</Label>
               <Input type="number" value={port} onChange={(e) => setPort(e.target.value)} className="h-8 text-xs" />
             </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs">Host</Label>
+            <Input value={host} onChange={(e) => setHost(e.target.value)} className="h-8 text-xs" />
           </div>
         )}
         {monitor.type === "http" && (
@@ -788,7 +793,9 @@ function EditMonitorOverlay({
                       body: body || undefined,
                       rules: rules.length ? rules : undefined,
                     }
-                  : { host, port: Number(port) }),
+                  : monitor.type === "tcp"
+                    ? { host, port: Number(port) }
+                    : { host }),
               })
             }
           >
@@ -811,7 +818,7 @@ function formatBody(body: string): string {
 function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState<"http" | "tcp">("http");
+  const [type, setType] = useState<"http" | "tcp" | "ping">("http");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [host, setHost] = useState("");
@@ -864,7 +871,7 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
             <Label>Type</Label>
             <Select
               value={type}
-              onValueChange={(v) => setType(v as "http" | "tcp")}
+              onValueChange={(v) => setType(v as "http" | "tcp" | "ping")}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -872,6 +879,7 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
               <SelectContent>
                 <SelectItem value="http">HTTP</SelectItem>
                 <SelectItem value="tcp">TCP</SelectItem>
+                <SelectItem value="ping">Ping</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -884,7 +892,7 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
                 placeholder="https://example.com"
               />
             </div>
-          ) : (
+          ) : type === "tcp" ? (
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1.5">
                 <Label>Host</Label>
@@ -903,6 +911,15 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
                   placeholder="443"
                 />
               </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <Label>Host</Label>
+              <Input
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+                placeholder="example.com"
+              />
             </div>
           )}
           {type === "http" && (
@@ -964,7 +981,9 @@ function CreateMonitorDialog({ organizationId }: { organizationId: string }) {
                       body: body || undefined,
                       rules: rules.length ? rules : undefined,
                     }
-                  : { host, port: Number(port) }),
+                  : type === "tcp"
+                    ? { host, port: Number(port) }
+                    : { host }),
               })
             }
           >

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as IncidentIdRouteImport } from './routes/$incidentId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
@@ -39,6 +40,11 @@ const LoginRoute = LoginRouteImport.update({
 } as any)
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentIdRoute = IncidentIdRouteImport.update({
+  id: '/$incidentId',
+  path: '/$incidentId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -120,6 +126,7 @@ const AuthedDashboardIncidentsIncidentIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$incidentId': typeof IncidentIdRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$incidentId'
     | '/login'
     | '/pricing'
     | '/dashboard'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$incidentId'
     | '/login'
     | '/pricing'
     | '/dashboard/settings'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$incidentId'
     | '/_authed'
     | '/login'
     | '/pricing'
@@ -232,6 +244,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  IncidentIdRoute: typeof IncidentIdRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$incidentId': {
+      id: '/$incidentId'
+      path: '/$incidentId'
+      fullPath: '/$incidentId'
+      preLoaderRoute: typeof IncidentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -405,6 +425,7 @@ const AuthedRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  IncidentIdRoute: IncidentIdRoute,
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
