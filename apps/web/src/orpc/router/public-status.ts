@@ -125,7 +125,10 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       dailyByMonitor.set(row.monitorId, statsByDay);
     }
 
-    statsByDay.set(row.day, {
+    const dayKey = row.day instanceof Date
+      ? row.day.toISOString().slice(0, 10)
+      : String(row.day).slice(0, 10);
+    statsByDay.set(dayKey, {
       total: Number(row.total),
       up: Number(row.up),
       latency: row.avg_latency,

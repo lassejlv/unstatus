@@ -60,7 +60,7 @@ function OrgDetails({ orgId }: { orgId: string }) {
   if (!org) return null;
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="border-b px-4 py-3">
         <h2 className="text-sm font-medium">Organization</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -104,7 +104,7 @@ function MembersSection({ orgId }: { orgId: string }) {
   const members = data ?? [];
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h2 className="text-sm font-medium">Members</h2>
@@ -244,7 +244,7 @@ function NotificationsSection({ orgId }: { orgId: string }) {
   });
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h2 className="text-sm font-medium">Notifications</h2>
@@ -387,7 +387,7 @@ function OrgSection() {
   const { setActiveOrg, activeOrg } = useOrg();
 
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h2 className="text-sm font-medium">Organizations</h2>
