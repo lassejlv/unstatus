@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -13,7 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Spinner } from "@/components/ui/spinner";
 import { useTheme } from "@/hooks/use-theme";
-import { Sun, Moon, Monitor, ChevronDown, Mail, Check } from "lucide-react";
+import { Sun, Moon, Monitor, ChevronDown, Check, Bell, MessageCircle } from "lucide-react";
 
 // --- Types ---
 
@@ -109,12 +116,31 @@ export function PublicStatusPageView({
 
       <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
         {/* Header */}
-        <div className="animate-fade-in mb-8 flex flex-col items-center gap-2 text-center">
-          {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8" />}
-          <h1 className="text-lg font-semibold tracking-tight">{data.name}</h1>
-          {data.headerText && (
-            <p className="text-sm text-muted-foreground">{data.headerText}</p>
-          )}
+        <div className="animate-fade-in mb-8 flex flex-col items-center gap-3 text-center">
+          <div className="flex flex-col items-center gap-2">
+            {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8" />}
+            <h1 className="text-lg font-semibold tracking-tight">{data.name}</h1>
+            {data.headerText && (
+              <p className="text-sm text-muted-foreground">{data.headerText}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {onSubscribe && (
+              <SubscribeDialog
+                monitors={data.monitors}
+                onSubscribe={onSubscribe}
+                loading={subscribeLoading}
+                success={subscribeSuccess}
+                error={subscribeError}
+              />
+            )}
+            <Button variant="outline" size="sm" asChild>
+              <a href={`mailto:support@unstatus.app?subject=Issue Report: ${data.name}`}>
+                <MessageCircle className="size-3.5" />
+                Report an issue
+              </a>
+            </Button>
+          </div>
         </div>
 
         {/* Overall status banner */}
@@ -159,19 +185,6 @@ export function PublicStatusPageView({
                   </Fragment>
                 ))}
             </div>
-          </div>
-        )}
-
-        {/* Subscribe */}
-        {onSubscribe && (
-          <div className="animate-fade-in mt-10" style={{ animationDelay: `${100 + data.monitors.length * 40 + 100}ms` }}>
-            <SubscribeForm
-              monitors={data.monitors}
-              onSubscribe={onSubscribe}
-              loading={subscribeLoading}
-              success={subscribeSuccess}
-              error={subscribeError}
-            />
           </div>
         )}
 
@@ -483,7 +496,7 @@ function UptimeBar({ daily }: { daily: { date: string; uptime: number; totalChec
   );
 }
 
-function SubscribeForm({
+function SubscribeDialog({
   monitors: _monitors,
   onSubscribe,
   loading,
@@ -498,47 +511,52 @@ function SubscribeForm({
 }) {
   const [emailValue, setEmailValue] = useState("");
 
-  if (success) {
-    return (
-      <div className="rounded-lg border bg-card p-4 ring-1 ring-foreground/5">
-        <div className="flex items-center gap-2 text-sm">
-          <Check className="size-4 text-emerald-500" />
-          <span>Check your email to verify your subscription.</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-lg border bg-card p-4 ring-1 ring-foreground/5">
-      <div className="flex items-center gap-2 mb-3">
-        <Mail className="size-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Subscribe to updates</span>
-      </div>
-      <form
-        className="flex gap-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!emailValue) return;
-          await onSubscribe(emailValue);
-        }}
-      >
-        <Input
-          type="email"
-          placeholder="your@email.com"
-          value={emailValue}
-          onChange={(e) => setEmailValue(e.target.value)}
-          className="flex-1"
-          required
-        />
-        <Button type="submit" size="sm" disabled={loading || !emailValue}>
-          {loading ? <Spinner className="size-4" /> : "Subscribe"}
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Bell className="size-3.5" />
+          Get updates
         </Button>
-      </form>
-      {error && (
-        <p className="mt-2 text-xs text-red-500">{error}</p>
-      )}
-    </div>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Subscribe to updates</DialogTitle>
+        </DialogHeader>
+        {success ? (
+          <div className="flex items-center gap-2 text-sm py-2">
+            <Check className="size-4 text-emerald-500" />
+            <span>Check your email to verify your subscription.</span>
+          </div>
+        ) : (
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!emailValue) return;
+              await onSubscribe(emailValue);
+            }}
+          >
+            <p className="text-sm text-muted-foreground">
+              Get notified by email when incidents are created or resolved.
+            </p>
+            <Input
+              type="email"
+              placeholder="your@email.com"
+              value={emailValue}
+              onChange={(e) => setEmailValue(e.target.value)}
+              required
+            />
+            {error && (
+              <p className="text-xs text-red-500">{error}</p>
+            )}
+            <Button type="submit" disabled={loading || !emailValue}>
+              {loading ? <Spinner className="size-4" /> : "Subscribe"}
+            </Button>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
