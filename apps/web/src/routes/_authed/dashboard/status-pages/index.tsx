@@ -37,7 +37,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { X, ChevronLeft, Pencil, ExternalLink, Trash2 } from "lucide-react";
+import { X, ChevronLeft, Pencil, ExternalLink, Trash2, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/")({
   component: StatusPagesPage,
@@ -294,6 +294,13 @@ function StatusPageSidecar({
               )}
             </div>
 
+            {/* Custom domain */}
+            <CustomDomainInline
+              pageId={page.id}
+              currentDomain={page.customDomain}
+              onSuccess={invalidate}
+            />
+
             {/* Danger zone */}
             <div className="mt-auto pt-2 border-t">
               <Button
@@ -391,6 +398,109 @@ function StatusPageSidecar({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CustomDomainInline({
+  pageId,
+  currentDomain,
+  onSuccess,
+}: {
+  pageId: string;
+  currentDomain: string | null;
+  onSuccess: () => void;
+}) {
+  const [domain, setDomain] = useState(currentDomain ?? "");
+  const [editing, setEditing] = useState(false);
+
+  const prevDomain = useRef(currentDomain);
+  if (currentDomain !== prevDomain.current) {
+    prevDomain.current = currentDomain;
+    setDomain(currentDomain ?? "");
+    setEditing(false);
+  }
+
+  const update = useMutation({
+    ...orpc.statusPages.update.mutationOptions(),
+    onSuccess: () => {
+      onSuccess();
+      setEditing(false);
+      toast.success(domain ? "Custom domain saved" : "Custom domain removed");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update custom domain");
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium">Custom domain</span>
+        {!currentDomain && !editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            + Add
+          </button>
+        )}
+      </div>
+
+      {!currentDomain && !editing ? (
+        <div className="rounded-lg border border-dashed px-3 py-3 flex items-center gap-2">
+          <Globe className="size-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground">
+            Serve on your own domain
+          </span>
+        </div>
+      ) : (
+        <div className="rounded-lg border">
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            <Input
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder="status.example.com"
+              className="h-7 text-xs flex-1"
+            />
+            <Button
+              size="sm"
+              className="h-7 text-xs px-2.5"
+              disabled={update.isPending || domain === (currentDomain ?? "")}
+              onClick={() =>
+                update.mutate({ id: pageId, customDomain: domain || null })
+              }
+            >
+              Save
+            </Button>
+            {currentDomain && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs px-2"
+                disabled={update.isPending}
+                onClick={() => {
+                  setDomain("");
+                  update.mutate({ id: pageId, customDomain: null });
+                }}
+              >
+                <Trash2 className="size-3" />
+              </Button>
+            )}
+          </div>
+          {currentDomain && (
+            <div className="border-t px-3 py-2.5">
+              <p className="text-[10px] text-muted-foreground mb-1.5">
+                Add an A record pointing to:
+              </p>
+              <div className="rounded bg-muted px-2 py-1.5 font-mono text-[11px] select-all">
+                {import.meta.env.VITE_PROXY_IP ?? "your-server-ip"}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
