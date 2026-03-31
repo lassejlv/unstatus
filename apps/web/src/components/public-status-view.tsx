@@ -44,6 +44,7 @@ export type PublicStatusPageData = {
   brandColor: string | null;
   headerText: string | null;
   footerText: string | null;
+  showResponseTimes?: boolean;
   overallStatus: string;
   monitors: PublicStatusMonitorData[];
   incidents: PublicStatusIncidentSummary[];
@@ -131,6 +132,7 @@ export function PublicStatusPageView({
             >
               <MonitorCard
                 monitor={monitor}
+                showResponseTimes={data.showResponseTimes !== false}
                 expanded={expandedMonitor === monitor.id}
                 onToggle={() =>
                   setExpandedMonitor(
@@ -302,10 +304,12 @@ function OverallBanner({ status, accent }: { status: string; accent?: string }) 
 
 function MonitorCard({
   monitor,
+  showResponseTimes,
   expanded,
   onToggle,
 }: {
   monitor: PublicStatusMonitorData;
+  showResponseTimes: boolean;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -325,7 +329,7 @@ function MonitorCard({
         ? "text-yellow-600 dark:text-yellow-400"
         : "text-red-600 dark:text-red-400";
 
-  const hasChart = (monitor.responseTimeSeries?.length ?? 0) > 0;
+  const hasChart = showResponseTimes && (monitor.responseTimeSeries?.length ?? 0) > 0;
 
   return (
     <div className="rounded-lg border bg-card ring-1 ring-foreground/5 transition-all hover:ring-foreground/10">

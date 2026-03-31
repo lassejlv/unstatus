@@ -194,12 +194,13 @@ model StatusPage {
   isPublic    Boolean  @default(true)
 
   // Customization
-  logoUrl     String?
-  faviconUrl  String?
-  brandColor  String?  @default("#000000")
-  headerText  String?
-  footerText  String?
-  customCss   String?
+  logoUrl            String?
+  faviconUrl         String?
+  brandColor         String?  @default("#000000")
+  headerText         String?
+  footerText         String?
+  customCss          String?
+  showResponseTimes  Boolean  @default(true)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

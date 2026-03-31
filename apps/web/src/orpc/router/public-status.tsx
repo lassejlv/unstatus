@@ -15,6 +15,7 @@ type ResolvedPublicPage = {
   brandColor: string | null;
   headerText: string | null;
   footerText: string | null;
+  showResponseTimes: boolean;
 };
 
 type MonitorRow = {
@@ -68,6 +69,7 @@ async function resolvePublicPage(
       brandColor: true,
       headerText: true,
       footerText: true,
+      showResponseTimes: true,
     },
   });
 
@@ -123,19 +125,21 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       page.id,
       ninetyDaysAgo,
     ),
-    prisma.$queryRawUnsafe<HourlyRow[]>(
-      `SELECT mc."monitorId",
-        date_trunc('hour', mc."checkedAt") as hour,
-        ROUND(AVG(mc.latency))::float as avg_latency,
-        COUNT(*)::bigint as check_count
-      FROM monitor_check mc
-      JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
-      WHERE spm."statusPageId" = $1 AND mc."checkedAt" >= $2
-      GROUP BY mc."monitorId", date_trunc('hour', mc."checkedAt")
-      ORDER BY hour ASC`,
-      page.id,
-      twentyFourHoursAgo,
-    ),
+    page.showResponseTimes
+      ? prisma.$queryRawUnsafe<HourlyRow[]>(
+          `SELECT mc."monitorId",
+            date_trunc('hour', mc."checkedAt") as hour,
+            ROUND(AVG(mc.latency))::float as avg_latency,
+            COUNT(*)::bigint as check_count
+          FROM monitor_check mc
+          JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
+          WHERE spm."statusPageId" = $1 AND mc."checkedAt" >= $2
+          GROUP BY mc."monitorId", date_trunc('hour', mc."checkedAt")
+          ORDER BY hour ASC`,
+          page.id,
+          twentyFourHoursAgo,
+        )
+      : Promise.resolve([] as HourlyRow[]),
   ]);
 
   const dailyByMonitor = new Map<
@@ -272,6 +276,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     brandColor: page.brandColor,
     headerText: page.headerText,
     footerText: page.footerText,
+    showResponseTimes: page.showResponseTimes,
     overallStatus,
     monitors,
     incidents: incidentRows.map((incident) => ({

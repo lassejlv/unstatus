@@ -195,6 +195,7 @@ type PageData = {
   brandColor: string | null;
   headerText: string | null;
   footerText: string | null;
+  showResponseTimes: boolean;
 };
 
 function EditPageDialog({
@@ -211,6 +212,7 @@ function EditPageDialog({
   const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
   const [footerText, setFooterText] = useState(page.footerText ?? "");
+  const [showResponseTimes, setShowResponseTimes] = useState(page.showResponseTimes);
 
   useEffect(() => {
     if (open) {
@@ -220,6 +222,7 @@ function EditPageDialog({
       setBrandColor(page.brandColor ?? "#000000");
       setHeaderText(page.headerText ?? "");
       setFooterText(page.footerText ?? "");
+      setShowResponseTimes(page.showResponseTimes);
     }
   }, [open, page]);
 
@@ -259,6 +262,10 @@ function EditPageDialog({
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
             <Label>Public</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={showResponseTimes} onCheckedChange={setShowResponseTimes} />
+            <Label>Show response times</Label>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label>Brand color</Label>
             <Input
@@ -297,6 +304,7 @@ function EditPageDialog({
                 brandColor,
                 headerText: headerText || undefined,
                 footerText: footerText || undefined,
+                showResponseTimes,
               })
             }
           >

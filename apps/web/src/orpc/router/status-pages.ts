@@ -32,6 +32,7 @@ const createInput = z.object({
   brandColor: z.string().default("#000000"),
   headerText: z.string().optional(),
   footerText: z.string().optional(),
+  showResponseTimes: z.boolean().default(true),
 });
 
 const updateInput = createInput.partial().extend({ id: z.string() });
