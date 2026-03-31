@@ -12,9 +12,13 @@ const domainSchema = z
   .refine((v) => /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(v), {
     message: "Invalid domain format",
   })
-  .refine((v) => v !== env.APP_DOMAIN && !v.endsWith(`.${env.APP_DOMAIN}`), {
-    message: "Cannot use the application's own domain",
-  });
+  .refine(
+    (v) => {
+      if (env.APP_DOMAIN === "localhost") return true;
+      return v !== env.APP_DOMAIN && !v.endsWith(`.${env.APP_DOMAIN}`);
+    },
+    { message: "Cannot use the application's own domain" },
+  );
 
 const createInput = z.object({
   organizationId: z.string(),
