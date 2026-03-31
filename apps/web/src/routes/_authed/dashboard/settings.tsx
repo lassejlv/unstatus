@@ -100,8 +100,8 @@ function OrgDetails({ orgId }: { orgId: string }) {
 }
 
 function MembersSection({ orgId }: { orgId: string }) {
-  const { data } = authClient.useListOrganizationMembers({ query: { organizationId: orgId } });
-  const members = data ?? [];
+  const { data: activeOrgData } = authClient.useActiveOrganization();
+  const members = (activeOrgData as any)?.members ?? [];
 
   return (
     <div className="rounded-lg border bg-card">
