@@ -8,7 +8,7 @@ COPY packages/db/ packages/db/
 COPY packages/caddy/ packages/caddy/
 
 RUN bun install --frozen-lockfile
-RUN cd packages/db && bun prisma generate --config prisma.config.ts
+RUN cd packages/db && DATABASE_PUBLIC_URL="postgresql://dummy:dummy@localhost:5432/dummy" bun prisma generate --config prisma.config.ts
 RUN cd packages/caddy && bun run build
 
 # Stage 2: Runtime with Caddy
