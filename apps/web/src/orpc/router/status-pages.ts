@@ -15,7 +15,8 @@ const domainSchema = z
   .refine(
     (v) => {
       if (env.APP_DOMAIN === "localhost") return true;
-      return v !== env.APP_DOMAIN && !v.endsWith(`.${env.APP_DOMAIN}`);
+      // Only block the exact app domain, not subdomains
+      return v !== env.APP_DOMAIN;
     },
     { message: "Cannot use the application's own domain" },
   );
