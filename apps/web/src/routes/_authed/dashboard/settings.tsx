@@ -653,7 +653,7 @@ function BillingSection({ orgId }: { orgId: string }) {
                 onClick={async () => {
                   setLoading(true);
                   try {
-                    await authClient.checkout({
+                    await authClient.checkoutEmbed({
                       slug: "pro",
                       referenceId: orgId,
                     });

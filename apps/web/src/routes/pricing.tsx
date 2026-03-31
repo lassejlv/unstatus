@@ -121,7 +121,7 @@ function PricingPage() {
       navigate({ to: "/login" });
       return;
     }
-    await authClient.checkout({ slug: "pro" });
+    await authClient.checkoutEmbed({ slug: "pro" });
   };
 
   return (
