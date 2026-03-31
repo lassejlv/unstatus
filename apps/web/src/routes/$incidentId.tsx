@@ -16,6 +16,7 @@ function CustomDomainIncidentPage() {
   const customDomain = useCustomDomain();
   const { incidentId } = Route.useParams();
 
+  if (customDomain === undefined) return null;
   if (!customDomain) {
     return <CenteredMessage message="Page not found." />;
   }

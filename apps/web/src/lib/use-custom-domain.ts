@@ -1,14 +1,9 @@
+import { useSyncExternalStore } from "react";
+
 const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN as string | undefined;
 
-/**
- * Returns the custom domain hostname if the current page is being served
- * on a custom domain, or null if on the app's own domain.
- *
- * If VITE_APP_DOMAIN is not set, custom domain detection is disabled
- * and always returns null.
- */
-export function useCustomDomain(): string | null {
-  if (!APP_DOMAIN || typeof window === "undefined") return null;
+function getCustomDomain(): string | null {
+  if (!APP_DOMAIN) return null;
   const hostname = window.location.hostname;
   if (
     hostname === APP_DOMAIN ||
@@ -19,4 +14,25 @@ export function useCustomDomain(): string | null {
     return null;
   }
   return hostname;
+}
+
+const subscribe = () => () => {};
+
+// When APP_DOMAIN isn't set, custom domains are disabled — always null.
+// When set, server can't know the hostname, so return undefined during SSR.
+const serverSnapshot = APP_DOMAIN ? undefined : null;
+
+/**
+ * Returns the custom domain hostname, null if on the app's own domain,
+ * or undefined during SSR (when custom domains are enabled).
+ *
+ * Callers should render nothing when undefined to avoid flashing
+ * the homepage on custom domains.
+ */
+export function useCustomDomain(): string | null | undefined {
+  return useSyncExternalStore(
+    subscribe,
+    getCustomDomain,
+    () => serverSnapshot,
+  );
 }

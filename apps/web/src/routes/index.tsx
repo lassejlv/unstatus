@@ -24,6 +24,8 @@ export const Route = createFileRoute("/")({
 
 function RootPage() {
   const customDomain = useCustomDomain();
+  // undefined = SSR, don't render anything yet to avoid homepage flash
+  if (customDomain === undefined) return null;
   if (customDomain) {
     return <CustomDomainStatusPage domain={customDomain} />;
   }
