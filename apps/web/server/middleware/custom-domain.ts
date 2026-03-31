@@ -23,7 +23,9 @@ function isCustomDomain(hostname: string): boolean {
 export default defineHandler((event) => {
   if (!APP_DOMAIN) return;
 
-  const host = event.req.headers.get("host") ?? "";
+  // Caddy sends the original domain in X-Forwarded-Host
+  const forwardedHost = event.req.headers.get("x-forwarded-host");
+  const host = forwardedHost ?? event.req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
 
   if (!isCustomDomain(hostname)) {
