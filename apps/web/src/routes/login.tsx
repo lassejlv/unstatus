@@ -74,18 +74,6 @@ function DotGrid() {
 
     const isDark = document.documentElement.classList.contains("dark");
 
-    // ECG heartbeat shape: flat → small dip → sharp spike up → sharp spike down → return → flat
-    function ecg(t: number): number {
-      const p = ((t % 1) + 1) % 1;
-      if (p < 0.4) return 0;
-      if (p < 0.44) return -0.15 * ((p - 0.4) / 0.04);
-      if (p < 0.48) return -0.15 + 1.15 * ((p - 0.44) / 0.04);
-      if (p < 0.52) return 1.0 - 1.6 * ((p - 0.48) / 0.04);
-      if (p < 0.56) return -0.6 + 0.6 * ((p - 0.52) / 0.04);
-      if (p < 0.62) return 0.12 * Math.sin(((p - 0.56) / 0.06) * Math.PI);
-      return 0;
-    }
-
     function draw(time: number) {
       const w = canvas!.offsetWidth;
       const h = canvas!.offsetHeight;
@@ -93,43 +81,33 @@ function DotGrid() {
 
       const cols = Math.ceil(w / gap) + 1;
       const rows = Math.ceil(h / gap) + 1;
+      const cx = w * 0.5;
       const cy = h * 0.5;
-      const t = time * 0.00025;
-      const pulseWidth = w * 0.7;
+      const t = time * 0.0008;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
           const x = col * gap;
           const y = row * gap;
 
-          // ECG wave displacement for this x position
-          const phase = (x / pulseWidth) - t;
-          const waveY = ecg(phase) * h * 0.15;
-          const ecgCenter = cy + waveY;
-
-          // Distance from dot to the ecg line
-          const distToLine = Math.abs(y - ecgCenter);
-          const lineInfluence = Math.max(0, 1 - distToLine / (gap * 6));
-
-          // Radial glow around center
-          const dx = x - w * 0.5;
+          const dx = x - cx;
           const dy = y - cy;
-          const distCenter = Math.sqrt(dx * dx + dy * dy);
-          const radialFade = Math.max(0, 1 - distCenter / (Math.min(w, h) * 0.55));
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
-          // Combine: line proximity + ambient glow
-          const intensity = Math.min(1, lineInfluence * 0.85 + radialFade * 0.25);
+          // Slow, gentle ripple from center
+          const wave = Math.sin(dist * 0.015 - t) * 0.5 + 0.5;
+
+          const falloff = Math.max(0, 1 - dist / (Math.min(w, h) * 0.65));
+          const intensity = wave * falloff;
 
           const r = baseRadius + (maxRadius - baseRadius) * intensity;
-          const alpha = 0.08 + 0.7 * intensity;
+          const alpha = 0.1 + 0.5 * intensity;
 
-          const green = Math.round(intensity * (isDark ? 180 : 140));
-          const red = Math.round((1 - intensity) * (isDark ? 200 : 30));
-          const blue = Math.round((1 - intensity) * (isDark ? 200 : 30));
+          const c = isDark ? 255 : 0;
 
           ctx!.beginPath();
           ctx!.arc(x, y, r, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
+          ctx!.fillStyle = `rgba(${c},${c},${c},${alpha})`;
           ctx!.fill();
         }
       }

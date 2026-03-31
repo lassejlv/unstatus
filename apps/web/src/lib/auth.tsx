@@ -88,7 +88,25 @@ export const auth = betterAuth({
           secret: env.POLAR_WEBHOOK_SECRET,
           onSubscriptionActive: async (payload) => {
             const sub = payload.data;
-            const orgId = (sub.metadata as any)?.referenceId as string | undefined;
+            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+
+            // Fallback: find org via customer external_id (better-auth user ID)
+            if (!orgId && sub.customerId) {
+              try {
+                const customer = await polarClient.customers.get({ id: sub.customerId });
+                const userId = customer.externalId;
+                if (userId) {
+                  const member = await prisma.member.findFirst({
+                    where: { userId, role: "owner", organization: { subscriptionActive: false } },
+                    select: { organizationId: true },
+                  });
+                  orgId = member?.organizationId;
+                }
+              } catch (e) {
+                console.error("[Polar] Failed to resolve org from customer:", e);
+              }
+            }
+
             if (!orgId) return;
             await prisma.organization.update({
               where: { id: orgId },
@@ -103,7 +121,16 @@ export const auth = betterAuth({
           },
           onSubscriptionUpdated: async (payload) => {
             const sub = payload.data;
-            const orgId = (sub.metadata as any)?.referenceId as string | undefined;
+            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+
+            // Fallback: find org by subscriptionId
+            if (!orgId) {
+              const org = await prisma.organization.findFirst({
+                where: { subscriptionId: sub.id },
+              });
+              orgId = org?.id;
+            }
+
             if (!orgId) return;
             await prisma.organization.update({
               where: { id: orgId },
