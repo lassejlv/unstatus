@@ -1,6 +1,6 @@
 import { defineHandler } from "nitro";
 
-const APP_DOMAIN = process.env.APP_DOMAIN ?? "localhost";
+const APP_DOMAIN = process.env.APP_DOMAIN;
 
 // Routes that belong to the main app and should not be served on custom domains
 const APP_ROUTES = new Set([
@@ -11,6 +11,7 @@ const APP_ROUTES = new Set([
 ]);
 
 function isCustomDomain(hostname: string): boolean {
+  if (!APP_DOMAIN) return false;
   return (
     hostname !== APP_DOMAIN &&
     hostname !== "localhost" &&
@@ -20,6 +21,8 @@ function isCustomDomain(hostname: string): boolean {
 }
 
 export default defineHandler((event) => {
+  if (!APP_DOMAIN) return;
+
   const host = event.req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
 
