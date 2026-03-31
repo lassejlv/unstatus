@@ -1,4 +1,4 @@
-import { authedProcedure } from "@/orpc/procedures";
+import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
 import { ORPCError } from "@orpc/server";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
@@ -27,8 +27,11 @@ const createInput = z.object({
 
 const updateInput = createInput.partial().extend({ id: z.string() });
 
+const runCheckLimiter = new Map<string, number>();
+const RATE_LIMIT_MS = 10_000;
+
 export const monitorsRouter = {
-  list: authedProcedure.input(z.object({ organizationId: z.string() })).handler(
+  list: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
     async ({ input }) => {
       return prisma.monitor.findMany({
         where: { organizationId: input.organizationId },
@@ -38,29 +41,37 @@ export const monitorsRouter = {
   ),
 
   get: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
-      return prisma.monitor.findUniqueOrThrow({ where: { id: input.id } });
+    async ({ input, context }) => {
+      const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.id } });
+      await verifyOrgMembership(context.session.user.id, monitor.organizationId);
+      return monitor;
     },
   ),
 
-  create: authedProcedure.input(createInput).handler(async ({ input }) => {
+  create: orgProcedure.input(createInput).handler(async ({ input }) => {
     return prisma.monitor.create({ data: input });
   }),
 
-  update: authedProcedure.input(updateInput).handler(async ({ input }) => {
-    const { id, ...data } = input;
+  update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
+    const { id, organizationId: _orgId, ...data } = input;
+    const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id } });
+    await verifyOrgMembership(context.session.user.id, monitor.organizationId);
     return prisma.monitor.update({ where: { id }, data });
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
+    async ({ input, context }) => {
+      const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.id } });
+      await verifyOrgMembership(context.session.user.id, monitor.organizationId);
       await prisma.monitor.delete({ where: { id: input.id } });
     },
   ),
 
   checks: authedProcedure
     .input(z.object({ monitorId: z.string(), limit: z.number().int().default(100) }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
+      await verifyOrgMembership(context.session.user.id, monitor.organizationId);
       return prisma.monitorCheck.findMany({
         where: { monitorId: input.monitorId },
         orderBy: { checkedAt: "desc" },
@@ -70,7 +81,17 @@ export const monitorsRouter = {
 
   runCheck: authedProcedure
     .input(z.object({ monitorId: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
+      await verifyOrgMembership(context.session.user.id, monitor.organizationId);
+
+      const now = Date.now();
+      const lastRun = runCheckLimiter.get(context.session.user.id);
+      if (lastRun && now - lastRun < RATE_LIMIT_MS) {
+        throw new ORPCError("TOO_MANY_REQUESTS", { message: "Please wait before running another check" });
+      }
+      runCheckLimiter.set(context.session.user.id, now);
+
       const workerUrl = env.WORKER_EU_URL ?? env.WORKER_URL;
       if (!workerUrl || !env.WORKER_SECRET) {
         throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Worker not configured" });
@@ -81,7 +102,8 @@ export const monitorsRouter = {
       });
       if (!res.ok) {
         const body = await res.text().catch(() => "");
-        throw new ORPCError("BAD_GATEWAY", { message: `Worker check failed: ${res.status} ${body}` });
+        console.error(`Worker check failed: ${res.status} ${body}`);
+        throw new ORPCError("BAD_GATEWAY", { message: "Monitor check failed. Please try again later." });
       }
       return res.json();
     }),

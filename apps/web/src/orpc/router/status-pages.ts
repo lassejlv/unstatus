@@ -1,7 +1,8 @@
 import z from "zod";
+import { ORPCError } from "@orpc/server";
 
 import { prisma } from "@/lib/prisma";
-import { authedProcedure } from "@/orpc/procedures";
+import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
 
 const createInput = z.object({
   organizationId: z.string(),
@@ -13,13 +14,12 @@ const createInput = z.object({
   brandColor: z.string().default("#000000"),
   headerText: z.string().optional(),
   footerText: z.string().optional(),
-  customCss: z.string().optional(),
 });
 
 const updateInput = createInput.partial().extend({ id: z.string() });
 
 export const statusPagesRouter = {
-  list: authedProcedure.input(z.object({ organizationId: z.string() })).handler(
+  list: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
     async ({ input }) => {
       return prisma.statusPage.findMany({
         where: { organizationId: input.organizationId },
@@ -35,8 +35,8 @@ export const statusPagesRouter = {
   ),
 
   get: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
-      return prisma.statusPage.findUniqueOrThrow({
+    async ({ input, context }) => {
+      const statusPage = await prisma.statusPage.findUniqueOrThrow({
         where: { id: input.id },
         include: {
           monitors: {
@@ -45,24 +45,26 @@ export const statusPagesRouter = {
           },
         },
       });
+      await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+      return statusPage;
     },
   ),
 
-  create: authedProcedure.input(createInput).handler(async ({ input }) => {
+  create: orgProcedure.input(createInput).handler(async ({ input }) => {
     return prisma.statusPage.create({ data: input });
   }),
 
-  update: authedProcedure.input(updateInput).handler(async ({ input }) => {
-    const { id, ...data } = input;
-
-    return prisma.statusPage.update({
-      where: { id },
-      data,
-    });
+  update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
+    const { id, organizationId: _orgId, ...data } = input;
+    const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id } });
+    await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+    return prisma.statusPage.update({ where: { id }, data });
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
-    async ({ input }) => {
+    async ({ input, context }) => {
+      const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.id } });
+      await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
       await prisma.statusPage.delete({ where: { id: input.id } });
     },
   ),
@@ -76,13 +78,24 @@ export const statusPagesRouter = {
         sortOrder: z.number().int().default(0),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.statusPageId } });
+      await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+      const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
+      if (monitor.organizationId !== statusPage.organizationId) {
+        throw new ORPCError("FORBIDDEN", { message: "Monitor does not belong to this organization" });
+      }
       return prisma.statusPageMonitor.create({ data: input });
     }),
 
   removeMonitor: authedProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
+      const spm = await prisma.statusPageMonitor.findUniqueOrThrow({
+        where: { id: input.id },
+        include: { statusPage: { select: { organizationId: true } } },
+      });
+      await verifyOrgMembership(context.session.user.id, spm.statusPage.organizationId);
       await prisma.statusPageMonitor.delete({ where: { id: input.id } });
     }),
 };
