@@ -22,6 +22,7 @@ import {
   Activity,
   AlertTriangle,
   Globe,
+  Mail,
   Settings,
 } from "lucide-react";
 import { Canvas } from "@/components/canvas";
@@ -35,6 +36,7 @@ const navItems = [
   { label: "Monitors", to: "/dashboard/monitors", search: {}, icon: Activity },
   { label: "Incidents", to: "/dashboard/incidents", search: {}, icon: AlertTriangle },
   { label: "Status Pages", to: "/dashboard/status-pages", search: {}, icon: Globe },
+  { label: "Subscribers", to: "/dashboard/subscribers", search: {}, icon: Mail },
   { label: "Settings", to: "/dashboard/settings", search: {}, icon: Settings },
 ] as const;
 

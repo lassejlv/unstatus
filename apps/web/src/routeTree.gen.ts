@@ -22,6 +22,7 @@ import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/veri
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
 import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
 import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
 import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors.index'
@@ -95,6 +96,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedDashboardSubscribersRoute =
+  AuthedDashboardSubscribersRouteImport.update({
+    id: '/subscribers',
+    path: '/subscribers',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardSettingsRoute = AuthedDashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
+  '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
@@ -165,6 +173,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
+  '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
@@ -188,6 +197,7 @@ export interface FileRoutesById {
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
+  '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/accept-invitation/$invitationId'
     | '/dashboard/settings'
+    | '/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/accept-invitation/$invitationId'
     | '/dashboard/settings'
+    | '/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
@@ -253,6 +265,7 @@ export interface FileRouteTypes {
     | '/_authed/dashboard'
     | '/accept-invitation/$invitationId'
     | '/_authed/dashboard/settings'
+    | '/_authed/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/dashboard/subscribers': {
+      id: '/_authed/dashboard/subscribers'
+      path: '/subscribers'
+      fullPath: '/dashboard/subscribers'
+      preLoaderRoute: typeof AuthedDashboardSubscribersRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/settings': {
       id: '/_authed/dashboard/settings'
       path: '/settings'
@@ -428,6 +448,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthedDashboardRouteChildren {
   AuthedDashboardSettingsRoute: typeof AuthedDashboardSettingsRoute
+  AuthedDashboardSubscribersRoute: typeof AuthedDashboardSubscribersRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
   AuthedDashboardIncidentsIncidentIdRoute: typeof AuthedDashboardIncidentsIncidentIdRoute
   AuthedDashboardMonitorsMonitorIdRoute: typeof AuthedDashboardMonitorsMonitorIdRoute
@@ -439,6 +460,7 @@ interface AuthedDashboardRouteChildren {
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardSettingsRoute: AuthedDashboardSettingsRoute,
+  AuthedDashboardSubscribersRoute: AuthedDashboardSubscribersRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
   AuthedDashboardIncidentsIncidentIdRoute:
     AuthedDashboardIncidentsIncidentIdRoute,

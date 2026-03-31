@@ -51,7 +51,7 @@ const featureGroups: {
 
 function PricingPage() {
   const [annual, setAnnual] = useState(false);
-  const proPrice = annual ? 144 : 15;
+  const proPrice = annual ? 144 : 20;
   const proPeriod = annual ? "/year" : "/mo";
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
@@ -98,40 +98,11 @@ function PricingPage() {
         {/* Header */}
         <section className="mx-auto max-w-5xl px-6 pt-24 pb-6 text-center">
           <h1 className="text-4xl font-semibold tracking-tight">
-            Simple, transparent pricing
+            Pricing
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Start free. Upgrade when you need more. No surprises.
           </p>
-
-          {/* Billing toggle */}
-          <div className="mt-10 inline-flex items-center rounded-full border p-1">
-            <button
-              type="button"
-              onClick={() => setAnnual(false)}
-              className={`rounded-full px-5 py-2 text-sm transition-all ${
-                !annual
-                  ? "bg-foreground text-background font-medium shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => setAnnual(true)}
-              className={`rounded-full px-5 py-2 text-sm transition-all ${
-                annual
-                  ? "bg-foreground text-background font-medium shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Annual
-              <span className="ml-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                -20%
-              </span>
-            </button>
-          </div>
         </section>
 
         {/* Cards */}
@@ -148,8 +119,7 @@ function PricingPage() {
                 </span>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                For side projects and personal use. Everything you need to get
-                started.
+               Everything you need to get started 🤓
               </p>
               <Link to="/login" className="mt-8">
                 <Button variant="outline" className="w-full h-11">
@@ -199,14 +169,8 @@ function PricingPage() {
                   {proPeriod}
                 </span>
               </div>
-              {annual && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  That's $12/month, billed annually
-                </p>
-              )}
               <p className="mt-3 text-sm text-muted-foreground">
-                For teams and businesses. Unlimited everything, all features
-                unlocked.
+                Unlock the full experience 🔥
               </p>
               <Button className="mt-8 w-full h-11 gap-2" onClick={handleProCheckout}>
                 Get started <ArrowRight className="size-4" />

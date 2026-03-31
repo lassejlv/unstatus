@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { useOrg } from "@/components/org-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc, client } from "@/orpc/client";
 import { toast } from "sonner";
@@ -28,6 +28,29 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge } from "@/components/upgrade-badge";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Settings, Users, Bell, CreditCard, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
@@ -37,69 +60,186 @@ function SettingsPage() {
   const { activeOrg } = useOrg();
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      {/* Org details */}
-      {activeOrg && <OrgDetails orgId={activeOrg.id} />}
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div>
+        <h1 className="text-lg font-semibold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your organization, members, and preferences.
+        </p>
+      </div>
 
-      {/* Members */}
-      {activeOrg && <MembersSection orgId={activeOrg.id} />}
+      {activeOrg && (
+        <Tabs defaultValue="general" orientation="vertical" className="flex-row gap-8">
+          <TabsList variant="line" className="w-44 shrink-0 flex-col items-stretch">
+            <TabsTrigger value="general" className="justify-start">
+              <Settings className="size-3.5" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="members" className="justify-start">
+              <Users className="size-3.5" />
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="justify-start">
+              <Bell className="size-3.5" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="justify-start">
+              <CreditCard className="size-3.5" />
+              Billing
+            </TabsTrigger>
+            <Separator className="my-2" />
+            <TabsTrigger value="organizations" className="justify-start">
+              <Building2 className="size-3.5" />
+              Organizations
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Notifications */}
-      {activeOrg && <NotificationsSection orgId={activeOrg.id} />}
+          <div className="flex-1 min-w-0">
+            <TabsContent value="general" className="flex flex-col gap-6">
+              <OrgDetails orgId={activeOrg.id} />
+            </TabsContent>
 
-      {/* Billing */}
-      {activeOrg && <BillingSection orgId={activeOrg.id} />}
+            <TabsContent value="members" className="flex flex-col gap-6">
+              <MembersSection orgId={activeOrg.id} />
+            </TabsContent>
 
-      {/* Organizations */}
-      <OrgSection />
+            <TabsContent value="notifications" className="flex flex-col gap-6">
+              <NotificationsSection orgId={activeOrg.id} />
+            </TabsContent>
+
+            <TabsContent value="billing" className="flex flex-col gap-6">
+              <BillingSection orgId={activeOrg.id} />
+            </TabsContent>
+
+            <TabsContent value="organizations" className="flex flex-col gap-6">
+              <OrgSection />
+            </TabsContent>
+          </div>
+        </Tabs>
+      )}
     </div>
   );
 }
 
 function OrgDetails({ orgId }: { orgId: string }) {
   const { data: org } = authClient.useActiveOrganization();
+  const { setActiveOrg } = useOrg();
   const [name, setName] = useState(org?.name ?? "");
   const [slug, setSlug] = useState(org?.slug ?? "");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (org) {
+      setName(org.name);
+      setSlug(org.slug);
+    }
+  }, [org?.name, org?.slug]);
 
   if (!org) return null;
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="border-b px-4 py-3">
-        <h2 className="text-sm font-medium">Organization</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Manage your organization name and URL slug.
-        </p>
-      </div>
-      <div className="flex flex-col gap-4 p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label>Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Organization</CardTitle>
+          <CardDescription>
+            Manage your organization name and URL slug.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Name</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Slug</Label>
+              <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+            </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Slug</Label>
-            <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+        </CardContent>
+        <CardFooter className="justify-end border-t">
+          <Button
+            size="sm"
+            disabled={saving || (!name && !slug)}
+            onClick={async () => {
+              setSaving(true);
+              await authClient.organization.update({
+                data: { name, slug },
+                organizationId: orgId,
+              });
+              setSaving(false);
+              toast.success("Organization updated");
+            }}
+          >
+            Save changes
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card className="ring-destructive/30">
+        <CardHeader className="border-b">
+          <CardTitle className="text-destructive">Danger zone</CardTitle>
+          <CardDescription>
+            Permanently delete this organization and all its data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">Delete organization</span>
+              <span className="text-xs text-muted-foreground">
+                This will delete all monitors, status pages, and data. This
+                action cannot be undone.
+              </span>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {org.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the organization, all its
+                    monitors, status pages, incidents, and notification channels.
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    disabled={deleting}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setDeleting(true);
+                      try {
+                        await authClient.organization.delete({
+                          organizationId: orgId,
+                        });
+                        toast.success("Organization deleted");
+                        setActiveOrg(null);
+                      } catch (err: any) {
+                        toast.error(
+                          err.message || "Failed to delete organization",
+                        );
+                      } finally {
+                        setDeleting(false);
+                      }
+                    }}
+                  >
+                    {deleting ? "Deleting..." : "Delete organization"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-        </div>
-      </div>
-      <div className="flex items-center justify-end border-t bg-muted/30 px-4 py-3">
-        <Button
-          size="sm"
-          disabled={saving || (!name && !slug)}
-          onClick={async () => {
-            setSaving(true);
-            await authClient.organization.update({
-              data: { name, slug },
-              organizationId: orgId,
-            });
-            setSaving(false);
-          }}
-        >
-          Save changes
-        </Button>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -109,26 +249,28 @@ function MembersSection({ orgId }: { orgId: string }) {
   const members = (activeOrgData as any)?.members ?? [];
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <div>
-          <h2 className="text-sm font-medium">Members</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Manage who has access to this organization.
-          </p>
-        </div>
-        <InviteMemberDialog orgId={orgId} />
-      </div>
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Members</CardTitle>
+        <CardDescription>
+          Manage who has access to this organization.
+        </CardDescription>
+        <CardAction>
+          <InviteMemberDialog orgId={orgId} />
+        </CardAction>
+      </CardHeader>
       {members.length > 0 ? (
-        <div>
-          {members.map((m, i) => (
+        <CardContent className="p-0">
+          {members.map((m: any, i: number) => (
             <div
               key={m.id}
               className={`flex items-center justify-between px-4 py-3 ${i < members.length - 1 ? "border-b" : ""}`}
             >
               <div className="flex flex-col">
                 <span className="text-sm font-medium">{m.user.name}</span>
-                <span className="text-xs text-muted-foreground">{m.user.email}</span>
+                <span className="text-xs text-muted-foreground">
+                  {m.user.email}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{m.role}</Badge>
@@ -138,7 +280,9 @@ function MembersSection({ orgId }: { orgId: string }) {
                     size="sm"
                     className="text-muted-foreground"
                     onClick={() =>
-                      authClient.organization.removeMember({ memberIdOrEmail: m.id })
+                      authClient.organization.removeMember({
+                        memberIdOrEmail: m.id,
+                      })
                     }
                   >
                     Remove
@@ -147,19 +291,20 @@ function MembersSection({ orgId }: { orgId: string }) {
               </div>
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : (
-        <div className="px-4 py-6 text-center">
-          <p className="text-xs text-muted-foreground">No members yet. Invite someone to get started.</p>
-        </div>
+        <CardContent className="py-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            No members yet. Invite someone to get started.
+          </p>
+        </CardContent>
       )}
-    </div>
+    </Card>
   );
 }
 
 function InviteMemberDialog({ orgId }: { orgId: string }) {
   const { isPro } = useSubscription();
-  // TODO: Check member count against free-tier limit (3 members) and gate invites for non-Pro orgs
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -185,7 +330,10 @@ function InviteMemberDialog({ orgId }: { orgId: string }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Role</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+            <Select
+              value={role}
+              onValueChange={(v) => setRole(v as typeof role)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -251,18 +399,18 @@ function NotificationsSection({ orgId }: { orgId: string }) {
   });
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <div>
-          <h2 className="text-sm font-medium">Notifications</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Configure channels to receive alerts via Discord or email.
-          </p>
-        </div>
-        <AddNotificationDialog orgId={orgId} />
-      </div>
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Notification channels</CardTitle>
+        <CardDescription>
+          Configure channels to receive alerts via Discord or email.
+        </CardDescription>
+        <CardAction>
+          <AddNotificationDialog orgId={orgId} />
+        </CardAction>
+      </CardHeader>
       {channels?.length ? (
-        <div>
+        <CardContent className="p-0">
           {channels.map((ch, i) => (
             <div
               key={ch.id}
@@ -271,12 +419,17 @@ function NotificationsSection({ orgId }: { orgId: string }) {
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{ch.name}</span>
-                  <Badge variant="outline">{ch.type === "discord" ? "Discord" : "Email"}</Badge>
+                  <Badge variant="outline">
+                    {ch.type === "discord" ? "Discord" : "Email"}
+                  </Badge>
                   {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
                 </div>
-                <span className="text-[11px] text-muted-foreground font-mono truncate max-w-xs">
+                <span className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
                   {ch.type === "discord"
-                    ? ch.webhookUrl?.replace(/\/webhooks\/\d+\/.*/, "/webhooks/***")
+                    ? ch.webhookUrl?.replace(
+                        /\/webhooks\/\d+\/.*/,
+                        "/webhooks/***",
+                      )
                     : ch.recipientEmail}
                 </span>
               </div>
@@ -306,15 +459,16 @@ function NotificationsSection({ orgId }: { orgId: string }) {
               </div>
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : (
-        <div className="px-4 py-6 text-center">
+        <CardContent className="py-6 text-center">
           <p className="text-xs text-muted-foreground">
-            No notification channels configured. Add a Discord webhook or email to receive alerts.
+            No notification channels configured. Add a Discord webhook or email
+            to receive alerts.
           </p>
-        </div>
+        </CardContent>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -354,12 +508,18 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Type</Label>
-            <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
+            <Select
+              value={type}
+              onValueChange={(v) => setType(v as typeof type)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="discord" disabled={!isPro}>Discord {!isPro && " "}{!isPro && <ProBadge />}</SelectItem>
+                <SelectItem value="discord" disabled={!isPro}>
+                  Discord {!isPro && " "}
+                  {!isPro && <ProBadge />}
+                </SelectItem>
                 <SelectItem value="email">Email</SelectItem>
               </SelectContent>
             </Select>
@@ -400,7 +560,9 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                   organizationId: orgId,
                   name,
                   type,
-                  ...(type === "discord" ? { webhookUrl } : { recipientEmail }),
+                  ...(type === "discord"
+                    ? { webhookUrl }
+                    : { recipientEmail }),
                 });
                 qc.invalidateQueries({ queryKey: queryOpts.queryKey });
                 toast.success("Channel added");
@@ -423,84 +585,157 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
   );
 }
 
+function SubscribersSection({ orgId }: { orgId: string }) {
+  const qc = useQueryClient();
+  const queryOpts = orpc.subscribers.list.queryOptions({
+    input: { organizationId: orgId },
+  });
+  const { data: subscribers } = useQuery(queryOpts);
+
+  const deleteMut = useMutation({
+    ...orpc.subscribers.delete.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+      toast.success("Subscriber removed");
+    },
+    onError: (err) => toast.error(err.message || "Failed to remove"),
+  });
+
+  return (
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Subscribers</CardTitle>
+        <CardDescription>
+          People subscribed to status updates on your status pages.
+        </CardDescription>
+      </CardHeader>
+      {subscribers?.length ? (
+        <CardContent className="p-0">
+          {subscribers.map((sub, i) => (
+            <div
+              key={sub.id}
+              className={`flex items-center justify-between px-4 py-3 ${i < subscribers.length - 1 ? "border-b" : ""}`}
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{sub.email}</span>
+                  <Badge variant={sub.verified ? "default" : "secondary"}>
+                    {sub.verified ? "Verified" : "Pending"}
+                  </Badge>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {sub.statusPageName}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() =>
+                  deleteMut.mutate({ id: sub.id, organizationId: orgId })
+                }
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      ) : (
+        <CardContent className="py-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            No subscribers yet. Subscribers are added when users sign up on your
+            status pages.
+          </p>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+
 function BillingSection({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(false);
   const { data: subscription } = useQuery(
-    orpc.billing.getSubscription.queryOptions({ input: { organizationId: orgId } }),
+    orpc.billing.getSubscription.queryOptions({
+      input: { organizationId: orgId },
+    }),
   );
 
   const isActive = subscription?.subscriptionActive ?? false;
   const planName = subscription?.subscriptionPlanName ?? "Free";
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="border-b px-4 py-3">
-        <h2 className="text-sm font-medium">Billing</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Subscription</CardTitle>
+        <CardDescription>
           Manage your subscription and billing.
-        </p>
-      </div>
-      <div className="flex items-center justify-between p-4">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{isActive ? planName : "Free"}</span>
-            <Badge variant={isActive ? "default" : "secondary"}>
-              {isActive ? "Active" : "Free"}
-            </Badge>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {isActive ? planName : "Free"}
+              </span>
+              <Badge variant={isActive ? "default" : "secondary"}>
+                {isActive ? "Active" : "Free"}
+              </Badge>
+            </div>
+            {isActive && (
+              <span className="text-xs text-muted-foreground">
+                {subscription?.cancelAtPeriodEnd
+                  ? "Cancels at end of billing period"
+                  : "$15/month"}
+              </span>
+            )}
+            {!isActive && (
+              <span className="text-xs text-muted-foreground">
+                Upgrade to unlock all features
+              </span>
+            )}
           </div>
-          {isActive && (
-            <span className="text-xs text-muted-foreground">
-              {subscription?.cancelAtPeriodEnd
-                ? "Cancels at end of billing period"
-                : "$15/month"}
-            </span>
-          )}
-          {!isActive && (
-            <span className="text-xs text-muted-foreground">
-              Upgrade to unlock all features
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {isActive && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    await authClient.customer.portal();
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Manage subscription
+              </Button>
+            )}
+            {!isActive && (
+              <Button
+                size="sm"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    await authClient.checkout({
+                      slug: "pro",
+                      referenceId: orgId,
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Upgrade to Pro
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isActive && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={loading}
-              onClick={async () => {
-                setLoading(true);
-                try {
-                  await authClient.customer.portal();
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Manage subscription
-            </Button>
-          )}
-          {!isActive && (
-            <Button
-              size="sm"
-              disabled={loading}
-              onClick={async () => {
-                setLoading(true);
-                try {
-                  await authClient.checkout({
-                    slug: "pro",
-                    referenceId: orgId,
-                  });
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Upgrade to Pro
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -509,18 +744,18 @@ function OrgSection() {
   const { setActiveOrg, activeOrg } = useOrg();
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <div>
-          <h2 className="text-sm font-medium">Organizations</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Switch between or create new organizations.
-          </p>
-        </div>
-        <CreateOrgDialog />
-      </div>
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Organizations</CardTitle>
+        <CardDescription>
+          Switch between or create new organizations.
+        </CardDescription>
+        <CardAction>
+          <CreateOrgDialog />
+        </CardAction>
+      </CardHeader>
       {orgs?.length ? (
-        <div>
+        <CardContent className="p-0">
           {orgs.map((org, i) => (
             <div
               key={org.id}
@@ -543,9 +778,9 @@ function OrgSection() {
               )}
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : null}
-    </div>
+    </Card>
   );
 }
 
@@ -573,7 +808,9 @@ function CreateOrgDialog() {
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"));
+                setSlug(
+                  e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+                );
               }}
               placeholder="My Team"
             />
