@@ -1,13 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -22,13 +16,22 @@ function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="flex min-h-screen">
+      <div className="relative hidden w-1/2 overflow-hidden bg-muted lg:block">
+        <DotGrid />
+      </div>
+
+      <div className="flex w-full flex-col items-center justify-center px-8 lg:w-1/2">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Welcome back
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Please log in to continue.
+            </p>
+          </div>
+
           <Button
             variant="outline"
             size="lg"
@@ -38,10 +41,111 @@ function LoginPage() {
             <GoogleIcon />
             Continue with Google
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
+}
+
+function DotGrid() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    const gap = 16;
+    const baseRadius = 1.2;
+    const maxRadius = 5;
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas!.width = canvas!.offsetWidth * dpr;
+      canvas!.height = canvas!.offsetHeight * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const isDark = document.documentElement.classList.contains("dark");
+
+    // ECG heartbeat shape: flat → small dip → sharp spike up → sharp spike down → return → flat
+    function ecg(t: number): number {
+      const p = ((t % 1) + 1) % 1;
+      if (p < 0.4) return 0;
+      if (p < 0.44) return -0.15 * ((p - 0.4) / 0.04);
+      if (p < 0.48) return -0.15 + 1.15 * ((p - 0.44) / 0.04);
+      if (p < 0.52) return 1.0 - 1.6 * ((p - 0.48) / 0.04);
+      if (p < 0.56) return -0.6 + 0.6 * ((p - 0.52) / 0.04);
+      if (p < 0.62) return 0.12 * Math.sin(((p - 0.56) / 0.06) * Math.PI);
+      return 0;
+    }
+
+    function draw(time: number) {
+      const w = canvas!.offsetWidth;
+      const h = canvas!.offsetHeight;
+      ctx!.clearRect(0, 0, w, h);
+
+      const cols = Math.ceil(w / gap) + 1;
+      const rows = Math.ceil(h / gap) + 1;
+      const cy = h * 0.5;
+      const t = time * 0.00025;
+      const pulseWidth = w * 0.7;
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * gap;
+          const y = row * gap;
+
+          // ECG wave displacement for this x position
+          const phase = (x / pulseWidth) - t;
+          const waveY = ecg(phase) * h * 0.15;
+          const ecgCenter = cy + waveY;
+
+          // Distance from dot to the ecg line
+          const distToLine = Math.abs(y - ecgCenter);
+          const lineInfluence = Math.max(0, 1 - distToLine / (gap * 6));
+
+          // Radial glow around center
+          const dx = x - w * 0.5;
+          const dy = y - cy;
+          const distCenter = Math.sqrt(dx * dx + dy * dy);
+          const radialFade = Math.max(0, 1 - distCenter / (Math.min(w, h) * 0.55));
+
+          // Combine: line proximity + ambient glow
+          const intensity = Math.min(1, lineInfluence * 0.85 + radialFade * 0.25);
+
+          const r = baseRadius + (maxRadius - baseRadius) * intensity;
+          const alpha = 0.08 + 0.7 * intensity;
+
+          const green = Math.round(intensity * (isDark ? 180 : 140));
+          const red = Math.round((1 - intensity) * (isDark ? 200 : 30));
+          const blue = Math.round((1 - intensity) * (isDark ? 200 : 30));
+
+          ctx!.beginPath();
+          ctx!.arc(x, y, r, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
+          ctx!.fill();
+        }
+      }
+
+      animationId = requestAnimationFrame(draw);
+    }
+
+    animationId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 size-full" />;
 }
 
 function GoogleIcon() {
