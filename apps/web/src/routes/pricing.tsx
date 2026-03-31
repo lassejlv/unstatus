@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Minus } from "lucide-react";
@@ -7,6 +7,62 @@ import { authClient } from "@/lib/auth-client";
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
+
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          obs.disconnect();
+        }
+      },
+      { threshold },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, inView };
+}
+
+function FadeIn({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const { ref, inView } = useInView(0.1);
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(24px)",
+        transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
 
 const featureGroups: {
   label: string;
@@ -49,6 +105,10 @@ const featureGroups: {
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 function PricingPage() {
   const [annual, setAnnual] = useState(false);
   const proPrice = annual ? 144 : 20;
@@ -67,8 +127,8 @@ function PricingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Nav */}
-      <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2">
             <img src="/Logo.png" alt="unstatus" className="size-7" />
             <span className="text-sm font-semibold tracking-tight">
@@ -96,192 +156,209 @@ function PricingPage() {
 
       <main className="flex-1">
         {/* Header */}
-        <section className="mx-auto max-w-5xl px-6 pt-24 pb-6 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Pricing
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Start free. Upgrade when you need more. No surprises.
-          </p>
+        <section className="mx-auto max-w-6xl px-6 pt-28 pb-6 text-center">
+          <FadeIn>
+            <h1 className="text-4xl font-semibold tracking-tight lg:text-5xl">
+              Simple, transparent pricing
+            </h1>
+            <p className="mx-auto mt-5 max-w-lg text-lg text-muted-foreground">
+              Start free. Upgrade when you need more. No surprises.
+            </p>
+          </FadeIn>
         </section>
 
         {/* Cards */}
-        <section className="mx-auto max-w-3xl px-6 py-12">
+        <section className="mx-auto max-w-3xl px-6 py-16">
           <div className="grid gap-8 sm:grid-cols-2">
             {/* Free */}
-            <div className="flex flex-col rounded-2xl border p-8">
-              <div className="text-sm font-medium text-muted-foreground">
-                Free
+            <FadeIn delay={0}>
+              <div className="flex h-full flex-col rounded-2xl border p-8 transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
+                <div className="text-sm font-medium text-muted-foreground">
+                  Free
+                </div>
+                <div className="mt-4 flex items-baseline">
+                  <span className="font-mono text-5xl font-semibold tracking-tight">
+                    $0
+                  </span>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Everything you need to get started
+                </p>
+                <Link to="/login" className="mt-8">
+                  <Button variant="outline" className="h-11 w-full">
+                    Get started free
+                  </Button>
+                </Link>
+                <div className="mt-8 border-t pt-6">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Includes
+                  </span>
+                  <ul className="mt-4 space-y-3">
+                    {[
+                      "5 monitors",
+                      "1 status page",
+                      "3 team members",
+                      "5 min check interval",
+                      "Email notifications",
+                      "30 day history",
+                    ].map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-center gap-2.5 text-sm"
+                      >
+                        <Check className="size-4 shrink-0 text-muted-foreground" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="mt-4 flex items-baseline">
-                <span className="text-5xl font-semibold tracking-tight">
-                  $0
-                </span>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-               Everything you need to get started 🤓
-              </p>
-              <Link to="/login" className="mt-8">
-                <Button variant="outline" className="w-full h-11">
-                  Get started free
-                </Button>
-              </Link>
-              <div className="mt-8 border-t pt-6">
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Includes
-                </span>
-                <ul className="mt-4 space-y-3">
-                  {[
-                    "5 monitors",
-                    "1 status page",
-                    "3 team members",
-                    "5 min check interval",
-                    "Email notifications",
-                    "30 day history",
-                  ].map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-2.5 text-sm"
-                    >
-                      <Check className="size-4 text-muted-foreground shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            </FadeIn>
 
             {/* Pro */}
-            <div className="relative flex flex-col rounded-2xl border-2 border-foreground/15 p-8">
-              <div className="absolute -top-3 left-8">
-                <span className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
-                  Most popular
-                </span>
+            <FadeIn delay={100}>
+              <div className="relative flex h-full flex-col rounded-2xl border-2 border-foreground/15 p-8 transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5">
+                <div className="absolute -top-3 left-8">
+                  <span className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
+                    Most popular
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  Pro
+                </div>
+                <div className="mt-4 flex items-baseline">
+                  <span className="font-mono text-5xl font-semibold tracking-tight">
+                    ${proPrice}
+                  </span>
+                  <span className="ml-1 text-lg text-muted-foreground">
+                    {proPeriod}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Unlock the full experience
+                </p>
+                <Button
+                  className="mt-8 h-11 w-full gap-2"
+                  onClick={handleProCheckout}
+                >
+                  Get started <ArrowRight className="size-4" />
+                </Button>
+                <div className="mt-8 border-t pt-6">
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Everything in Free, plus
+                  </span>
+                  <ul className="mt-4 space-y-3">
+                    {[
+                      "Unlimited monitors",
+                      "Unlimited status pages",
+                      "Unlimited team members",
+                      "10 sec check interval",
+                      "All notification channels",
+                      "Custom domains & branding",
+                      "API access",
+                      "Auto incidents",
+                      "All regions (EU, US, Asia)",
+                      "Unlimited history",
+                    ].map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-center gap-2.5 text-sm"
+                      >
+                        <Check className="size-4 shrink-0 text-foreground" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="text-sm font-medium text-muted-foreground">
-                Pro
-              </div>
-              <div className="mt-4 flex items-baseline">
-                <span className="text-5xl font-semibold tracking-tight">
-                  ${proPrice}
-                </span>
-                <span className="ml-1 text-lg text-muted-foreground">
-                  {proPeriod}
-                </span>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Unlock the full experience 🔥
-              </p>
-              <Button className="mt-8 w-full h-11 gap-2" onClick={handleProCheckout}>
-                Get started <ArrowRight className="size-4" />
-              </Button>
-              <div className="mt-8 border-t pt-6">
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Everything in Free, plus
-                </span>
-                <ul className="mt-4 space-y-3">
-                  {[
-                    "Unlimited monitors",
-                    "Unlimited status pages",
-                    "Unlimited team members",
-                    "10 sec check interval",
-                    "All notification channels",
-                    "Custom domains & branding",
-                    "API access",
-                    "Auto incidents",
-                    "All regions (EU, US, Asia)",
-                    "Unlimited history",
-                  ].map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-2.5 text-sm"
-                    >
-                      <Check className="size-4 text-foreground shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            </FadeIn>
           </div>
         </section>
 
         {/* Feature comparison */}
         <section className="border-t bg-muted/20">
-          <div className="mx-auto max-w-3xl px-6 py-20">
-            <h2 className="text-2xl font-semibold tracking-tight text-center">
-              Compare plans in detail
-            </h2>
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              See exactly what you get on each plan.
-            </p>
-            <div className="mt-12 rounded-xl border bg-background overflow-hidden">
-              {/* Table header */}
-              <div className="grid grid-cols-3 border-b bg-muted/30 px-6 py-4 text-xs font-medium text-muted-foreground">
-                <div>Feature</div>
-                <div className="text-center">Free</div>
-                <div className="text-center">Pro</div>
-              </div>
+          <div className="mx-auto max-w-3xl px-6 py-24">
+            <FadeIn>
+              <h2 className="text-center text-2xl font-semibold tracking-tight lg:text-3xl">
+                Compare plans in detail
+              </h2>
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                See exactly what you get on each plan.
+              </p>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <div className="mt-14 overflow-hidden rounded-xl border bg-background">
+                {/* Table header */}
+                <div className="grid grid-cols-3 border-b bg-muted/30 px-6 py-4 text-xs font-medium text-muted-foreground">
+                  <div>Feature</div>
+                  <div className="text-center">Free</div>
+                  <div className="text-center">Pro</div>
+                </div>
 
-              {featureGroups.map((group, gi) => (
-                <div key={group.label}>
-                  <div
-                    className={`px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50 ${
-                      gi > 0 ? "border-t bg-muted/20" : "bg-muted/20"
-                    }`}
-                  >
-                    {group.label}
-                  </div>
-                  {group.features.map((f, fi) => (
+                {featureGroups.map((group, gi) => (
+                  <div key={group.label}>
                     <div
-                      key={f.name}
-                      className={`grid grid-cols-3 px-6 py-3.5 text-sm ${
-                        fi < group.features.length - 1 ? "border-b border-border/50" : ""
+                      className={`px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50 ${
+                        gi > 0 ? "border-t bg-muted/20" : "bg-muted/20"
                       }`}
                     >
-                      <div className="text-muted-foreground">{f.name}</div>
-                      <div className="text-center">
-                        <FeatureValue value={f.free} />
-                      </div>
-                      <div className="text-center">
-                        <FeatureValue value={f.pro} />
-                      </div>
+                      {group.label}
                     </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                    {group.features.map((f, fi) => (
+                      <div
+                        key={f.name}
+                        className={`grid grid-cols-3 px-6 py-3.5 text-sm ${
+                          fi < group.features.length - 1
+                            ? "border-b border-border/50"
+                            : ""
+                        }`}
+                      >
+                        <div className="text-muted-foreground">{f.name}</div>
+                        <div className="text-center">
+                          <FeatureValue value={f.free} />
+                        </div>
+                        <div className="text-center">
+                          <FeatureValue value={f.pro} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
           </div>
         </section>
 
-        {/* FAQ-style bottom */}
+        {/* CTA */}
         <section className="border-t">
-          <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Questions?
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              The free plan is free forever. Upgrade or downgrade anytime. Cancel
-              anytime. No contracts.
-            </p>
-            <Link to="/login" className="mt-8 inline-block">
-              <Button size="lg" className="gap-2">
-                Start for free <ArrowRight className="size-4" />
-              </Button>
-            </Link>
+          <div className="mx-auto max-w-6xl px-6 py-24 text-center">
+            <FadeIn>
+              <h2 className="text-3xl font-semibold tracking-tight">
+                Start monitoring in under a minute
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                The free plan is free forever. Upgrade or downgrade anytime. No
+                contracts.
+              </p>
+              <Link to="/login" className="mt-8 inline-block">
+                <Button size="lg" className="gap-2">
+                  Get started <ArrowRight className="size-4" />
+                </Button>
+              </Link>
+            </FadeIn>
           </div>
         </section>
       </main>
 
       {/* Footer */}
       <footer className="border-t">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <span className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} unstatus
+            &copy; {new Date().getFullYear()} unstatus
           </span>
           <Link
             to="/"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Home
           </Link>
