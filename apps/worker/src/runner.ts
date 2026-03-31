@@ -1,6 +1,7 @@
 import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
+import { sendNotifications } from "./notify.js";
 import type { Monitor } from "@unstatus/db";
 
 const region = process.env.REGION ?? "eu";
@@ -23,6 +24,10 @@ async function handleAutoIncident(monitor: Monitor, status: string) {
           updates: { create: { status: "investigating", message: "Monitor detected as down." } },
         },
       });
+      sendNotifications(monitor.organizationId, {
+        type: "monitor.down",
+        monitorName: monitor.name,
+      }).catch((e) => console.error("Notification failed:", e));
     }
   } else if (status === "up") {
     // Auto-resolve any open incident
@@ -38,6 +43,10 @@ async function handleAutoIncident(monitor: Monitor, status: string) {
           updates: { create: { status: "resolved", message: "Monitor recovered automatically." } },
         },
       });
+      sendNotifications(monitor.organizationId, {
+        type: "monitor.recovered",
+        monitorName: monitor.name,
+      }).catch((e) => console.error("Notification failed:", e));
     }
   }
 }

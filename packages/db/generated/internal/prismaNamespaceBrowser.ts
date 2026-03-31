@@ -63,7 +63,8 @@ export const ModelName = {
   StatusPage: 'StatusPage',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
-  IncidentUpdate: 'IncidentUpdate'
+  IncidentUpdate: 'IncidentUpdate',
+  NotificationChannel: 'NotificationChannel'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -274,6 +275,25 @@ export const IncidentUpdateScalarFieldEnum = {
 } as const
 
 export type IncidentUpdateScalarFieldEnum = (typeof IncidentUpdateScalarFieldEnum)[keyof typeof IncidentUpdateScalarFieldEnum]
+
+
+export const NotificationChannelScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  name: 'name',
+  type: 'type',
+  webhookUrl: 'webhookUrl',
+  enabled: 'enabled',
+  onIncidentCreated: 'onIncidentCreated',
+  onIncidentResolved: 'onIncidentResolved',
+  onIncidentUpdated: 'onIncidentUpdated',
+  onMonitorDown: 'onMonitorDown',
+  onMonitorRecovered: 'onMonitorRecovered',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
 
 
 export const SortOrder = {

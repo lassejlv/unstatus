@@ -396,7 +396,8 @@ export const ModelName = {
   StatusPage: 'StatusPage',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
-  IncidentUpdate: 'IncidentUpdate'
+  IncidentUpdate: 'IncidentUpdate',
+  NotificationChannel: 'NotificationChannel'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -412,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "member" | "invitation" | "statusPage" | "statusPageMonitor" | "incident" | "incidentUpdate"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "member" | "invitation" | "statusPage" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1378,6 +1379,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    NotificationChannel: {
+      payload: Prisma.$NotificationChannelPayload<ExtArgs>
+      fields: Prisma.NotificationChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotificationChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotificationChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.NotificationChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotificationChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        findMany: {
+          args: Prisma.NotificationChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>[]
+        }
+        create: {
+          args: Prisma.NotificationChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        createMany: {
+          args: Prisma.NotificationChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotificationChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.NotificationChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        update: {
+          args: Prisma.NotificationChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotificationChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotificationChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotificationChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotificationChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.NotificationChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotificationChannel>
+        }
+        groupBy: {
+          args: Prisma.NotificationChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotificationChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationChannelCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1609,6 +1684,25 @@ export const IncidentUpdateScalarFieldEnum = {
 } as const
 
 export type IncidentUpdateScalarFieldEnum = (typeof IncidentUpdateScalarFieldEnum)[keyof typeof IncidentUpdateScalarFieldEnum]
+
+
+export const NotificationChannelScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  name: 'name',
+  type: 'type',
+  webhookUrl: 'webhookUrl',
+  enabled: 'enabled',
+  onIncidentCreated: 'onIncidentCreated',
+  onIncidentResolved: 'onIncidentResolved',
+  onIncidentUpdated: 'onIncidentUpdated',
+  onMonitorDown: 'onMonitorDown',
+  onMonitorRecovered: 'onMonitorRecovered',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1849,6 +1943,7 @@ export type GlobalOmitConfig = {
   statusPageMonitor?: Prisma.StatusPageMonitorOmit
   incident?: Prisma.IncidentOmit
   incidentUpdate?: Prisma.IncidentUpdateOmit
+  notificationChannel?: Prisma.NotificationChannelOmit
 }
 
 /* Types for Logging */

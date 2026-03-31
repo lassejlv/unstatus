@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { useOrg } from "@/components/org-context";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { orpc, client } from "@/orpc/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
@@ -37,6 +41,9 @@ function SettingsPage() {
 
       {/* Members */}
       {activeOrg && <MembersSection orgId={activeOrg.id} />}
+
+      {/* Notifications */}
+      {activeOrg && <NotificationsSection orgId={activeOrg.id} />}
 
       {/* Organizations */}
       <OrgSection />
@@ -201,6 +208,173 @@ function InviteMemberDialog({ orgId }: { orgId: string }) {
             }}
           >
             Invite
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function NotificationsSection({ orgId }: { orgId: string }) {
+  const qc = useQueryClient();
+  const queryOpts = orpc.notifications.list.queryOptions({
+    input: { organizationId: orgId },
+  });
+  const { data: channels } = useQuery(queryOpts);
+
+  const deleteMut = useMutation({
+    ...orpc.notifications.delete.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+      toast.success("Webhook deleted");
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete"),
+  });
+
+  const toggleMut = useMutation({
+    ...orpc.notifications.update.mutationOptions(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryOpts.queryKey }),
+    onError: (err) => toast.error(err.message || "Failed to update"),
+  });
+
+  const testMut = useMutation({
+    ...orpc.notifications.test.mutationOptions(),
+    onSuccess: () => toast.success("Test notification sent"),
+    onError: (err) => toast.error(err.message || "Test failed"),
+  });
+
+  return (
+    <div className="rounded-lg border">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div>
+          <h2 className="text-sm font-medium">Notifications</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Configure Discord webhooks to receive alerts.
+          </p>
+        </div>
+        <AddWebhookDialog orgId={orgId} />
+      </div>
+      {channels?.length ? (
+        <div>
+          {channels.map((ch, i) => (
+            <div
+              key={ch.id}
+              className={`flex items-center justify-between px-4 py-3 ${i < channels.length - 1 ? "border-b" : ""}`}
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{ch.name}</span>
+                  <Badge variant="outline">Discord</Badge>
+                  {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
+                </div>
+                <span className="text-[11px] text-muted-foreground font-mono truncate max-w-xs">
+                  {ch.webhookUrl.replace(/\/webhooks\/\d+\/.*/, "/webhooks/***")}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={ch.enabled}
+                  onCheckedChange={(enabled) =>
+                    toggleMut.mutate({ id: ch.id, enabled })
+                  }
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => testMut.mutate({ id: ch.id })}
+                  disabled={testMut.isPending}
+                >
+                  Test
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => deleteMut.mutate({ id: ch.id })}
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="px-4 py-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            No webhooks configured. Add a Discord webhook to receive notifications.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddWebhookDialog({ orgId }: { orgId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const queryOpts = orpc.notifications.list.queryOptions({
+    input: { organizationId: orgId },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">Add webhook</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Discord webhook</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label>Name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Alerts channel"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Webhook URL</Label>
+            <Input
+              value={webhookUrl}
+              onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder="https://discord.com/api/webhooks/..."
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button
+            disabled={!name || !webhookUrl || loading}
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await client.notifications.create({
+                  organizationId: orgId,
+                  name,
+                  type: "discord",
+                  webhookUrl,
+                });
+                qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+                toast.success("Webhook added");
+                setOpen(false);
+                setName("");
+                setWebhookUrl("");
+              } catch (err: any) {
+                toast.error(err.message || "Failed to add webhook");
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            Add
           </Button>
         </DialogFooter>
       </DialogContent>

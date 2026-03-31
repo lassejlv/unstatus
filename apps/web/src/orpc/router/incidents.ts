@@ -1,5 +1,6 @@
 import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
+import { sendNotifications } from "@/lib/notifications";
 import z from "zod";
 
 const createInput = z.object({
@@ -49,13 +50,21 @@ export const incidentsRouter = {
     const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
     await verifyOrgMembership(context.session.user.id, monitor.organizationId);
     const { message, ...data } = input;
-    return prisma.incident.create({
+    const incident = await prisma.incident.create({
       data: {
         ...data,
         updates: { create: { status: data.status, message } },
       },
       include: { updates: true },
     });
+    sendNotifications(monitor.organizationId, {
+      type: "incident.created",
+      monitorName: monitor.name,
+      title: input.title,
+      severity: input.severity,
+      message,
+    }).catch((e) => console.error("Notification failed:", e));
+    return incident;
   }),
 
   update: authedProcedure
@@ -63,11 +72,11 @@ export const incidentsRouter = {
     .handler(async ({ input, context }) => {
       const incident = await prisma.incident.findUniqueOrThrow({
         where: { id: input.id },
-        include: { monitor: { select: { organizationId: true } } },
+        include: { monitor: { select: { organizationId: true, name: true } } },
       });
       await verifyOrgMembership(context.session.user.id, incident.monitor.organizationId);
       const resolvedAt = input.status === "resolved" ? new Date() : undefined;
-      return prisma.incident.update({
+      const updated = await prisma.incident.update({
         where: { id: input.id },
         data: {
           status: input.status,
@@ -76,6 +85,13 @@ export const incidentsRouter = {
         },
         include: { updates: { orderBy: { createdAt: "desc" } } },
       });
+      const eventType = input.status === "resolved" ? "incident.resolved" as const : "incident.updated" as const;
+      const event = eventType === "incident.resolved"
+        ? { type: eventType, monitorName: incident.monitor.name, title: incident.title }
+        : { type: eventType, monitorName: incident.monitor.name, title: incident.title, status: input.status, message: input.message };
+      sendNotifications(incident.monitor.organizationId, event)
+        .catch((e) => console.error("Notification failed:", e));
+      return updated;
     }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
