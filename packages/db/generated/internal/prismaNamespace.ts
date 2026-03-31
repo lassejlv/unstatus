@@ -1717,6 +1717,7 @@ export const StatusPageScalarFieldEnum = {
   headerText: 'headerText',
   footerText: 'footerText',
   customCss: 'customCss',
+  showResponseTimes: 'showResponseTimes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
