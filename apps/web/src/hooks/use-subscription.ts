@@ -1,16 +1,14 @@
-import { skipToken, useQuery } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
-import { useOrg } from "@/components/org-context";
+import { useCustomer } from "autumn-js/react";
 
 export function useSubscription() {
-  const { activeOrg } = useOrg();
-  const { data, isLoading } = useQuery(
-    orpc.billing.getSubscription.queryOptions({
-      input: activeOrg ? { organizationId: activeOrg.id } : skipToken,
-    }),
-  );
-  return {
-    isPro: data?.subscriptionActive ?? false,
-    isLoading,
-  };
+  const customerResult = useCustomer({
+    expand: ["invoices", "subscriptions.plan"],
+  });
+  const { data: customer, isLoading } = customerResult;
+
+  const isPro = customer?.subscriptions?.some(
+    (sub) => !sub.autoEnable && sub.status === "active",
+  ) ?? false;
+
+  return { isPro, isLoading, customer, ...customerResult };
 }

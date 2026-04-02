@@ -386,6 +386,7 @@ export type MonitorWhereInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupListRelationFilter
   statusPageMonitors?: Prisma.StatusPageMonitorListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
+  dependencies?: Prisma.MonitorDependencyListRelationFilter
 }
 
 export type MonitorOrderByWithRelationInput = {
@@ -420,6 +421,7 @@ export type MonitorOrderByWithRelationInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupOrderByRelationAggregateInput
   statusPageMonitors?: Prisma.StatusPageMonitorOrderByRelationAggregateInput
   incidents?: Prisma.IncidentOrderByRelationAggregateInput
+  dependencies?: Prisma.MonitorDependencyOrderByRelationAggregateInput
 }
 
 export type MonitorWhereUniqueInput = Prisma.AtLeast<{
@@ -457,6 +459,7 @@ export type MonitorWhereUniqueInput = Prisma.AtLeast<{
   dailyRollups?: Prisma.MonitorCheckDailyRollupListRelationFilter
   statusPageMonitors?: Prisma.StatusPageMonitorListRelationFilter
   incidents?: Prisma.IncidentListRelationFilter
+  dependencies?: Prisma.MonitorDependencyListRelationFilter
 }, "id">
 
 export type MonitorOrderByWithAggregationInput = {
@@ -554,6 +557,7 @@ export type MonitorCreateInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateInput = {
@@ -587,6 +591,7 @@ export type MonitorUncheckedCreateInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUpdateInput = {
@@ -620,6 +625,7 @@ export type MonitorUpdateInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateInput = {
@@ -653,6 +659,7 @@ export type MonitorUncheckedUpdateInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateManyInput = {
@@ -975,6 +982,20 @@ export type MonitorUpdateOneRequiredWithoutIncidentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MonitorUpdateToOneWithWhereWithoutIncidentsInput, Prisma.MonitorUpdateWithoutIncidentsInput>, Prisma.MonitorUncheckedUpdateWithoutIncidentsInput>
 }
 
+export type MonitorCreateNestedOneWithoutDependenciesInput = {
+  create?: Prisma.XOR<Prisma.MonitorCreateWithoutDependenciesInput, Prisma.MonitorUncheckedCreateWithoutDependenciesInput>
+  connectOrCreate?: Prisma.MonitorCreateOrConnectWithoutDependenciesInput
+  connect?: Prisma.MonitorWhereUniqueInput
+}
+
+export type MonitorUpdateOneRequiredWithoutDependenciesNestedInput = {
+  create?: Prisma.XOR<Prisma.MonitorCreateWithoutDependenciesInput, Prisma.MonitorUncheckedCreateWithoutDependenciesInput>
+  connectOrCreate?: Prisma.MonitorCreateOrConnectWithoutDependenciesInput
+  upsert?: Prisma.MonitorUpsertWithoutDependenciesInput
+  connect?: Prisma.MonitorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MonitorUpdateToOneWithWhereWithoutDependenciesInput, Prisma.MonitorUpdateWithoutDependenciesInput>, Prisma.MonitorUncheckedUpdateWithoutDependenciesInput>
+}
+
 export type MonitorCreateWithoutOrganizationInput = {
   id?: string
   name: string
@@ -1005,6 +1026,7 @@ export type MonitorCreateWithoutOrganizationInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutOrganizationInput = {
@@ -1037,6 +1059,7 @@ export type MonitorUncheckedCreateWithoutOrganizationInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutOrganizationInput = {
@@ -1126,6 +1149,7 @@ export type MonitorCreateWithoutChecksInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutChecksInput = {
@@ -1158,6 +1182,7 @@ export type MonitorUncheckedCreateWithoutChecksInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutChecksInput = {
@@ -1206,6 +1231,7 @@ export type MonitorUpdateWithoutChecksInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutChecksInput = {
@@ -1238,6 +1264,7 @@ export type MonitorUncheckedUpdateWithoutChecksInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateWithoutHourlyRollupsInput = {
@@ -1270,6 +1297,7 @@ export type MonitorCreateWithoutHourlyRollupsInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutHourlyRollupsInput = {
@@ -1302,6 +1330,7 @@ export type MonitorUncheckedCreateWithoutHourlyRollupsInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutHourlyRollupsInput = {
@@ -1350,6 +1379,7 @@ export type MonitorUpdateWithoutHourlyRollupsInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutHourlyRollupsInput = {
@@ -1382,6 +1412,7 @@ export type MonitorUncheckedUpdateWithoutHourlyRollupsInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateWithoutDailyRollupsInput = {
@@ -1414,6 +1445,7 @@ export type MonitorCreateWithoutDailyRollupsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutDailyRollupsInput = {
@@ -1446,6 +1478,7 @@ export type MonitorUncheckedCreateWithoutDailyRollupsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutDailyRollupsInput = {
@@ -1494,6 +1527,7 @@ export type MonitorUpdateWithoutDailyRollupsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutDailyRollupsInput = {
@@ -1526,6 +1560,7 @@ export type MonitorUncheckedUpdateWithoutDailyRollupsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateWithoutStatusPageMonitorsInput = {
@@ -1558,6 +1593,7 @@ export type MonitorCreateWithoutStatusPageMonitorsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupCreateNestedManyWithoutMonitorInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutStatusPageMonitorsInput = {
@@ -1590,6 +1626,7 @@ export type MonitorUncheckedCreateWithoutStatusPageMonitorsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedCreateNestedManyWithoutMonitorInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutStatusPageMonitorsInput = {
@@ -1638,6 +1675,7 @@ export type MonitorUpdateWithoutStatusPageMonitorsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUpdateManyWithoutMonitorNestedInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutStatusPageMonitorsInput = {
@@ -1670,6 +1708,7 @@ export type MonitorUncheckedUpdateWithoutStatusPageMonitorsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateWithoutIncidentsInput = {
@@ -1702,6 +1741,7 @@ export type MonitorCreateWithoutIncidentsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupCreateNestedManyWithoutMonitorInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorUncheckedCreateWithoutIncidentsInput = {
@@ -1734,6 +1774,7 @@ export type MonitorUncheckedCreateWithoutIncidentsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedCreateNestedManyWithoutMonitorInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
+  dependencies?: Prisma.MonitorDependencyUncheckedCreateNestedManyWithoutMonitorInput
 }
 
 export type MonitorCreateOrConnectWithoutIncidentsInput = {
@@ -1782,6 +1823,7 @@ export type MonitorUpdateWithoutIncidentsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUpdateManyWithoutMonitorNestedInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutIncidentsInput = {
@@ -1814,6 +1856,155 @@ export type MonitorUncheckedUpdateWithoutIncidentsInput = {
   hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
+}
+
+export type MonitorCreateWithoutDependenciesInput = {
+  id?: string
+  name: string
+  type: string
+  active?: boolean
+  interval?: number
+  timeout?: number
+  url?: string | null
+  method?: string | null
+  headers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  body?: string | null
+  host?: string | null
+  port?: number | null
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
+  nextCheckAt?: Date | string | null
+  lastStatus?: string | null
+  lastLatency?: number | null
+  lastStatusCode?: number | null
+  lastRegion?: string | null
+  lastMessage?: string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutMonitorsInput
+  checks?: Prisma.MonitorCheckCreateNestedManyWithoutMonitorInput
+  hourlyRollups?: Prisma.MonitorCheckHourlyRollupCreateNestedManyWithoutMonitorInput
+  dailyRollups?: Prisma.MonitorCheckDailyRollupCreateNestedManyWithoutMonitorInput
+  statusPageMonitors?: Prisma.StatusPageMonitorCreateNestedManyWithoutMonitorInput
+  incidents?: Prisma.IncidentCreateNestedManyWithoutMonitorInput
+}
+
+export type MonitorUncheckedCreateWithoutDependenciesInput = {
+  id?: string
+  organizationId: string
+  name: string
+  type: string
+  active?: boolean
+  interval?: number
+  timeout?: number
+  url?: string | null
+  method?: string | null
+  headers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  body?: string | null
+  host?: string | null
+  port?: number | null
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  lastCheckedAt?: Date | string | null
+  nextCheckAt?: Date | string | null
+  lastStatus?: string | null
+  lastLatency?: number | null
+  lastStatusCode?: number | null
+  lastRegion?: string | null
+  lastMessage?: string | null
+  checks?: Prisma.MonitorCheckUncheckedCreateNestedManyWithoutMonitorInput
+  hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedCreateNestedManyWithoutMonitorInput
+  dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedCreateNestedManyWithoutMonitorInput
+  statusPageMonitors?: Prisma.StatusPageMonitorUncheckedCreateNestedManyWithoutMonitorInput
+  incidents?: Prisma.IncidentUncheckedCreateNestedManyWithoutMonitorInput
+}
+
+export type MonitorCreateOrConnectWithoutDependenciesInput = {
+  where: Prisma.MonitorWhereUniqueInput
+  create: Prisma.XOR<Prisma.MonitorCreateWithoutDependenciesInput, Prisma.MonitorUncheckedCreateWithoutDependenciesInput>
+}
+
+export type MonitorUpsertWithoutDependenciesInput = {
+  update: Prisma.XOR<Prisma.MonitorUpdateWithoutDependenciesInput, Prisma.MonitorUncheckedUpdateWithoutDependenciesInput>
+  create: Prisma.XOR<Prisma.MonitorCreateWithoutDependenciesInput, Prisma.MonitorUncheckedCreateWithoutDependenciesInput>
+  where?: Prisma.MonitorWhereInput
+}
+
+export type MonitorUpdateToOneWithWhereWithoutDependenciesInput = {
+  where?: Prisma.MonitorWhereInput
+  data: Prisma.XOR<Prisma.MonitorUpdateWithoutDependenciesInput, Prisma.MonitorUncheckedUpdateWithoutDependenciesInput>
+}
+
+export type MonitorUpdateWithoutDependenciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.IntFieldUpdateOperationsInput | number
+  timeout?: Prisma.IntFieldUpdateOperationsInput | number
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  headers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLatency?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastStatusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastRegion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutMonitorsNestedInput
+  checks?: Prisma.MonitorCheckUpdateManyWithoutMonitorNestedInput
+  hourlyRollups?: Prisma.MonitorCheckHourlyRollupUpdateManyWithoutMonitorNestedInput
+  dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
+  statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
+  incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+}
+
+export type MonitorUncheckedUpdateWithoutDependenciesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  interval?: Prisma.IntFieldUpdateOperationsInput | number
+  timeout?: Prisma.IntFieldUpdateOperationsInput | number
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  method?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  headers?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  body?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  host?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  port?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  autoIncidents?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLatency?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastStatusCode?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastRegion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  checks?: Prisma.MonitorCheckUncheckedUpdateManyWithoutMonitorNestedInput
+  hourlyRollups?: Prisma.MonitorCheckHourlyRollupUncheckedUpdateManyWithoutMonitorNestedInput
+  dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
+  statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
+  incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorCreateManyOrganizationInput = {
@@ -1873,6 +2064,7 @@ export type MonitorUpdateWithoutOrganizationInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateWithoutOrganizationInput = {
@@ -1905,6 +2097,7 @@ export type MonitorUncheckedUpdateWithoutOrganizationInput = {
   dailyRollups?: Prisma.MonitorCheckDailyRollupUncheckedUpdateManyWithoutMonitorNestedInput
   statusPageMonitors?: Prisma.StatusPageMonitorUncheckedUpdateManyWithoutMonitorNestedInput
   incidents?: Prisma.IncidentUncheckedUpdateManyWithoutMonitorNestedInput
+  dependencies?: Prisma.MonitorDependencyUncheckedUpdateManyWithoutMonitorNestedInput
 }
 
 export type MonitorUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1945,6 +2138,7 @@ export type MonitorCountOutputType = {
   dailyRollups: number
   statusPageMonitors: number
   incidents: number
+  dependencies: number
 }
 
 export type MonitorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1953,6 +2147,7 @@ export type MonitorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   dailyRollups?: boolean | MonitorCountOutputTypeCountDailyRollupsArgs
   statusPageMonitors?: boolean | MonitorCountOutputTypeCountStatusPageMonitorsArgs
   incidents?: boolean | MonitorCountOutputTypeCountIncidentsArgs
+  dependencies?: boolean | MonitorCountOutputTypeCountDependenciesArgs
 }
 
 /**
@@ -2000,6 +2195,13 @@ export type MonitorCountOutputTypeCountIncidentsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.IncidentWhereInput
 }
 
+/**
+ * MonitorCountOutputType without action
+ */
+export type MonitorCountOutputTypeCountDependenciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MonitorDependencyWhereInput
+}
+
 
 export type MonitorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2033,6 +2235,7 @@ export type MonitorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   dailyRollups?: boolean | Prisma.Monitor$dailyRollupsArgs<ExtArgs>
   statusPageMonitors?: boolean | Prisma.Monitor$statusPageMonitorsArgs<ExtArgs>
   incidents?: boolean | Prisma.Monitor$incidentsArgs<ExtArgs>
+  dependencies?: boolean | Prisma.Monitor$dependenciesArgs<ExtArgs>
   _count?: boolean | Prisma.MonitorCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monitor"]>
 
@@ -2130,6 +2333,7 @@ export type MonitorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   dailyRollups?: boolean | Prisma.Monitor$dailyRollupsArgs<ExtArgs>
   statusPageMonitors?: boolean | Prisma.Monitor$statusPageMonitorsArgs<ExtArgs>
   incidents?: boolean | Prisma.Monitor$incidentsArgs<ExtArgs>
+  dependencies?: boolean | Prisma.Monitor$dependenciesArgs<ExtArgs>
   _count?: boolean | Prisma.MonitorCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MonitorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2148,6 +2352,7 @@ export type $MonitorPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     dailyRollups: Prisma.$MonitorCheckDailyRollupPayload<ExtArgs>[]
     statusPageMonitors: Prisma.$StatusPageMonitorPayload<ExtArgs>[]
     incidents: Prisma.$IncidentPayload<ExtArgs>[]
+    dependencies: Prisma.$MonitorDependencyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2575,6 +2780,7 @@ export interface Prisma__MonitorClient<T, Null = never, ExtArgs extends runtime.
   dailyRollups<T extends Prisma.Monitor$dailyRollupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Monitor$dailyRollupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MonitorCheckDailyRollupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   statusPageMonitors<T extends Prisma.Monitor$statusPageMonitorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Monitor$statusPageMonitorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusPageMonitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   incidents<T extends Prisma.Monitor$incidentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Monitor$incidentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncidentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  dependencies<T extends Prisma.Monitor$dependenciesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Monitor$dependenciesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MonitorDependencyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3147,6 +3353,30 @@ export type Monitor$incidentsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.IncidentScalarFieldEnum | Prisma.IncidentScalarFieldEnum[]
+}
+
+/**
+ * Monitor.dependencies
+ */
+export type Monitor$dependenciesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MonitorDependency
+   */
+  select?: Prisma.MonitorDependencySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MonitorDependency
+   */
+  omit?: Prisma.MonitorDependencyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MonitorDependencyInclude<ExtArgs> | null
+  where?: Prisma.MonitorDependencyWhereInput
+  orderBy?: Prisma.MonitorDependencyOrderByWithRelationInput | Prisma.MonitorDependencyOrderByWithRelationInput[]
+  cursor?: Prisma.MonitorDependencyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MonitorDependencyScalarFieldEnum | Prisma.MonitorDependencyScalarFieldEnum[]
 }
 
 /**

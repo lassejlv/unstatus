@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { client } from "@/orpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useCustomer, useListPlans } from "autumn-js/react";
 import { ProBadge } from "@/components/upgrade-badge";
 import {
   Card,
@@ -73,11 +75,6 @@ type NotificationChannelRow = {
   updatedAt: Date;
 };
 
-type SubscriptionRow = {
-  subscriptionActive: boolean;
-  subscriptionPlanName: string | null;
-  cancelAtPeriodEnd: boolean;
-};
 
 const MAX_ORGANIZATIONS = 3;
 
@@ -147,26 +144,27 @@ function SettingsPage() {
 }
 
 function OrgDetails({ orgId }: { orgId: string }) {
-  const { data: org } = authClient.useActiveOrganization();
+  const { activeOrg } = useOrg();
   const { data: session } = authClient.useSession();
-  const [name, setName] = useState(org?.name ?? "");
-  const [slug, setSlug] = useState(org?.slug ?? "");
+  const [name, setName] = useState(activeOrg?.name ?? "");
+  const [slug, setSlug] = useState(activeOrg?.slug ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (org) {
-      setName(org.name);
-      setSlug(org.slug);
+    if (activeOrg) {
+      setName(activeOrg.name);
+      setSlug(activeOrg.slug);
     }
-  }, [org?.name, org?.slug]);
+  }, [activeOrg?.name, activeOrg?.slug]);
 
-  if (!org) return null;
+  if (!activeOrg) return <Spinner className="mx-auto my-8 size-5" />;
 
+  const org = activeOrg;
   const userId = session?.user.id;
-  const members = (org as any).members ?? [];
+  const { data: members } = authClient.useListMembers({ query: { organizationId: orgId } });
   const currentMember = userId
-    ? members.find((member: any) => member.userId === userId || member.user?.id === userId)
+    ? members?.data?.find((m: any) => m.userId === userId)
     : null;
   const isOwner = currentMember?.role === "owner";
   const isPersonalOrg = Boolean(
@@ -645,17 +643,29 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
   );
 }
 
-function BillingSection({ orgId }: { orgId: string }) {
+function BillingSection({ orgId: _orgId }: { orgId: string }) {
+  const { isPro, customer } = useSubscription();
+  const { attach, updateSubscription, setupPayment, openCustomerPortal } = useCustomer();
   const [loading, setLoading] = useState(false);
-  const { data } = useQuery({
-    queryKey: ["billing", orgId],
-    queryFn: () => client.billing.getSubscription({ organizationId: orgId }),
-  });
 
-  const subscription = data as SubscriptionRow | undefined;
+  const activeSub = customer?.subscriptions?.find(
+    (s) => s.status === "active" && !s.autoEnable,
+  );
+  const isCanceling = activeSub?.canceledAt != null;
+  const periodEnd = activeSub?.currentPeriodEnd
+    ? new Date(activeSub.currentPeriodEnd).toLocaleDateString()
+    : null;
 
-  const isActive = subscription?.subscriptionActive ?? false;
-  const planName = subscription?.subscriptionPlanName ?? "Free";
+  // paymentMethod shape varies — try nested .card first, then top-level fields
+  const pm = customer?.paymentMethod as Record<string, any> | null | undefined;
+  const card = pm?.card ?? pm;
+  const cardBrand = card?.brand as string | undefined;
+  const cardLast4 = card?.last4 as string | undefined;
+  const cardExpMonth = card?.exp_month as number | undefined;
+  const cardExpYear = card?.exp_year as number | undefined;
+  const hasCard = Boolean(cardLast4);
+
+  const recentInvoices = customer?.invoices?.slice(0, 5);
 
   return (
     <Card>
@@ -665,71 +675,375 @@ function BillingSection({ orgId }: { orgId: string }) {
           Manage your subscription and billing.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
+        {/* Current plan */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">
-                {isActive ? planName : "Free"}
+                {activeSub?.plan?.name ?? (isPro ? "Pro" : "Free")}
               </span>
-              <Badge variant={isActive ? "default" : "secondary"}>
-                {isActive ? "Active" : "Free"}
-              </Badge>
+              {isCanceling ? (
+                <Badge variant="secondary">Canceling</Badge>
+              ) : (
+                <Badge variant={isPro ? "default" : "secondary"}>
+                  {isPro ? "Active" : "Free"}
+                </Badge>
+              )}
             </div>
-            {isActive && (
+            {isPro && activeSub?.plan?.price ? (
               <span className="text-xs text-muted-foreground">
-                {subscription?.cancelAtPeriodEnd
-                  ? "Cancels at end of billing period"
-                  : "$15/month"}
+                {activeSub.plan.price.display?.primaryText ?? `$${activeSub.plan.price.amount}`}
+                {" "}
+                {activeSub.plan.price.display?.secondaryText ?? `/ ${activeSub.plan.price.interval}`}
               </span>
-            )}
-            {!isActive && (
+            ) : !isPro ? (
               <span className="text-xs text-muted-foreground">
                 Upgrade to unlock all features
               </span>
-            )}
+            ) : null}
           </div>
           <div className="flex items-center gap-2">
-            {isActive && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    await authClient.customer.portal();
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                Manage subscription
-              </Button>
-            )}
-            {!isActive && (
-              <Button
-                size="sm"
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    await authClient.checkoutEmbed({
-                      slug: "pro",
-                      referenceId: orgId,
-                    });
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                Upgrade to Pro
-              </Button>
+            {!isPro && <UpgradePlanDialog attach={attach} />}
+            {isPro && activeSub && <UpgradePlanDialog attach={attach} currentPlanId={activeSub.planId} />}
+          </div>
+        </div>
+
+        {/* Subscription details */}
+        {isPro && activeSub && (
+          <>
+            <div className="rounded-lg border divide-y text-sm">
+              {periodEnd && (
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <span className="text-muted-foreground">
+                    {isCanceling ? "Access until" : "Next billing date"}
+                  </span>
+                  <span className="font-medium">{periodEnd}</span>
+                </div>
+              )}
+              {activeSub.trialEndsAt && (
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <span className="text-muted-foreground">Trial ends</span>
+                  <span className="font-medium">
+                    {new Date(activeSub.trialEndsAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between px-3 py-2.5">
+                <span className="text-muted-foreground">Started</span>
+                <span className="font-medium">
+                  {new Date(activeSub.startedAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Cancel / reactivate */}
+            <div className="flex items-center justify-between">
+              {isCanceling ? (
+                <>
+                  <span className="text-xs text-muted-foreground">
+                    Your subscription will end on {periodEnd}
+                  </span>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={loading}>
+                        Reactivate
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reactivate subscription?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Your {activeSub.plan?.name ?? "Pro"} subscription will continue and you will be billed at the next billing cycle on {periodEnd}.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Nevermind</AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={loading}
+                          onClick={async () => {
+                            setLoading(true);
+                            try {
+                              await updateSubscription({
+                                planId: activeSub.planId,
+                                cancelAction: "uncancel",
+                              });
+                              toast.success("Subscription reactivated");
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                        >
+                          Reactivate
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs text-muted-foreground" />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        disabled={loading}
+                      >
+                        Cancel subscription
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel subscription?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Your {activeSub.plan?.name ?? "Pro"} plan will remain active until {periodEnd}. After that, you'll lose access to Pro features including unlimited monitors, custom domains, and all regions.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Keep subscription</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={loading}
+                          onClick={async () => {
+                            setLoading(true);
+                            try {
+                              await updateSubscription({
+                                planId: activeSub.planId,
+                                cancelAction: "cancel_end_of_cycle",
+                              });
+                              toast.success("Subscription will cancel at end of billing period");
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                        >
+                          Cancel subscription
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Payment method */}
+        <div>
+          <span className="text-xs font-medium text-muted-foreground">
+            Payment method
+          </span>
+          <div className="mt-2 rounded-lg border text-sm">
+            {hasCard ? (
+              <div className="flex items-center justify-between px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  {cardBrand && <span className="font-medium capitalize">{cardBrand}</span>}
+                  <span className="text-muted-foreground font-mono">
+                    **** {cardLast4}
+                  </span>
+                  {cardExpMonth && cardExpYear && (
+                    <span className="text-xs text-muted-foreground">
+                      {String(cardExpMonth).padStart(2, "0")}/{cardExpYear}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      await setupPayment();
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  Update
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between px-3 py-2.5">
+                <span className="text-muted-foreground">No payment method on file</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      await setupPayment();
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  Add payment method
+                </Button>
+              </div>
             )}
           </div>
         </div>
+
+        {/* Recent invoices */}
+        {recentInvoices && recentInvoices.length > 0 && (
+          <div>
+            <span className="text-xs font-medium text-muted-foreground">
+              Invoices
+            </span>
+            <div className="mt-2 rounded-lg border divide-y text-sm">
+              {recentInvoices.map((inv) => (
+                <div
+                  key={inv.stripeId}
+                  className="flex items-center justify-between px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      {new Date(inv.createdAt).toLocaleDateString()}
+                    </span>
+                    <Badge variant={inv.status === "paid" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                      {inv.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium font-mono">
+                      ${inv.total.toFixed(2)} {inv.currency.toUpperCase()}
+                    </span>
+                    {inv.hostedInvoiceUrl && (
+                      <a
+                        href={inv.hostedInvoiceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        View
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Stripe portal link */}
+        {isPro && (
+          <div className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  await openCustomerPortal();
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Open Stripe billing portal
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+function UpgradePlanDialog({
+  attach,
+  currentPlanId,
+}: {
+  attach: (params: { planId: string }) => Promise<any>;
+  currentPlanId?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { data: plans } = useListPlans();
+
+  const availablePlans = plans?.filter((p) => !p.addOn && !p.autoEnable && p.id !== currentPlanId) ?? [];
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          {currentPlanId ? "Change plan" : "Upgrade"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {currentPlanId ? "Change plan" : "Choose a plan"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          {availablePlans.length === 0 && (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No other plans available.
+            </p>
+          )}
+          {availablePlans.map((plan) => (
+            <button
+              key={plan.id}
+              type="button"
+              disabled={loading}
+              className="flex items-center justify-between rounded-lg border p-4 text-left transition-colors hover:bg-accent/50 disabled:opacity-50"
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  await attach({ planId: plan.id });
+                  setOpen(false);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{plan.name}</span>
+                {plan.description && (
+                  <span className="text-xs text-muted-foreground">{plan.description}</span>
+                )}
+                {plan.items.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {plan.items.slice(0, 4).map((item) => (
+                      <Badge key={item.featureId} variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {item.feature?.name ?? item.featureId}
+                      </Badge>
+                    ))}
+                    {plan.items.length > 4 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        +{plan.items.length - 4} more
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="shrink-0 text-right">
+                {plan.price ? (
+                  <div className="flex flex-col items-end">
+                    <span className="text-lg font-semibold font-mono">
+                      {plan.price.display?.primaryText ?? `€${plan.price.amount}`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {plan.price.display?.secondaryText ?? `/ ${plan.price.interval}`}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-medium">Free</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

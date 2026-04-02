@@ -126,3 +126,23 @@ export type IncidentUpdate = Prisma.IncidentUpdateModel
  * 
  */
 export type NotificationChannel = Prisma.NotificationChannelModel
+/**
+ * Model ExternalService
+ * 
+ */
+export type ExternalService = Prisma.ExternalServiceModel
+/**
+ * Model ExternalServiceComponent
+ * 
+ */
+export type ExternalServiceComponent = Prisma.ExternalServiceComponentModel
+/**
+ * Model ExternalServiceStatus
+ * 
+ */
+export type ExternalServiceStatus = Prisma.ExternalServiceStatusModel
+/**
+ * Model MonitorDependency
+ * 
+ */
+export type MonitorDependency = Prisma.MonitorDependencyModel

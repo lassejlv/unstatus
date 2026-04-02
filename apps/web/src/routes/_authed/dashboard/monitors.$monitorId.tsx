@@ -160,6 +160,9 @@ function MonitorDetailPage() {
         {monitor.interval}s interval · {monitor.timeout}s timeout
       </p>
 
+      {/* Dependencies */}
+      <MonitorDependencies monitorId={monitor.id} />
+
       <h2 className="text-xs font-medium">Check history</h2>
       {checks?.length ? (
         <Table>
@@ -553,6 +556,174 @@ function HeadersEditor({
           <Button type="button" variant="ghost" size="sm" className="h-9 px-2 text-xs" onClick={() => onChange(headers.filter((_, j) => j !== i))}>×</Button>
         </div>
       ))}
+    </div>
+  );
+}
+
+function MonitorDependencies({ monitorId }: { monitorId: string }) {
+  const qc = useQueryClient();
+  const depsOpts = orpc.dependencies.listForMonitor.queryOptions({ input: { monitorId } });
+  const { data: deps } = useQuery(depsOpts);
+  const { data: services } = useQuery(
+    orpc.dependencies.listExternalServices.queryOptions({ input: undefined }),
+  );
+  const [addOpen, setAddOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const addDep = useMutation({
+    ...orpc.dependencies.add.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: depsOpts.queryKey });
+      setAddOpen(false);
+      setSelectedServiceId("");
+      setSearchQuery("");
+      toast.success("Dependency added");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to add dependency");
+    },
+  });
+
+  const removeDep = useMutation({
+    ...orpc.dependencies.remove.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: depsOpts.queryKey });
+      toast.success("Dependency removed");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to remove dependency");
+    },
+  });
+
+  const existingServiceIds = new Set(deps?.map((d) => d.externalServiceId) ?? []);
+  const filteredServices = services?.filter(
+    (s) =>
+      !existingServiceIds.has(s.id) &&
+      (searchQuery === "" || s.name.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
+  const STATUS_COLORS: Record<string, string> = {
+    operational: "bg-emerald-500",
+    degraded_performance: "bg-yellow-500",
+    partial_outage: "bg-orange-500",
+    major_outage: "bg-red-500",
+    maintenance: "bg-blue-500",
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-medium">Dependencies</h2>
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-6 text-xs">
+              + Add
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add dependency</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              <Input
+                placeholder="Search services..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
+                {filteredServices?.length === 0 && (
+                  <p className="p-3 text-xs text-muted-foreground">No services found.</p>
+                )}
+                {filteredServices?.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-colors ${
+                      selectedServiceId === s.id ? "bg-accent" : ""
+                    }`}
+                    onClick={() => setSelectedServiceId(s.id)}
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded border bg-background">
+                      {s.logoUrl ? (
+                        <img src={s.logoUrl} alt={s.name} className="size-4 rounded" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          {s.name.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm">{s.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
+                    </div>
+                    <span
+                      className={`size-2 rounded-full ${
+                        STATUS_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                disabled={!selectedServiceId || addDep.isPending}
+                onClick={() =>
+                  addDep.mutate({
+                    monitorId,
+                    externalServiceId: selectedServiceId,
+                  })
+                }
+              >
+                Add
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {deps && deps.length > 0 ? (
+        <div className="rounded-lg border divide-y">
+          {deps.map((dep) => (
+            <div key={dep.id} className="flex items-center gap-3 px-3 py-2">
+              <span
+                className={`size-2 shrink-0 rounded-full ${
+                  STATUS_COLORS[dep.externalService.currentStatus ?? ""] ?? "bg-muted-foreground"
+                }`}
+              />
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium">{dep.externalService.name}</span>
+                {dep.externalComponent && (
+                  <span className="text-xs text-muted-foreground">
+                    {" "}
+                    / {dep.externalComponent.name}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-muted-foreground">
+                {dep.externalService.category}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => removeDep.mutate({ id: dep.id })}
+                disabled={removeDep.isPending}
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-muted-foreground">
+          No dependencies — link external services this monitor depends on.
+        </p>
+      )}
     </div>
   );
 }

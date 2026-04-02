@@ -333,6 +333,12 @@ function HomePage() {
           </Link>
           <nav className="flex items-center gap-6">
             <Link
+              to="/registry"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Registry
+            </Link>
+            <Link
               to="/pricing"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >

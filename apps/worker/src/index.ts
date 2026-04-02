@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { runChecks, runSingleCheck } from "./runner.js";
 import { runMonitorPerfMaintenance } from "./monitor-perf.js";
+import { runExternalServiceChecks, runExternalServiceMaintenance } from "./external-service-runner.js";
 
 const app = new Hono();
 
@@ -13,6 +14,16 @@ app.post("/run", async (c) => {
     return c.json({ error: "unauthorized" }, 401);
   }
   const result = await runChecks();
+  return c.json(result);
+});
+
+// Trigger external service status checks
+app.post("/run-external", async (c) => {
+  const secret = c.req.header("x-worker-secret");
+  if (secret !== process.env.WORKER_SECRET) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+  const result = await runExternalServiceChecks();
   return c.json(result);
 });
 
@@ -42,4 +53,12 @@ const MAINTENANCE_INTERVAL = 6 * 60 * 60 * 1000;
 runMonitorPerfMaintenance().catch((e) => console.error("Perf maintenance failed:", e));
 setInterval(() => {
   runMonitorPerfMaintenance().catch((e) => console.error("Perf maintenance failed:", e));
+  runExternalServiceMaintenance().catch((e) => console.error("External service maintenance failed:", e));
 }, MAINTENANCE_INTERVAL);
+
+// External service status polling (every 60s)
+const EXT_POLL_INTERVAL = Number(process.env.EXT_POLL_INTERVAL ?? 60) * 1000;
+setInterval(() => {
+  runExternalServiceChecks().catch((e) => console.error("External service check failed:", e));
+}, EXT_POLL_INTERVAL);
+console.log(`External service polling every ${EXT_POLL_INTERVAL / 1000}s`);

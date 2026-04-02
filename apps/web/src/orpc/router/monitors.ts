@@ -5,8 +5,8 @@ import {
   ORG_MANAGER_ROLES,
   verifyOrgMembership,
   verifyOrgRole,
-  getOrgSubscription,
-  requirePro,
+  checkFeature,
+  requireFeature,
 } from "@/orpc/procedures";
 import { ORPCError } from "@orpc/server";
 import { Prisma } from "@unstatus/db";
@@ -240,15 +240,13 @@ export const monitorsRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    const { isPro } = await getOrgSubscription(input.organizationId);
+    const orgId = input.organizationId;
 
-    if (!isPro) {
-      const count = await prisma.monitor.count({ where: { organizationId: input.organizationId } });
-      if (count >= 5) requirePro(false, "More than 5 monitors");
-      if (input.type === "ping") requirePro(false, "Ping monitors");
-      if (input.autoIncidents) requirePro(false, "Auto-create incidents");
-      if (input.interval < 300) requirePro(false, "Check intervals under 5 minutes");
-      if (input.regions.length > 1) requirePro(false, "Multiple regions");
+    if (input.autoIncidents) {
+      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
+    }
+    if (input.regions.length > 1) {
+      requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");
     }
 
     return prisma.monitor.create({ data: toMonitorCreateData(input) });
@@ -259,12 +257,13 @@ export const monitorsRouter = {
     const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id } });
     await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
 
-    const { isPro } = await getOrgSubscription(monitor.organizationId);
-    if (!isPro) {
-      if (data.type === "ping") requirePro(false, "Ping monitors");
-      if (data.autoIncidents) requirePro(false, "Auto-create incidents");
-      if (data.interval !== undefined && data.interval < 300) requirePro(false, "Check intervals under 5 minutes");
-      if (data.regions && data.regions.length > 1) requirePro(false, "Multiple regions");
+    const orgId = monitor.organizationId;
+
+    if (data.autoIncidents) {
+      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
+    }
+    if (data.regions && data.regions.length > 1) {
+      requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");
     }
 
     return prisma.monitor.update({ where: { id }, data: toMonitorUpdateData(data) });

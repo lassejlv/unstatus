@@ -144,6 +144,7 @@ model Monitor {
   dailyRollups  MonitorCheckDailyRollup[]
   statusPageMonitors StatusPageMonitor[]
   incidents   Incident[]
+  dependencies MonitorDependency[]
 
   @@index([organizationId])
   @@index([active])
@@ -248,6 +249,7 @@ model StatusPage {
   footerText         String?
   customCss          String?
   showResponseTimes  Boolean  @default(true)
+  showDependencies   Boolean  @default(false)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -345,4 +347,97 @@ model NotificationChannel {
 
   @@index([organizationId])
   @@map("notification_channel")
+}
+
+// --- Global Status Registry ---
+
+model ExternalService {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  website       String?
+  logoUrl       String?
+  category      String   // "hosting" | "cdn" | "database" | "api" | "devtools" | "cloud" | "payments" | "communication" | "auth"
+
+  // Status page parsing
+  statusPageUrl    String?
+  statusPageApiUrl String?
+  parserType       String   @default("atlassian") // "atlassian" | "custom_json"
+  parserConfig     Json?
+
+  // Polling
+  pollInterval  Int      @default(300) // seconds
+  active        Boolean  @default(true)
+
+  // Cached current status
+  currentStatus      String?  // "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "maintenance" | "unknown"
+  currentDescription String?
+  lastFetchedAt      DateTime?
+  lastFetchError     String?
+  nextFetchAt        DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  components    ExternalServiceComponent[]
+  statusHistory ExternalServiceStatus[]
+  dependencies  MonitorDependency[]
+
+  @@index([category])
+  @@index([active, nextFetchAt])
+  @@map("external_service")
+}
+
+model ExternalServiceComponent {
+  id                String          @id @default(cuid())
+  externalServiceId String
+  externalService   ExternalService @relation(fields: [externalServiceId], references: [id], onDelete: Cascade)
+
+  externalId    String?
+  name          String
+  description   String?
+  groupName     String?
+  currentStatus String?
+
+  updatedAt     DateTime @updatedAt
+
+  dependencies  MonitorDependency[]
+
+  @@unique([externalServiceId, externalId])
+  @@index([externalServiceId])
+  @@map("external_service_component")
+}
+
+model ExternalServiceStatus {
+  id                String          @id @default(cuid())
+  externalServiceId String
+  externalService   ExternalService @relation(fields: [externalServiceId], references: [id], onDelete: Cascade)
+
+  status           String
+  description      String?
+  incidentName     String?
+  componentStatuses Json?
+
+  checkedAt        DateTime @default(now())
+
+  @@index([externalServiceId, checkedAt])
+  @@map("external_service_status")
+}
+
+model MonitorDependency {
+  id                  String   @id @default(cuid())
+  monitorId           String
+  monitor             Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  externalServiceId   String
+  externalService     ExternalService @relation(fields: [externalServiceId], references: [id], onDelete: Cascade)
+  externalComponentId String?
+  externalComponent   ExternalServiceComponent? @relation(fields: [externalComponentId], references: [id], onDelete: SetNull)
+  note                String?
+
+  createdAt           DateTime @default(now())
+
+  @@unique([monitorId, externalServiceId, externalComponentId])
+  @@index([monitorId])
+  @@index([externalServiceId])
+  @@map("monitor_dependency")
 }

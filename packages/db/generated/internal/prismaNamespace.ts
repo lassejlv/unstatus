@@ -400,7 +400,11 @@ export const ModelName = {
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
-  NotificationChannel: 'NotificationChannel'
+  NotificationChannel: 'NotificationChannel',
+  ExternalService: 'ExternalService',
+  ExternalServiceComponent: 'ExternalServiceComponent',
+  ExternalServiceStatus: 'ExternalServiceStatus',
+  MonitorDependency: 'MonitorDependency'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1678,6 +1682,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ExternalService: {
+      payload: Prisma.$ExternalServicePayload<ExtArgs>
+      fields: Prisma.ExternalServiceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExternalServiceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExternalServiceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        findFirst: {
+          args: Prisma.ExternalServiceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExternalServiceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        findMany: {
+          args: Prisma.ExternalServiceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>[]
+        }
+        create: {
+          args: Prisma.ExternalServiceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        createMany: {
+          args: Prisma.ExternalServiceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExternalServiceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>[]
+        }
+        delete: {
+          args: Prisma.ExternalServiceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        update: {
+          args: Prisma.ExternalServiceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        deleteMany: {
+          args: Prisma.ExternalServiceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExternalServiceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExternalServiceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>[]
+        }
+        upsert: {
+          args: Prisma.ExternalServiceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServicePayload>
+        }
+        aggregate: {
+          args: Prisma.ExternalServiceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExternalService>
+        }
+        groupBy: {
+          args: Prisma.ExternalServiceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExternalServiceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceCountAggregateOutputType> | number
+        }
+      }
+    }
+    ExternalServiceComponent: {
+      payload: Prisma.$ExternalServiceComponentPayload<ExtArgs>
+      fields: Prisma.ExternalServiceComponentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExternalServiceComponentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExternalServiceComponentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        findFirst: {
+          args: Prisma.ExternalServiceComponentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExternalServiceComponentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        findMany: {
+          args: Prisma.ExternalServiceComponentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>[]
+        }
+        create: {
+          args: Prisma.ExternalServiceComponentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        createMany: {
+          args: Prisma.ExternalServiceComponentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExternalServiceComponentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>[]
+        }
+        delete: {
+          args: Prisma.ExternalServiceComponentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        update: {
+          args: Prisma.ExternalServiceComponentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExternalServiceComponentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExternalServiceComponentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExternalServiceComponentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExternalServiceComponentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceComponentPayload>
+        }
+        aggregate: {
+          args: Prisma.ExternalServiceComponentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExternalServiceComponent>
+        }
+        groupBy: {
+          args: Prisma.ExternalServiceComponentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceComponentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExternalServiceComponentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceComponentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ExternalServiceStatus: {
+      payload: Prisma.$ExternalServiceStatusPayload<ExtArgs>
+      fields: Prisma.ExternalServiceStatusFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExternalServiceStatusFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExternalServiceStatusFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        findFirst: {
+          args: Prisma.ExternalServiceStatusFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExternalServiceStatusFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        findMany: {
+          args: Prisma.ExternalServiceStatusFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>[]
+        }
+        create: {
+          args: Prisma.ExternalServiceStatusCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        createMany: {
+          args: Prisma.ExternalServiceStatusCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExternalServiceStatusCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>[]
+        }
+        delete: {
+          args: Prisma.ExternalServiceStatusDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        update: {
+          args: Prisma.ExternalServiceStatusUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExternalServiceStatusDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExternalServiceStatusUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExternalServiceStatusUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExternalServiceStatusUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalServiceStatusPayload>
+        }
+        aggregate: {
+          args: Prisma.ExternalServiceStatusAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExternalServiceStatus>
+        }
+        groupBy: {
+          args: Prisma.ExternalServiceStatusGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceStatusGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExternalServiceStatusCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExternalServiceStatusCountAggregateOutputType> | number
+        }
+      }
+    }
+    MonitorDependency: {
+      payload: Prisma.$MonitorDependencyPayload<ExtArgs>
+      fields: Prisma.MonitorDependencyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MonitorDependencyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MonitorDependencyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        findFirst: {
+          args: Prisma.MonitorDependencyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MonitorDependencyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        findMany: {
+          args: Prisma.MonitorDependencyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>[]
+        }
+        create: {
+          args: Prisma.MonitorDependencyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        createMany: {
+          args: Prisma.MonitorDependencyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MonitorDependencyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>[]
+        }
+        delete: {
+          args: Prisma.MonitorDependencyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        update: {
+          args: Prisma.MonitorDependencyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        deleteMany: {
+          args: Prisma.MonitorDependencyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MonitorDependencyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MonitorDependencyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>[]
+        }
+        upsert: {
+          args: Prisma.MonitorDependencyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorDependencyPayload>
+        }
+        aggregate: {
+          args: Prisma.MonitorDependencyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonitorDependency>
+        }
+        groupBy: {
+          args: Prisma.MonitorDependencyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorDependencyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MonitorDependencyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorDependencyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1905,6 +2205,7 @@ export const StatusPageScalarFieldEnum = {
   footerText: 'footerText',
   customCss: 'customCss',
   showResponseTimes: 'showResponseTimes',
+  showDependencies: 'showDependencies',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1980,6 +2281,70 @@ export const NotificationChannelScalarFieldEnum = {
 } as const
 
 export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
+
+
+export const ExternalServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  category: 'category',
+  statusPageUrl: 'statusPageUrl',
+  statusPageApiUrl: 'statusPageApiUrl',
+  parserType: 'parserType',
+  parserConfig: 'parserConfig',
+  pollInterval: 'pollInterval',
+  active: 'active',
+  currentStatus: 'currentStatus',
+  currentDescription: 'currentDescription',
+  lastFetchedAt: 'lastFetchedAt',
+  lastFetchError: 'lastFetchError',
+  nextFetchAt: 'nextFetchAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExternalServiceScalarFieldEnum = (typeof ExternalServiceScalarFieldEnum)[keyof typeof ExternalServiceScalarFieldEnum]
+
+
+export const ExternalServiceComponentScalarFieldEnum = {
+  id: 'id',
+  externalServiceId: 'externalServiceId',
+  externalId: 'externalId',
+  name: 'name',
+  description: 'description',
+  groupName: 'groupName',
+  currentStatus: 'currentStatus',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExternalServiceComponentScalarFieldEnum = (typeof ExternalServiceComponentScalarFieldEnum)[keyof typeof ExternalServiceComponentScalarFieldEnum]
+
+
+export const ExternalServiceStatusScalarFieldEnum = {
+  id: 'id',
+  externalServiceId: 'externalServiceId',
+  status: 'status',
+  description: 'description',
+  incidentName: 'incidentName',
+  componentStatuses: 'componentStatuses',
+  checkedAt: 'checkedAt'
+} as const
+
+export type ExternalServiceStatusScalarFieldEnum = (typeof ExternalServiceStatusScalarFieldEnum)[keyof typeof ExternalServiceStatusScalarFieldEnum]
+
+
+export const MonitorDependencyScalarFieldEnum = {
+  id: 'id',
+  monitorId: 'monitorId',
+  externalServiceId: 'externalServiceId',
+  externalComponentId: 'externalComponentId',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type MonitorDependencyScalarFieldEnum = (typeof MonitorDependencyScalarFieldEnum)[keyof typeof MonitorDependencyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2224,6 +2589,10 @@ export type GlobalOmitConfig = {
   incident?: Prisma.IncidentOmit
   incidentUpdate?: Prisma.IncidentUpdateOmit
   notificationChannel?: Prisma.NotificationChannelOmit
+  externalService?: Prisma.ExternalServiceOmit
+  externalServiceComponent?: Prisma.ExternalServiceComponentOmit
+  externalServiceStatus?: Prisma.ExternalServiceStatusOmit
+  monitorDependency?: Prisma.MonitorDependencyOmit
 }
 
 /* Types for Logging */

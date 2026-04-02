@@ -198,6 +198,7 @@ type PageData = {
   headerText: string | null;
   footerText: string | null;
   showResponseTimes: boolean;
+  showDependencies: boolean;
 };
 
 function EditPageDialog({
@@ -215,6 +216,7 @@ function EditPageDialog({
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
   const [footerText, setFooterText] = useState(page.footerText ?? "");
   const [showResponseTimes, setShowResponseTimes] = useState(page.showResponseTimes);
+  const [showDependencies, setShowDependencies] = useState(page.showDependencies);
 
   useEffect(() => {
     if (open) {
@@ -225,6 +227,7 @@ function EditPageDialog({
       setHeaderText(page.headerText ?? "");
       setFooterText(page.footerText ?? "");
       setShowResponseTimes(page.showResponseTimes);
+      setShowDependencies(page.showDependencies);
     }
   }, [open, page]);
 
@@ -268,6 +271,10 @@ function EditPageDialog({
             <Switch checked={showResponseTimes} onCheckedChange={setShowResponseTimes} />
             <Label>Show response times</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={showDependencies} onCheckedChange={setShowDependencies} />
+            <Label>Show dependency chain (Pro)</Label>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label>Brand color</Label>
             <Input
@@ -307,6 +314,7 @@ function EditPageDialog({
                 headerText: headerText || undefined,
                 footerText: footerText || undefined,
                 showResponseTimes,
+                showDependencies,
               })
             }
           >

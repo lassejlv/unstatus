@@ -67,7 +67,11 @@ export const ModelName = {
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
-  NotificationChannel: 'NotificationChannel'
+  NotificationChannel: 'NotificationChannel',
+  ExternalService: 'ExternalService',
+  ExternalServiceComponent: 'ExternalServiceComponent',
+  ExternalServiceStatus: 'ExternalServiceStatus',
+  MonitorDependency: 'MonitorDependency'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -274,6 +278,7 @@ export const StatusPageScalarFieldEnum = {
   footerText: 'footerText',
   customCss: 'customCss',
   showResponseTimes: 'showResponseTimes',
+  showDependencies: 'showDependencies',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -349,6 +354,70 @@ export const NotificationChannelScalarFieldEnum = {
 } as const
 
 export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
+
+
+export const ExternalServiceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  website: 'website',
+  logoUrl: 'logoUrl',
+  category: 'category',
+  statusPageUrl: 'statusPageUrl',
+  statusPageApiUrl: 'statusPageApiUrl',
+  parserType: 'parserType',
+  parserConfig: 'parserConfig',
+  pollInterval: 'pollInterval',
+  active: 'active',
+  currentStatus: 'currentStatus',
+  currentDescription: 'currentDescription',
+  lastFetchedAt: 'lastFetchedAt',
+  lastFetchError: 'lastFetchError',
+  nextFetchAt: 'nextFetchAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExternalServiceScalarFieldEnum = (typeof ExternalServiceScalarFieldEnum)[keyof typeof ExternalServiceScalarFieldEnum]
+
+
+export const ExternalServiceComponentScalarFieldEnum = {
+  id: 'id',
+  externalServiceId: 'externalServiceId',
+  externalId: 'externalId',
+  name: 'name',
+  description: 'description',
+  groupName: 'groupName',
+  currentStatus: 'currentStatus',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExternalServiceComponentScalarFieldEnum = (typeof ExternalServiceComponentScalarFieldEnum)[keyof typeof ExternalServiceComponentScalarFieldEnum]
+
+
+export const ExternalServiceStatusScalarFieldEnum = {
+  id: 'id',
+  externalServiceId: 'externalServiceId',
+  status: 'status',
+  description: 'description',
+  incidentName: 'incidentName',
+  componentStatuses: 'componentStatuses',
+  checkedAt: 'checkedAt'
+} as const
+
+export type ExternalServiceStatusScalarFieldEnum = (typeof ExternalServiceStatusScalarFieldEnum)[keyof typeof ExternalServiceStatusScalarFieldEnum]
+
+
+export const MonitorDependencyScalarFieldEnum = {
+  id: 'id',
+  monitorId: 'monitorId',
+  externalServiceId: 'externalServiceId',
+  externalComponentId: 'externalComponentId',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type MonitorDependencyScalarFieldEnum = (typeof MonitorDependencyScalarFieldEnum)[keyof typeof MonitorDependencyScalarFieldEnum]
 
 
 export const SortOrder = {

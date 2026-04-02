@@ -20,9 +20,22 @@ import {
 } from "@/components/ui/tooltip";
 import { Spinner } from "@/components/ui/spinner";
 import { useTheme } from "@/hooks/use-theme";
+import { DependencyList, DependencyImpactBanner } from "@/components/-dependency-chain";
 import { Sun, Moon, Monitor, ChevronDown, Check, Bell, MessageCircle } from "lucide-react";
 
 // --- Types ---
+
+export type PublicStatusMonitorDependency = {
+  serviceId: string;
+  serviceName: string;
+  serviceSlug: string;
+  serviceLogoUrl: string | null;
+  serviceStatus: string;
+  serviceStatusPageUrl: string | null;
+  serviceLastFetchedAt: string | Date | null;
+  componentName: string | null;
+  componentStatus: string | null;
+};
 
 export type PublicStatusMonitorData = {
   id: string;
@@ -32,6 +45,7 @@ export type PublicStatusMonitorData = {
   avgLatency: number;
   daily: { date: string; uptime: number; totalChecks: number }[];
   responseTimeSeries?: { hour: string; avgLatency: number; checkCount: number }[];
+  dependencies?: PublicStatusMonitorDependency[];
 };
 
 export type PublicStatusIncidentSummary = {
@@ -52,6 +66,7 @@ export type PublicStatusPageData = {
   headerText: string | null;
   footerText: string | null;
   showResponseTimes?: boolean;
+  showDependencies?: boolean;
   overallStatus: string;
   monitors: PublicStatusMonitorData[];
   incidents: PublicStatusIncidentSummary[];
@@ -378,6 +393,17 @@ function MonitorCard({
           <span>90d ago</span>
           <span>Today</span>
         </div>
+
+        {/* Dependencies */}
+        {monitor.dependencies && monitor.dependencies.length > 0 && (
+          <>
+            <DependencyImpactBanner
+              monitorStatus={monitor.currentStatus}
+              dependencies={monitor.dependencies}
+            />
+            <DependencyList dependencies={monitor.dependencies} />
+          </>
+        )}
       </div>
 
       {/* Expandable chart */}

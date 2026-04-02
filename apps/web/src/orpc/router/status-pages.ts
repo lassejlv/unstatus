@@ -11,8 +11,8 @@ import {
   ORG_MANAGER_ROLES,
   verifyOrgMembership,
   verifyOrgRole,
-  getOrgSubscription,
-  requirePro,
+  checkFeature,
+  requireFeature,
 } from "@/orpc/procedures";
 
 const domainSchema = z
@@ -43,6 +43,7 @@ const createInput = z.object({
   footerText: z.string().optional(),
   customCss: z.string().optional(),
   showResponseTimes: z.boolean().default(true),
+  showDependencies: z.boolean().default(false),
 });
 
 const updateInput = createInput.partial().extend({ id: z.string() });
@@ -80,11 +81,6 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    const { isPro } = await getOrgSubscription(input.organizationId);
-    if (!isPro) {
-      const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
-      if (count >= 1) requirePro(false, "More than 1 status page");
-    }
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -93,10 +89,15 @@ export const statusPagesRouter = {
     const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id } });
     await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
 
-    const { isPro } = await getOrgSubscription(statusPage.organizationId);
-    if (!isPro) {
-      if (data.customDomain) requirePro(false, "Custom domains");
-      if (data.customCss) requirePro(false, "Custom CSS");
+    const orgId = statusPage.organizationId;
+    if (data.customDomain) {
+      requireFeature(await checkFeature(orgId, "custom_domains"), "Custom domains");
+    }
+    if (data.customCss) {
+      requireFeature(await checkFeature(orgId, "custom_css"), "Custom CSS");
+    }
+    if (data.showDependencies) {
+      requireFeature(await checkFeature(orgId, "dependency_chain"), "Dependency chain");
     }
 
     try {

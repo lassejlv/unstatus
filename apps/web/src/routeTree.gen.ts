@@ -14,6 +14,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IncidentIdRouteImport } from './routes/$incidentId'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegistryIndexRouteImport } from './routes/registry/index'
+import { Route as RegistrySlugRouteImport } from './routes/registry/$slug'
 import { Route as AcceptInvitationInvitationIdRouteImport } from './routes/accept-invitation.$invitationId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
@@ -21,6 +23,7 @@ import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashb
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
+import { Route as ApiAutumnSplatRouteImport } from './routes/api/autumn/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
 import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
@@ -53,6 +56,16 @@ const IncidentIdRoute = IncidentIdRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistryIndexRoute = RegistryIndexRouteImport.update({
+  id: '/registry/',
+  path: '/registry/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistrySlugRoute = RegistrySlugRouteImport.update({
+  id: '/registry/$slug',
+  path: '/registry/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcceptInvitationInvitationIdRoute =
@@ -89,6 +102,11 @@ const StatusSlugIncidentIdRoute = StatusSlugIncidentIdRouteImport.update({
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
   path: '/api/rpc/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAutumnSplatRoute = ApiAutumnSplatRouteImport.update({
+  id: '/api/autumn/$',
+  path: '/api/autumn/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -151,9 +169,12 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
+  '/registry/$slug': typeof RegistrySlugRoute
+  '/registry/': typeof RegistryIndexRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -172,9 +193,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
+  '/registry/$slug': typeof RegistrySlugRoute
+  '/registry': typeof RegistryIndexRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -196,9 +220,12 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
+  '/registry/$slug': typeof RegistrySlugRoute
+  '/registry/': typeof RegistryIndexRoute
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -220,9 +247,12 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/dashboard'
     | '/accept-invitation/$invitationId'
+    | '/registry/$slug'
+    | '/registry/'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
+    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -241,9 +271,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/accept-invitation/$invitationId'
+    | '/registry/$slug'
+    | '/registry'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
+    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -264,9 +297,12 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/_authed/dashboard'
     | '/accept-invitation/$invitationId'
+    | '/registry/$slug'
+    | '/registry/'
     | '/_authed/dashboard/settings'
     | '/_authed/dashboard/subscribers'
     | '/api/auth/$'
+    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -287,7 +323,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   AcceptInvitationInvitationIdRoute: typeof AcceptInvitationInvitationIdRoute
+  RegistrySlugRoute: typeof RegistrySlugRoute
+  RegistryIndexRoute: typeof RegistryIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAutumnSplatRoute: typeof ApiAutumnSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
   StatusSlugVerifyRoute: typeof StatusSlugVerifyRoute
@@ -329,6 +368,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registry/': {
+      id: '/registry/'
+      path: '/registry'
+      fullPath: '/registry/'
+      preLoaderRoute: typeof RegistryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registry/$slug': {
+      id: '/registry/$slug'
+      path: '/registry/$slug'
+      fullPath: '/registry/$slug'
+      preLoaderRoute: typeof RegistrySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accept-invitation/$invitationId': {
@@ -378,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/api/rpc/$'
       fullPath: '/api/rpc/$'
       preLoaderRoute: typeof ApiRpcSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/autumn/$': {
+      id: '/api/autumn/$'
+      path: '/api/autumn/$'
+      fullPath: '/api/autumn/$'
+      preLoaderRoute: typeof ApiAutumnSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -493,7 +553,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   AcceptInvitationInvitationIdRoute: AcceptInvitationInvitationIdRoute,
+  RegistrySlugRoute: RegistrySlugRoute,
+  RegistryIndexRoute: RegistryIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAutumnSplatRoute: ApiAutumnSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,
   StatusSlugVerifyRoute: StatusSlugVerifyRoute,

@@ -1,10 +1,10 @@
 import z from "zod";
+import { ORPCError } from "@orpc/server";
 
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
 import { publicProcedure } from "@/orpc/procedures";
-import { ORPCError } from "@orpc/server";
 import { SubscriptionVerifyEmail } from "@unstatus/email";
 
 type ResolvedPublicPage = {
@@ -17,6 +17,7 @@ type ResolvedPublicPage = {
   headerText: string | null;
   footerText: string | null;
   showResponseTimes: boolean;
+  showDependencies: boolean;
 };
 
 type MonitorRow = {
@@ -54,6 +55,19 @@ type HourlyRow = {
   hour: Date;
   avg_latency: number | null;
   check_count: bigint;
+};
+
+type DependencyRow = {
+  monitorId: string;
+  serviceId: string;
+  serviceName: string;
+  serviceSlug: string;
+  serviceLogoUrl: string | null;
+  serviceStatus: string | null;
+  serviceStatusPageUrl: string | null;
+  serviceLastFetchedAt: Date | null;
+  componentName: string | null;
+  componentStatus: string | null;
 };
 
 function getLocalDateKey(date: Date) {
@@ -127,11 +141,12 @@ async function resolvePublicPage(
       headerText: true,
       footerText: true,
       showResponseTimes: true,
+      showDependencies: true,
     },
   });
 
   if (!page.isPublic) {
-    throw new Error("Not found");
+    throw new ORPCError("NOT_FOUND");
   }
 
   return page;
@@ -326,6 +341,44 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     });
   }
 
+  // Fetch dependency data if enabled
+  let dependencyRows: DependencyRow[] = [];
+  if (page.showDependencies) {
+    try {
+      dependencyRows = await prisma.$queryRawUnsafe<DependencyRow[]>(
+        `SELECT
+          md."monitorId",
+          es.id as "serviceId",
+          es.name as "serviceName",
+          es.slug as "serviceSlug",
+          es."logoUrl" as "serviceLogoUrl",
+          es."currentStatus" as "serviceStatus",
+          es."statusPageUrl" as "serviceStatusPageUrl",
+          es."lastFetchedAt" as "serviceLastFetchedAt",
+          esc.name as "componentName",
+          esc."currentStatus" as "componentStatus"
+        FROM monitor_dependency md
+        JOIN external_service es ON es.id = md."externalServiceId"
+        LEFT JOIN external_service_component esc ON esc.id = md."externalComponentId"
+        JOIN status_page_monitor spm ON spm."monitorId" = md."monitorId"
+        WHERE spm."statusPageId" = $1`,
+        page.id,
+      );
+    } catch {
+      // Table may not exist yet
+    }
+  }
+
+  const depsByMonitor = new Map<string, DependencyRow[]>();
+  for (const row of dependencyRows) {
+    let deps = depsByMonitor.get(row.monitorId);
+    if (!deps) {
+      deps = [];
+      depsByMonitor.set(row.monitorId, deps);
+    }
+    deps.push(row);
+  }
+
   const latestByMonitor = new Map(
     latestRows.map((row) => [row.monitorId, row.status]),
   );
@@ -383,6 +436,8 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
           ) / 100
         : 100;
 
+    const monitorDeps = depsByMonitor.get(monitor.monitorId);
+
     return {
       id: monitor.monitorId,
       name: monitor.displayName ?? monitor.monitorName,
@@ -391,6 +446,17 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       avgLatency: latencyDays > 0 ? Math.round(latencySum / latencyDays) : 0,
       daily,
       responseTimeSeries: hourlyByMonitor.get(monitor.monitorId) ?? [],
+      dependencies: monitorDeps?.map((d) => ({
+        serviceId: d.serviceId,
+        serviceName: d.serviceName,
+        serviceSlug: d.serviceSlug,
+        serviceLogoUrl: d.serviceLogoUrl,
+        serviceStatus: d.serviceStatus ?? "unknown",
+        serviceStatusPageUrl: d.serviceStatusPageUrl,
+        serviceLastFetchedAt: d.serviceLastFetchedAt,
+        componentName: d.componentName,
+        componentStatus: d.componentStatus,
+      })),
     };
   });
 
@@ -424,6 +490,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     headerText: page.headerText,
     footerText: page.footerText,
     showResponseTimes: page.showResponseTimes,
+    showDependencies: page.showDependencies,
     overallStatus,
     monitors,
     incidents: incidentRows.map((incident) => ({
