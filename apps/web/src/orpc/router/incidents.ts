@@ -1,4 +1,10 @@
-import { authedProcedure, orgProcedure, verifyOrgMembership } from "@/orpc/procedures";
+import {
+  authedProcedure,
+  orgProcedure,
+  ORG_MANAGER_ROLES,
+  verifyOrgMembership,
+  verifyOrgRole,
+} from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
 import z from "zod";
@@ -24,7 +30,7 @@ export const incidentsRouter = {
     },
   ),
 
-  listByOrg: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
+  listByOrg: orgProcedure(z.object({ organizationId: z.string() })).handler(
     async ({ input }) => {
       return prisma.incident.findMany({
         where: { monitor: { organizationId: input.organizationId } },
@@ -48,7 +54,7 @@ export const incidentsRouter = {
 
   create: authedProcedure.input(createInput).handler(async ({ input, context }) => {
     const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
-    await verifyOrgMembership(context.session.user.id, monitor.organizationId);
+    await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
     const { message, ...data } = input;
     const incident = await prisma.incident.create({
       data: {
@@ -75,7 +81,7 @@ export const incidentsRouter = {
         where: { id: input.id },
         include: { monitor: { select: { id: true, organizationId: true, name: true } } },
       });
-      await verifyOrgMembership(context.session.user.id, incident.monitor.organizationId);
+      await verifyOrgRole(context.session.user.id, incident.monitor.organizationId, ORG_MANAGER_ROLES);
       const resolvedAt = input.status === "resolved" ? new Date() : undefined;
       const updated = await prisma.incident.update({
         where: { id: input.id },
@@ -101,7 +107,7 @@ export const incidentsRouter = {
         where: { id: input.id },
         include: { monitor: { select: { organizationId: true } } },
       });
-      await verifyOrgMembership(context.session.user.id, incident.monitor.organizationId);
+      await verifyOrgRole(context.session.user.id, incident.monitor.organizationId, ORG_MANAGER_ROLES);
       await prisma.incident.delete({ where: { id: input.id } });
     },
   ),

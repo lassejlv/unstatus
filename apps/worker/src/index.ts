@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { runChecks, runSingleCheck } from "./runner.js";
+import { runMonitorPerfMaintenance } from "./monitor-perf.js";
 
 const app = new Hono();
 
@@ -36,3 +37,9 @@ setInterval(() => {
   runChecks().catch((e) => console.error("Auto-check failed:", e));
 }, POLL_INTERVAL);
 console.log(`Worker polling every ${POLL_INTERVAL / 1000}s`);
+
+const MAINTENANCE_INTERVAL = 6 * 60 * 60 * 1000;
+runMonitorPerfMaintenance().catch((e) => console.error("Perf maintenance failed:", e));
+setInterval(() => {
+  runMonitorPerfMaintenance().catch((e) => console.error("Perf maintenance failed:", e));
+}, MAINTENANCE_INTERVAL);

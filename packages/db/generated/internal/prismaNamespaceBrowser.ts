@@ -58,6 +58,8 @@ export const ModelName = {
   Organization: 'Organization',
   Monitor: 'Monitor',
   MonitorCheck: 'MonitorCheck',
+  MonitorCheckHourlyRollup: 'MonitorCheckHourlyRollup',
+  MonitorCheckDailyRollup: 'MonitorCheckDailyRollup',
   Member: 'Member',
   Invitation: 'Invitation',
   StatusPage: 'StatusPage',
@@ -179,7 +181,13 @@ export const MonitorScalarFieldEnum = {
   autoIncidents: 'autoIncidents',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastCheckedAt: 'lastCheckedAt'
+  lastCheckedAt: 'lastCheckedAt',
+  nextCheckAt: 'nextCheckAt',
+  lastStatus: 'lastStatus',
+  lastLatency: 'lastLatency',
+  lastStatusCode: 'lastStatusCode',
+  lastRegion: 'lastRegion',
+  lastMessage: 'lastMessage'
 } as const
 
 export type MonitorScalarFieldEnum = (typeof MonitorScalarFieldEnum)[keyof typeof MonitorScalarFieldEnum]
@@ -199,6 +207,32 @@ export const MonitorCheckScalarFieldEnum = {
 } as const
 
 export type MonitorCheckScalarFieldEnum = (typeof MonitorCheckScalarFieldEnum)[keyof typeof MonitorCheckScalarFieldEnum]
+
+
+export const MonitorCheckHourlyRollupScalarFieldEnum = {
+  monitorId: 'monitorId',
+  bucketStart: 'bucketStart',
+  totalChecks: 'totalChecks',
+  upChecks: 'upChecks',
+  downChecks: 'downChecks',
+  degradedChecks: 'degradedChecks',
+  latencySum: 'latencySum'
+} as const
+
+export type MonitorCheckHourlyRollupScalarFieldEnum = (typeof MonitorCheckHourlyRollupScalarFieldEnum)[keyof typeof MonitorCheckHourlyRollupScalarFieldEnum]
+
+
+export const MonitorCheckDailyRollupScalarFieldEnum = {
+  monitorId: 'monitorId',
+  bucketDate: 'bucketDate',
+  totalChecks: 'totalChecks',
+  upChecks: 'upChecks',
+  downChecks: 'downChecks',
+  degradedChecks: 'degradedChecks',
+  latencySum: 'latencySum'
+} as const
+
+export type MonitorCheckDailyRollupScalarFieldEnum = (typeof MonitorCheckDailyRollupScalarFieldEnum)[keyof typeof MonitorCheckDailyRollupScalarFieldEnum]
 
 
 export const MemberScalarFieldEnum = {

@@ -133,12 +133,21 @@ model Monitor {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastCheckedAt DateTime?
+  nextCheckAt   DateTime?
+  lastStatus    String?
+  lastLatency   Int?
+  lastStatusCode Int?
+  lastRegion    String?
+  lastMessage   String?
   checks      MonitorCheck[]
+  hourlyRollups MonitorCheckHourlyRollup[]
+  dailyRollups  MonitorCheckDailyRollup[]
   statusPageMonitors StatusPageMonitor[]
   incidents   Incident[]
 
   @@index([organizationId])
   @@index([active])
+  @@index([active, nextCheckAt])
   @@map("monitor")
 }
 
@@ -158,6 +167,36 @@ model MonitorCheck {
 
   @@index([monitorId, checkedAt])
   @@map("monitor_check")
+}
+
+model MonitorCheckHourlyRollup {
+  monitorId       String
+  monitor         Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  bucketStart     DateTime
+  totalChecks     Int
+  upChecks        Int
+  downChecks      Int
+  degradedChecks  Int
+  latencySum      Int
+
+  @@id([monitorId, bucketStart])
+  @@index([bucketStart])
+  @@map("monitor_check_hourly_rollup")
+}
+
+model MonitorCheckDailyRollup {
+  monitorId       String
+  monitor         Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  bucketDate      DateTime
+  totalChecks     Int
+  upChecks        Int
+  downChecks      Int
+  degradedChecks  Int
+  latencySum      Int
+
+  @@id([monitorId, bucketDate])
+  @@index([bucketDate])
+  @@map("monitor_check_daily_rollup")
 }
 
 model Member {

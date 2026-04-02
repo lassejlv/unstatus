@@ -3,10 +3,30 @@ import { email } from "@/lib/email";
 import { env } from "@/lib/env";
 import { NotificationEmail, type NotificationEmailProps } from "@unstatus/email";
 
+const DISCORD_WEBHOOK_HOSTS = new Set([
+  "discord.com",
+  "ptb.discord.com",
+  "canary.discord.com",
+  "discordapp.com",
+  "ptb.discordapp.com",
+  "canary.discordapp.com",
+]);
+
 type NotifyEvent =
   | { type: "incident.created"; monitorId: string; monitorName: string; title: string; severity: string; message: string }
   | { type: "incident.resolved"; monitorId: string; monitorName: string; title: string }
   | { type: "incident.updated"; monitorId: string; monitorName: string; title: string; status: string; message: string };
+
+export function isAllowedDiscordWebhookUrl(webhookUrl: string): boolean {
+  try {
+    const url = new URL(webhookUrl);
+    return url.protocol === "https:"
+      && DISCORD_WEBHOOK_HOSTS.has(url.hostname)
+      && /^\/api\/webhooks\/[^/]+\/[^/]+/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
 
 const EVENT_TO_FLAG: Record<NotifyEvent["type"], string> = {
   "incident.created": "onIncidentCreated",
@@ -90,6 +110,10 @@ export async function sendNotifications(organizationId: string, event: NotifyEve
 
   const channelPromises = channels.map(async (channel) => {
     if (channel.type === "discord" && channel.webhookUrl) {
+      if (!isAllowedDiscordWebhookUrl(channel.webhookUrl)) {
+        console.error(`Blocked invalid Discord webhook for channel ${channel.id}`);
+        return;
+      }
       const embed = buildEmbed(event);
       const res = await fetch(channel.webhookUrl, {
         method: "POST",

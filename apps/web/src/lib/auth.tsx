@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { APIError, betterAuth } from "better-auth";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
@@ -13,6 +13,10 @@ const polarClient = new Polar({
   accessToken: env.POLAR_ACCESS_TOKEN,
   server: env.POLAR_MODE === "production" ? "production" : "sandbox",
 });
+
+function isPersonalOrganizationSlug(slug: string, userId: string) {
+  return slug.endsWith(`-personal-${userId.slice(0, 8)}`);
+}
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -50,6 +54,7 @@ export const auth = betterAuth({
   plugins: [
     tanstackStartCookies(),
     organization({
+      organizationLimit: 3,
       sendInvitationEmail: async (data) => {
         const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
         const invitationUrl = `${domain}/accept-invitation/${data.id}`;
@@ -67,6 +72,34 @@ export const auth = betterAuth({
             />
           ),
         });
+      },
+      organizationHooks: {
+        beforeDeleteOrganization: async ({ organization, user }) => {
+          const member = await prisma.member.findFirst({
+            where: {
+              organizationId: organization.id,
+              userId: user.id,
+            },
+            select: {
+              role: true,
+            },
+          });
+
+          if (member?.role !== "owner") {
+            throw new APIError("FORBIDDEN", {
+              message: "Only organization owners can delete an organization.",
+            });
+          }
+
+          if (
+            organization.name === "Personal"
+            && isPersonalOrganizationSlug(organization.slug, user.id)
+          ) {
+            throw new APIError("FORBIDDEN", {
+              message: "Your personal organization cannot be deleted.",
+            });
+          }
+        },
       },
     }),
     polar({

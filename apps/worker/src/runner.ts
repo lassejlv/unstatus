@@ -4,10 +4,23 @@ import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
 import { sendNotifications } from "./notify";
 import type { Monitor } from "@unstatus/db";
+import {
+  claimLegacyMonitor,
+  claimDueMonitor,
+  getMonitorById,
+  isMissingMonitorPerfSchema,
+  listLegacyDueMonitors,
+  listDueMonitors,
+  recordMonitorCheck,
+  type WorkerMonitor,
+} from "./monitor-perf.js";
 
 const region = process.env.REGION ?? "eu";
 
-async function handleAutoIncident(monitor: Monitor, status: string) {
+async function handleAutoIncident(
+  monitor: Pick<WorkerMonitor, "id" | "name" | "organizationId" | "autoIncidents">,
+  status: string,
+) {
   if (!monitor.autoIncidents) return;
 
   if (status === "down") {
@@ -53,86 +66,73 @@ async function handleAutoIncident(monitor: Monitor, status: string) {
 }
 
 export async function runSingleCheck(monitorId: string) {
-  const monitor = await prisma.monitor.findUniqueOrThrow({
-    where: { id: monitorId },
-  });
+  const monitor = await getMonitorById(monitorId);
   const result =
-    monitor.type === "tcp" ? await checkTcp(monitor)
-    : monitor.type === "ping" ? await checkPing(monitor)
-    : await checkHttp(monitor);
+    monitor.type === "tcp" ? await checkTcp(monitor as Monitor)
+    : monitor.type === "ping" ? await checkPing(monitor as Monitor)
+    : await checkHttp(monitor as Monitor);
 
-  const [check] = await prisma.$transaction([
-    prisma.monitorCheck.create({
-      data: {
-        monitorId: monitor.id,
-        status: result.status,
-        latency: result.latency,
-        statusCode: result.statusCode,
-        message: result.message,
-        responseHeaders: result.responseHeaders,
-        responseBody: result.responseBody,
-        region,
-      },
-    }),
-    prisma.monitor.update({
-      where: { id: monitor.id },
-      data: { lastCheckedAt: new Date() },
-    }),
-  ]);
+  const check = await recordMonitorCheck(monitor, result, region, new Date());
 
   await handleAutoIncident(monitor, result.status);
 
   return check;
 }
 
-export async function runChecks() {
-  const now = new Date();
-  const monitors = await prisma.monitor.findMany({ where: { active: true } });
-  const filtered = monitors.filter((m) => {
-    const regions = (m.regions as string[]) ?? [];
-    if (!regions.includes(region)) return false;
-    if (m.lastCheckedAt) {
-      const elapsed =
-        (now.getTime() - new Date(m.lastCheckedAt).getTime()) / 1000;
-      if (elapsed < m.interval) return false;
-    }
-    return true;
-  });
+async function runLegacyChecks(now: Date) {
+  const monitors = await listLegacyDueMonitors(now, region);
 
   const results = await Promise.allSettled(
-    filtered.map(async (monitor) => {
-      // Atomically claim this monitor by setting lastCheckedAt only if it hasn't changed
-      const claimed = await prisma.monitor.updateMany({
-        where: {
-          id: monitor.id,
-          lastCheckedAt: monitor.lastCheckedAt,
-        },
-        data: { lastCheckedAt: now },
-      });
-      if (claimed.count === 0) return; // another run already claimed it
+    monitors.map(async (monitor) => {
+      const claimed = await claimLegacyMonitor(monitor, now);
+      if (!claimed) return;
 
       const result =
         monitor.type === "tcp"
-          ? await checkTcp(monitor)
-          : await checkHttp(monitor);
+          ? await checkTcp(monitor as Monitor)
+          : monitor.type === "ping"
+            ? await checkPing(monitor as Monitor)
+            : await checkHttp(monitor as Monitor);
 
-      await prisma.monitorCheck.create({
-        data: {
-          monitorId: monitor.id,
-          status: result.status,
-          latency: result.latency,
-          statusCode: result.statusCode,
-          message: result.message,
-          responseHeaders: result.responseHeaders,
-          responseBody: result.responseBody,
-          region,
-        },
-      });
-
+      await recordMonitorCheck(monitor, result, region, new Date());
       await handleAutoIncident(monitor, result.status);
     }),
   );
 
   const failed = results.filter((r) => r.status === "rejected").length;
-  return { total: filtered.length, failed };
+  return { total: monitors.length, failed };
+}
+
+export async function runChecks() {
+  const now = new Date();
+
+  try {
+    const monitors = await listDueMonitors(now, region);
+
+    const results = await Promise.allSettled(
+      monitors.map(async (monitor) => {
+        const claimed = await claimDueMonitor(monitor, now);
+        if (!claimed) return;
+
+        const result =
+          monitor.type === "tcp"
+            ? await checkTcp(monitor as Monitor)
+            : monitor.type === "ping"
+              ? await checkPing(monitor as Monitor)
+              : await checkHttp(monitor as Monitor);
+
+        await recordMonitorCheck(monitor, result, region, new Date());
+        await handleAutoIncident(monitor, result.status);
+      }),
+    );
+
+    const failed = results.filter((r) => r.status === "rejected").length;
+    return { total: monitors.length, failed };
+  } catch (error) {
+    if (!isMissingMonitorPerfSchema(error)) {
+      throw error;
+    }
+
+    return runLegacyChecks(now);
+  }
 }

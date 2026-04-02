@@ -391,6 +391,8 @@ export const ModelName = {
   Organization: 'Organization',
   Monitor: 'Monitor',
   MonitorCheck: 'MonitorCheck',
+  MonitorCheckHourlyRollup: 'MonitorCheckHourlyRollup',
+  MonitorCheckDailyRollup: 'MonitorCheckDailyRollup',
   Member: 'Member',
   Invitation: 'Invitation',
   StatusPage: 'StatusPage',
@@ -414,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -933,6 +935,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.MonitorCheckCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.MonitorCheckCountAggregateOutputType> | number
+        }
+      }
+    }
+    MonitorCheckHourlyRollup: {
+      payload: Prisma.$MonitorCheckHourlyRollupPayload<ExtArgs>
+      fields: Prisma.MonitorCheckHourlyRollupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MonitorCheckHourlyRollupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MonitorCheckHourlyRollupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        findFirst: {
+          args: Prisma.MonitorCheckHourlyRollupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MonitorCheckHourlyRollupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        findMany: {
+          args: Prisma.MonitorCheckHourlyRollupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>[]
+        }
+        create: {
+          args: Prisma.MonitorCheckHourlyRollupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        createMany: {
+          args: Prisma.MonitorCheckHourlyRollupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MonitorCheckHourlyRollupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>[]
+        }
+        delete: {
+          args: Prisma.MonitorCheckHourlyRollupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        update: {
+          args: Prisma.MonitorCheckHourlyRollupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        deleteMany: {
+          args: Prisma.MonitorCheckHourlyRollupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MonitorCheckHourlyRollupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MonitorCheckHourlyRollupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>[]
+        }
+        upsert: {
+          args: Prisma.MonitorCheckHourlyRollupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckHourlyRollupPayload>
+        }
+        aggregate: {
+          args: Prisma.MonitorCheckHourlyRollupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonitorCheckHourlyRollup>
+        }
+        groupBy: {
+          args: Prisma.MonitorCheckHourlyRollupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorCheckHourlyRollupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MonitorCheckHourlyRollupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorCheckHourlyRollupCountAggregateOutputType> | number
+        }
+      }
+    }
+    MonitorCheckDailyRollup: {
+      payload: Prisma.$MonitorCheckDailyRollupPayload<ExtArgs>
+      fields: Prisma.MonitorCheckDailyRollupFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MonitorCheckDailyRollupFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MonitorCheckDailyRollupFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        findFirst: {
+          args: Prisma.MonitorCheckDailyRollupFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MonitorCheckDailyRollupFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        findMany: {
+          args: Prisma.MonitorCheckDailyRollupFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>[]
+        }
+        create: {
+          args: Prisma.MonitorCheckDailyRollupCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        createMany: {
+          args: Prisma.MonitorCheckDailyRollupCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MonitorCheckDailyRollupCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>[]
+        }
+        delete: {
+          args: Prisma.MonitorCheckDailyRollupDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        update: {
+          args: Prisma.MonitorCheckDailyRollupUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        deleteMany: {
+          args: Prisma.MonitorCheckDailyRollupDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MonitorCheckDailyRollupUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MonitorCheckDailyRollupUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>[]
+        }
+        upsert: {
+          args: Prisma.MonitorCheckDailyRollupUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MonitorCheckDailyRollupPayload>
+        }
+        aggregate: {
+          args: Prisma.MonitorCheckDailyRollupAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonitorCheckDailyRollup>
+        }
+        groupBy: {
+          args: Prisma.MonitorCheckDailyRollupGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorCheckDailyRollupGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MonitorCheckDailyRollupCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MonitorCheckDailyRollupCountAggregateOutputType> | number
         }
       }
     }
@@ -1662,7 +1812,13 @@ export const MonitorScalarFieldEnum = {
   autoIncidents: 'autoIncidents',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastCheckedAt: 'lastCheckedAt'
+  lastCheckedAt: 'lastCheckedAt',
+  nextCheckAt: 'nextCheckAt',
+  lastStatus: 'lastStatus',
+  lastLatency: 'lastLatency',
+  lastStatusCode: 'lastStatusCode',
+  lastRegion: 'lastRegion',
+  lastMessage: 'lastMessage'
 } as const
 
 export type MonitorScalarFieldEnum = (typeof MonitorScalarFieldEnum)[keyof typeof MonitorScalarFieldEnum]
@@ -1682,6 +1838,32 @@ export const MonitorCheckScalarFieldEnum = {
 } as const
 
 export type MonitorCheckScalarFieldEnum = (typeof MonitorCheckScalarFieldEnum)[keyof typeof MonitorCheckScalarFieldEnum]
+
+
+export const MonitorCheckHourlyRollupScalarFieldEnum = {
+  monitorId: 'monitorId',
+  bucketStart: 'bucketStart',
+  totalChecks: 'totalChecks',
+  upChecks: 'upChecks',
+  downChecks: 'downChecks',
+  degradedChecks: 'degradedChecks',
+  latencySum: 'latencySum'
+} as const
+
+export type MonitorCheckHourlyRollupScalarFieldEnum = (typeof MonitorCheckHourlyRollupScalarFieldEnum)[keyof typeof MonitorCheckHourlyRollupScalarFieldEnum]
+
+
+export const MonitorCheckDailyRollupScalarFieldEnum = {
+  monitorId: 'monitorId',
+  bucketDate: 'bucketDate',
+  totalChecks: 'totalChecks',
+  upChecks: 'upChecks',
+  downChecks: 'downChecks',
+  degradedChecks: 'degradedChecks',
+  latencySum: 'latencySum'
+} as const
+
+export type MonitorCheckDailyRollupScalarFieldEnum = (typeof MonitorCheckDailyRollupScalarFieldEnum)[keyof typeof MonitorCheckDailyRollupScalarFieldEnum]
 
 
 export const MemberScalarFieldEnum = {
@@ -2032,6 +2214,8 @@ export type GlobalOmitConfig = {
   organization?: Prisma.OrganizationOmit
   monitor?: Prisma.MonitorOmit
   monitorCheck?: Prisma.MonitorCheckOmit
+  monitorCheckHourlyRollup?: Prisma.MonitorCheckHourlyRollupOmit
+  monitorCheckDailyRollup?: Prisma.MonitorCheckDailyRollupOmit
   member?: Prisma.MemberOmit
   invitation?: Prisma.InvitationOmit
   statusPage?: Prisma.StatusPageOmit

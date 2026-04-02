@@ -4,7 +4,16 @@ import { Prisma } from "@unstatus/db";
 
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
-import { authedProcedure, orgProcedure, verifyOrgMembership, getOrgSubscription, requirePro } from "@/orpc/procedures";
+import {
+  authedProcedure,
+  orgAdminProcedure,
+  orgProcedure,
+  ORG_MANAGER_ROLES,
+  verifyOrgMembership,
+  verifyOrgRole,
+  getOrgSubscription,
+  requirePro,
+} from "@/orpc/procedures";
 
 const domainSchema = z
   .string()
@@ -32,13 +41,14 @@ const createInput = z.object({
   brandColor: z.string().default("#000000"),
   headerText: z.string().optional(),
   footerText: z.string().optional(),
+  customCss: z.string().optional(),
   showResponseTimes: z.boolean().default(true),
 });
 
 const updateInput = createInput.partial().extend({ id: z.string() });
 
 export const statusPagesRouter = {
-  list: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
+  list: orgProcedure(z.object({ organizationId: z.string() })).handler(
     async ({ input }) => {
       return prisma.statusPage.findMany({
         where: { organizationId: input.organizationId },
@@ -69,7 +79,7 @@ export const statusPagesRouter = {
     },
   ),
 
-  create: orgProcedure.input(createInput).handler(async ({ input }) => {
+  create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     const { isPro } = await getOrgSubscription(input.organizationId);
     if (!isPro) {
       const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
@@ -81,7 +91,7 @@ export const statusPagesRouter = {
   update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
     const { id, organizationId: _orgId, ...data } = input;
     const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id } });
-    await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+    await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
 
     const { isPro } = await getOrgSubscription(statusPage.organizationId);
     if (!isPro) {
@@ -102,7 +112,7 @@ export const statusPagesRouter = {
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
     async ({ input, context }) => {
       const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.id } });
-      await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+      await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
       await prisma.statusPage.delete({ where: { id: input.id } });
     },
   ),
@@ -118,7 +128,7 @@ export const statusPagesRouter = {
     )
     .handler(async ({ input, context }) => {
       const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.statusPageId } });
-      await verifyOrgMembership(context.session.user.id, statusPage.organizationId);
+      await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
       const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
       if (monitor.organizationId !== statusPage.organizationId) {
         throw new ORPCError("FORBIDDEN", { message: "Monitor does not belong to this organization" });
@@ -133,7 +143,7 @@ export const statusPagesRouter = {
         where: { id: input.id },
         include: { statusPage: { select: { organizationId: true } } },
       });
-      await verifyOrgMembership(context.session.user.id, spm.statusPage.organizationId);
+      await verifyOrgRole(context.session.user.id, spm.statusPage.organizationId, ORG_MANAGER_ROLES);
       await prisma.statusPageMonitor.delete({ where: { id: input.id } });
     }),
 };

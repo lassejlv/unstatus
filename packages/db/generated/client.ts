@@ -77,6 +77,16 @@ export type Monitor = Prisma.MonitorModel
  */
 export type MonitorCheck = Prisma.MonitorCheckModel
 /**
+ * Model MonitorCheckHourlyRollup
+ * 
+ */
+export type MonitorCheckHourlyRollup = Prisma.MonitorCheckHourlyRollupModel
+/**
+ * Model MonitorCheckDailyRollup
+ * 
+ */
+export type MonitorCheckDailyRollup = Prisma.MonitorCheckDailyRollupModel
+/**
  * Model Member
  * 
  */

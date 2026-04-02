@@ -3,7 +3,7 @@ import { authClient } from "@/lib/auth-client";
 import { useOrg } from "@/components/org-context";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { orpc, client } from "@/orpc/client";
+import { client } from "@/orpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,31 @@ import { Settings, Users, Bell, CreditCard, Building2 } from "lucide-react";
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
 });
+
+type NotificationChannelRow = {
+  id: string;
+  organizationId: string;
+  name: string;
+  type: string;
+  webhookUrl: string | null;
+  recipientEmail: string | null;
+  enabled: boolean;
+  onIncidentCreated: boolean;
+  onIncidentResolved: boolean;
+  onIncidentUpdated: boolean;
+  onMonitorDown: boolean;
+  onMonitorRecovered: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type SubscriptionRow = {
+  subscriptionActive: boolean;
+  subscriptionPlanName: string | null;
+  cancelAtPeriodEnd: boolean;
+};
+
+const MAX_ORGANIZATIONS = 3;
 
 function SettingsPage() {
   const { activeOrg } = useOrg();
@@ -123,7 +148,7 @@ function SettingsPage() {
 
 function OrgDetails({ orgId }: { orgId: string }) {
   const { data: org } = authClient.useActiveOrganization();
-  const { setActiveOrg } = useOrg();
+  const { data: session } = authClient.useSession();
   const [name, setName] = useState(org?.name ?? "");
   const [slug, setSlug] = useState(org?.slug ?? "");
   const [saving, setSaving] = useState(false);
@@ -137,6 +162,25 @@ function OrgDetails({ orgId }: { orgId: string }) {
   }, [org?.name, org?.slug]);
 
   if (!org) return null;
+
+  const userId = session?.user.id;
+  const members = (org as any).members ?? [];
+  const currentMember = userId
+    ? members.find((member: any) => member.userId === userId || member.user?.id === userId)
+    : null;
+  const isOwner = currentMember?.role === "owner";
+  const isPersonalOrg = Boolean(
+    userId
+    && org.name === "Personal"
+    && org.slug.endsWith(`-personal-${userId.slice(0, 8)}`),
+  );
+  const canDeleteOrg = isOwner && !isPersonalOrg;
+  const deleteDisabledReason =
+    isPersonalOrg
+      ? "Your personal organization cannot be deleted."
+      : !isOwner
+        ? "Only organization owners can delete an organization."
+        : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -193,10 +237,15 @@ function OrgDetails({ orgId }: { orgId: string }) {
                 This will delete all monitors, status pages, and data. This
                 action cannot be undone.
               </span>
+              {deleteDisabledReason && (
+                <span className="text-xs text-muted-foreground">
+                  {deleteDisabledReason}
+                </span>
+              )}
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" disabled={!canDeleteOrg || deleting}>
                   Delete
                 </Button>
               </AlertDialogTrigger>
@@ -222,7 +271,7 @@ function OrgDetails({ orgId }: { orgId: string }) {
                           organizationId: orgId,
                         });
                         toast.success("Organization deleted");
-                        setActiveOrg(null);
+                        window.location.href = "/dashboard?tab=overview";
                       } catch (err: any) {
                         toast.error(
                           err.message || "Failed to delete organization",
@@ -372,30 +421,44 @@ function InviteMemberDialog({ orgId }: { orgId: string }) {
 
 function NotificationsSection({ orgId }: { orgId: string }) {
   const qc = useQueryClient();
-  const queryOpts = orpc.notifications.list.queryOptions({
-    input: { organizationId: orgId },
+  const queryKey = ["notifications", orgId] as const;
+  const { data } = useQuery({
+    queryKey,
+    queryFn: () => client.notifications.list({ organizationId: orgId }),
   });
-  const { data: channels } = useQuery(queryOpts);
+  const channels = (data ?? []) as NotificationChannelRow[];
 
-  const deleteMut = useMutation({
-    ...orpc.notifications.delete.mutationOptions(),
+  const deleteMut = useMutation<void, Error, { id: string }>({
+    mutationFn: ({ id }) => client.notifications.delete({ id }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+      qc.invalidateQueries({ queryKey });
       toast.success("Channel deleted");
     },
-    onError: (err) => toast.error(err.message || "Failed to delete"),
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete");
+    },
   });
 
-  const toggleMut = useMutation({
-    ...orpc.notifications.update.mutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryOpts.queryKey }),
-    onError: (err) => toast.error(err.message || "Failed to update"),
+  const toggleMut = useMutation<
+    NotificationChannelRow,
+    Error,
+    { id: string; enabled: boolean }
+  >({
+    mutationFn: ({ id, enabled }) => client.notifications.update({ id, enabled }),
+    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onError: (err) => {
+      toast.error(err.message || "Failed to update");
+    },
   });
 
-  const testMut = useMutation({
-    ...orpc.notifications.test.mutationOptions(),
-    onSuccess: () => toast.success("Test notification sent"),
-    onError: (err) => toast.error(err.message || "Test failed"),
+  const testMut = useMutation<{ success: boolean }, Error, { id: string }>({
+    mutationFn: ({ id }) => client.notifications.test({ id }),
+    onSuccess: () => {
+      toast.success("Test notification sent");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Test failed");
+    },
   });
 
   return (
@@ -481,10 +544,7 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const queryOpts = orpc.notifications.list.queryOptions({
-    input: { organizationId: orgId },
-  });
+  const queryKey = ["notifications", orgId] as const;
 
   const isValid = name && (type === "discord" ? webhookUrl : recipientEmail);
 
@@ -564,7 +624,7 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                     ? { webhookUrl }
                     : { recipientEmail }),
                 });
-                qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+                qc.invalidateQueries({ queryKey });
                 toast.success("Channel added");
                 setOpen(false);
                 setName("");
@@ -587,11 +647,12 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
 
 function BillingSection({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(false);
-  const { data: subscription } = useQuery(
-    orpc.billing.getSubscription.queryOptions({
-      input: { organizationId: orgId },
-    }),
-  );
+  const { data } = useQuery({
+    queryKey: ["billing", orgId],
+    queryFn: () => client.billing.getSubscription({ organizationId: orgId }),
+  });
+
+  const subscription = data as SubscriptionRow | undefined;
 
   const isActive = subscription?.subscriptionActive ?? false;
   const planName = subscription?.subscriptionPlanName ?? "Free";
@@ -675,6 +736,8 @@ function BillingSection({ orgId }: { orgId: string }) {
 function OrgSection() {
   const { data: orgs } = authClient.useListOrganizations();
   const { setActiveOrg, activeOrg } = useOrg();
+  const orgCount = orgs?.length ?? 0;
+  const canCreateOrg = orgCount < MAX_ORGANIZATIONS;
 
   return (
     <Card>
@@ -684,7 +747,7 @@ function OrgSection() {
           Switch between or create new organizations.
         </CardDescription>
         <CardAction>
-          <CreateOrgDialog />
+          <CreateOrgDialog disabled={!canCreateOrg} />
         </CardAction>
       </CardHeader>
       {orgs?.length ? (
@@ -713,11 +776,16 @@ function OrgSection() {
           ))}
         </CardContent>
       ) : null}
+      <CardContent className="border-t py-3">
+        <p className="text-xs text-muted-foreground">
+          {orgCount} / {MAX_ORGANIZATIONS} organizations used.
+        </p>
+      </CardContent>
     </Card>
   );
 }
 
-function CreateOrgDialog() {
+function CreateOrgDialog({ disabled = false }: { disabled?: boolean }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -726,7 +794,7 @@ function CreateOrgDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" disabled={disabled}>
           New organization
         </Button>
       </DialogTrigger>
@@ -762,14 +830,19 @@ function CreateOrgDialog() {
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!name || !slug || loading}
+            disabled={!name || !slug || loading || disabled}
             onClick={async () => {
               setLoading(true);
-              await authClient.organization.create({ name, slug });
-              setLoading(false);
-              setOpen(false);
-              setName("");
-              setSlug("");
+              try {
+                await authClient.organization.create({ name, slug });
+                setOpen(false);
+                setName("");
+                setSlug("");
+              } catch (err: any) {
+                toast.error(err.message || "Failed to create organization");
+              } finally {
+                setLoading(false);
+              }
             }}
           >
             Create

@@ -1,8 +1,18 @@
-import { authedProcedure, orgProcedure, verifyOrgMembership, getOrgSubscription, requirePro } from "@/orpc/procedures";
+import {
+  authedProcedure,
+  orgAdminProcedure,
+  orgProcedure,
+  ORG_MANAGER_ROLES,
+  verifyOrgRole,
+  getOrgSubscription,
+  requirePro,
+} from "@/orpc/procedures";
+import { isAllowedDiscordWebhookUrl } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
 import { NotificationEmail } from "@unstatus/email";
+import { ORPCError } from "@orpc/server";
 import z from "zod";
 
 function parseEmails(value: string): string[] {
@@ -40,7 +50,7 @@ const updateInput = z.object({
 });
 
 export const notificationsRouter = {
-  list: orgProcedure.input(z.object({ organizationId: z.string() })).handler(
+  list: orgProcedure(z.object({ organizationId: z.string() })).handler(
     async ({ input }) => {
       return prisma.notificationChannel.findMany({
         where: { organizationId: input.organizationId },
@@ -49,8 +59,11 @@ export const notificationsRouter = {
     },
   ),
 
-  create: orgProcedure.input(createInput).handler(async ({ input }) => {
+  create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     if (input.type === "discord") {
+      if (!input.webhookUrl || !isAllowedDiscordWebhookUrl(input.webhookUrl)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
+      }
       const { isPro } = await getOrgSubscription(input.organizationId);
       if (!isPro) requirePro(false, "Discord notifications");
     }
@@ -60,14 +73,17 @@ export const notificationsRouter = {
   update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
     const { id, ...data } = input;
     const channel = await prisma.notificationChannel.findUniqueOrThrow({ where: { id } });
-    await verifyOrgMembership(context.session.user.id, channel.organizationId);
+    await verifyOrgRole(context.session.user.id, channel.organizationId, ORG_MANAGER_ROLES);
+    if (channel.type === "discord" && data.webhookUrl && !isAllowedDiscordWebhookUrl(data.webhookUrl)) {
+      throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
+    }
     return prisma.notificationChannel.update({ where: { id }, data });
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
     async ({ input, context }) => {
       const channel = await prisma.notificationChannel.findUniqueOrThrow({ where: { id: input.id } });
-      await verifyOrgMembership(context.session.user.id, channel.organizationId);
+      await verifyOrgRole(context.session.user.id, channel.organizationId, ORG_MANAGER_ROLES);
       await prisma.notificationChannel.delete({ where: { id: input.id } });
     },
   ),
@@ -75,9 +91,12 @@ export const notificationsRouter = {
   test: authedProcedure.input(z.object({ id: z.string() })).handler(
     async ({ input, context }) => {
       const channel = await prisma.notificationChannel.findUniqueOrThrow({ where: { id: input.id } });
-      await verifyOrgMembership(context.session.user.id, channel.organizationId);
+      await verifyOrgRole(context.session.user.id, channel.organizationId, ORG_MANAGER_ROLES);
 
       if (channel.type === "discord" && channel.webhookUrl) {
+        if (!isAllowedDiscordWebhookUrl(channel.webhookUrl)) {
+          throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
+        }
         const res = await fetch(channel.webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

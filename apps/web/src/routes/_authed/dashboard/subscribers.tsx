@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useOrg } from "@/components/org-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
+import { client } from "@/orpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,13 @@ import {
 export const Route = createFileRoute("/_authed/dashboard/subscribers")({
   component: SubscribersPage,
 });
+
+type SubscriberRow = {
+  id: string;
+  email: string;
+  verified: boolean;
+  statusPageName: string;
+};
 
 function SubscribersPage() {
   const { activeOrg } = useOrg();
@@ -38,18 +45,22 @@ function SubscribersPage() {
 
 function SubscribersList({ orgId }: { orgId: string }) {
   const qc = useQueryClient();
-  const queryOpts = orpc.subscribers.list.queryOptions({
-    input: { organizationId: orgId },
+  const queryKey = ["subscribers", orgId] as const;
+  const { data } = useQuery({
+    queryKey,
+    queryFn: () => client.subscribers.list({ organizationId: orgId }),
   });
-  const { data: subscribers } = useQuery(queryOpts);
+  const subscribers = (data ?? []) as SubscriberRow[];
 
-  const deleteMut = useMutation({
-    ...orpc.subscribers.delete.mutationOptions(),
+  const deleteMut = useMutation<{ success: boolean }, Error, { id: string }>({
+    mutationFn: ({ id }) => client.subscribers.delete({ id }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryOpts.queryKey });
+      qc.invalidateQueries({ queryKey });
       toast.success("Subscriber removed");
     },
-    onError: (err) => toast.error(err.message || "Failed to remove"),
+    onError: (err) => {
+      toast.error(err.message || "Failed to remove");
+    },
   });
 
   return (
@@ -85,7 +96,7 @@ function SubscribersList({ orgId }: { orgId: string }) {
                 size="sm"
                 className="text-muted-foreground"
                 onClick={() =>
-                  deleteMut.mutate({ id: sub.id, organizationId: orgId })
+                  deleteMut.mutate({ id: sub.id })
                 }
               >
                 Remove

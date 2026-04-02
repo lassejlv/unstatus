@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
 import { publicProcedure } from "@/orpc/procedures";
+import { ORPCError } from "@orpc/server";
 import { SubscriptionVerifyEmail } from "@unstatus/email";
 
 type ResolvedPublicPage = {
@@ -29,12 +30,12 @@ type StatsRow = {
   day: string;
   total: bigint;
   up: bigint;
-  avg_latency: number;
+  avg_latency: number | null;
 };
 
 type LatestRow = {
   monitorId: string;
-  status: string;
+  status: string | null;
 };
 
 type IncidentRow = {
@@ -51,9 +52,53 @@ type IncidentRow = {
 type HourlyRow = {
   monitorId: string;
   hour: Date;
-  avg_latency: number;
+  avg_latency: number | null;
   check_count: bigint;
 };
+
+const subscribeRateLimiter = new Map<string, number[]>();
+const SUBSCRIBE_IP_LIMIT = { windowMs: 15 * 60 * 1000, maxRequests: 10 };
+const SUBSCRIBE_EMAIL_LIMIT = { windowMs: 60 * 60 * 1000, maxRequests: 3 };
+
+function isMissingMonitorPerfSchema(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("monitor_check_hourly_rollup")
+    || message.includes("monitor_check_daily_rollup")
+    || message.includes("lastStatus")
+    || message.includes("does not exist")
+    || message.includes("42P01")
+    || message.includes("42703")
+  );
+}
+
+function getRequestIp(headers: Headers): string {
+  const forwardedFor = headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() || "unknown";
+  }
+
+  return headers.get("cf-connecting-ip")
+    ?? headers.get("x-real-ip")
+    ?? "unknown";
+}
+
+function enforceRateLimit(
+  key: string,
+  config: { windowMs: number; maxRequests: number },
+  message: string,
+) {
+  const now = Date.now();
+  const attempts = subscribeRateLimiter.get(key) ?? [];
+  const recentAttempts = attempts.filter((attempt) => now - attempt < config.windowMs);
+
+  if (recentAttempts.length >= config.maxRequests) {
+    throw new ORPCError("TOO_MANY_REQUESTS", { message });
+  }
+
+  recentAttempts.push(now);
+  subscribeRateLimiter.set(key, recentAttempts);
+}
 
 async function resolvePublicPage(
   where: { slug: string } | { customDomain: string },
@@ -80,12 +125,12 @@ async function resolvePublicPage(
   return page;
 }
 
-async function getPublicStatusPage(page: ResolvedPublicPage) {
-  const now = new Date();
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
-
-  const [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await Promise.all([
+async function getLegacyPublicStatusRows(
+  page: ResolvedPublicPage,
+  ninetyDaysAgo: Date,
+  twentyFourHoursAgo: Date,
+) {
+  return Promise.all([
     prisma.$queryRawUnsafe<MonitorRow[]>(
       `SELECT spm."monitorId", m.name as "monitorName", spm."displayName"
       FROM status_page_monitor spm
@@ -141,6 +186,100 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
         )
       : Promise.resolve([] as HourlyRow[]),
   ]);
+}
+
+async function getRollupPublicStatusRows(
+  page: ResolvedPublicPage,
+  ninetyDaysAgo: Date,
+  twentyFourHoursAgo: Date,
+) {
+  return Promise.all([
+    prisma.$queryRawUnsafe<MonitorRow[]>(
+      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName"
+      FROM status_page_monitor spm
+      JOIN monitor m ON m.id = spm."monitorId"
+      WHERE spm."statusPageId" = $1
+      ORDER BY spm."sortOrder" ASC`,
+      page.id,
+    ),
+    prisma.$queryRawUnsafe<StatsRow[]>(
+      `SELECT dr."monitorId",
+        DATE(dr."bucketDate") as day,
+        SUM(dr."totalChecks")::bigint as total,
+        SUM(dr."upChecks")::bigint as up,
+        ROUND(SUM(dr."latencySum")::numeric / NULLIF(SUM(dr."totalChecks"), 0))::float as avg_latency
+      FROM monitor_check_daily_rollup dr
+      JOIN status_page_monitor spm ON spm."monitorId" = dr."monitorId"
+      WHERE spm."statusPageId" = $1 AND dr."bucketDate" >= $2
+      GROUP BY dr."monitorId", DATE(dr."bucketDate")`,
+      page.id,
+      ninetyDaysAgo,
+    ),
+    prisma.$queryRawUnsafe<LatestRow[]>(
+      `SELECT m.id as "monitorId", m."lastStatus" as status
+      FROM monitor m
+      JOIN status_page_monitor spm ON spm."monitorId" = m.id
+      WHERE spm."statusPageId" = $1`,
+      page.id,
+    ),
+    prisma.$queryRawUnsafe<IncidentRow[]>(
+      `SELECT i.id, i."monitorId", i.title, i.status, i.severity,
+        i."startedAt", i."resolvedAt",
+        (SELECT iu.message FROM incident_update iu WHERE iu."incidentId" = i.id ORDER BY iu."createdAt" DESC LIMIT 1) as "lastMessage"
+      FROM incident i
+      JOIN status_page_monitor spm ON spm."monitorId" = i."monitorId"
+      WHERE spm."statusPageId" = $1 AND i."createdAt" >= $2
+      ORDER BY i."createdAt" DESC
+      LIMIT 10`,
+      page.id,
+      ninetyDaysAgo,
+    ),
+    page.showResponseTimes
+      ? prisma.$queryRawUnsafe<HourlyRow[]>(
+          `SELECT hr."monitorId",
+            hr."bucketStart" as hour,
+            ROUND(SUM(hr."latencySum")::numeric / NULLIF(SUM(hr."totalChecks"), 0))::float as avg_latency,
+            SUM(hr."totalChecks")::bigint as check_count
+          FROM monitor_check_hourly_rollup hr
+          JOIN status_page_monitor spm ON spm."monitorId" = hr."monitorId"
+          WHERE spm."statusPageId" = $1 AND hr."bucketStart" >= $2
+          GROUP BY hr."monitorId", hr."bucketStart"
+          ORDER BY hour ASC`,
+          page.id,
+          twentyFourHoursAgo,
+        )
+      : Promise.resolve([] as HourlyRow[]),
+  ]);
+}
+
+async function getPublicStatusPage(page: ResolvedPublicPage) {
+  const now = new Date();
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
+
+  let monitorRows: MonitorRow[];
+  let statsRows: StatsRow[];
+  let latestRows: LatestRow[];
+  let incidentRows: IncidentRow[];
+  let hourlyRows: HourlyRow[];
+
+  try {
+    [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await getRollupPublicStatusRows(
+      page,
+      ninetyDaysAgo,
+      twentyFourHoursAgo,
+    );
+  } catch (error) {
+    if (!isMissingMonitorPerfSchema(error)) {
+      throw error;
+    }
+
+    [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await getLegacyPublicStatusRows(
+      page,
+      ninetyDaysAgo,
+      twentyFourHoursAgo,
+    );
+  }
 
   const dailyByMonitor = new Map<
     string,
@@ -153,13 +292,11 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       dailyByMonitor.set(row.monitorId, statsByDay);
     }
 
-    const dayKey = row.day instanceof Date
-      ? row.day.toISOString().slice(0, 10)
-      : String(row.day).slice(0, 10);
+    const dayKey = String(row.day).slice(0, 10);
     statsByDay.set(dayKey, {
       total: Number(row.total),
       up: Number(row.up),
-      latency: row.avg_latency,
+      latency: row.avg_latency ?? 0,
     });
   }
 
@@ -172,7 +309,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     }
     series.push({
       hour: new Date(row.hour).toISOString(),
-      avgLatency: row.avg_latency,
+      avgLatency: row.avg_latency ?? 0,
       checkCount: Number(row.check_count),
     });
   }
@@ -364,16 +501,29 @@ export const publicStatusRouter = {
       email: z.string().email(),
       monitorIds: z.array(z.string()).optional(),
     }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const page = await resolvePublicPage({ slug: input.slug });
+      const normalizedEmail = input.email.trim().toLowerCase();
+      const requestIp = getRequestIp(context.headers);
+
+      enforceRateLimit(
+        `status-subscribe:ip:${requestIp}`,
+        SUBSCRIBE_IP_LIMIT,
+        "Too many subscription attempts. Please try again later.",
+      );
+      enforceRateLimit(
+        `status-subscribe:email:${page.id}:${normalizedEmail}`,
+        SUBSCRIBE_EMAIL_LIMIT,
+        "This email has received too many verification messages. Please try again later.",
+      );
 
       const subscriber = await prisma.statusPageSubscriber.upsert({
         where: {
-          statusPageId_email: { statusPageId: page.id, email: input.email },
+          statusPageId_email: { statusPageId: page.id, email: normalizedEmail },
         },
         create: {
           statusPageId: page.id,
-          email: input.email,
+          email: normalizedEmail,
           monitorIds: input.monitorIds ?? [],
         },
         update: {
