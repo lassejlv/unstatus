@@ -56,6 +56,18 @@ type HourlyRow = {
   check_count: bigint;
 };
 
+function getLocalDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateKeyToLocalMs(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1).getTime();
+}
+
 const subscribeRateLimiter = new Map<string, number[]>();
 const SUBSCRIBE_IP_LIMIT = { windowMs: 15 * 60 * 1000, maxRequests: 10 };
 const SUBSCRIBE_EMAIL_LIMIT = { windowMs: 60 * 60 * 1000, maxRequests: 3 };
@@ -292,7 +304,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       dailyByMonitor.set(row.monitorId, statsByDay);
     }
 
-    const dayKey = String(row.day).slice(0, 10);
+    const dayKey = getLocalDateKey(new Date(String(row.day)));
     statsByDay.set(dayKey, {
       total: Number(row.total),
       up: Number(row.up),
@@ -329,9 +341,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     const daily: { date: string; uptime: number; totalChecks: number }[] = [];
 
     for (let dayOffset = 89; dayOffset >= 0; dayOffset -= 1) {
-      const date = new Date(now.getTime() - dayOffset * 86_400_000)
-        .toISOString()
-        .slice(0, 10);
+      const date = getLocalDateKey(new Date(now.getTime() - dayOffset * 86_400_000));
       const stats = monitorDaily?.get(date);
       const total = stats?.total ?? 0;
       const up = stats?.up ?? 0;
@@ -342,7 +352,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       }
 
       let uptime = total > 0 ? (up / total) * 100 : 100;
-      const dayStart = new Date(`${date}T00:00:00Z`).getTime();
+      const dayStart = parseDateKeyToLocalMs(date);
       const dayEnd = dayStart + 86_400_000;
 
       for (const incident of monitorIncidents) {
