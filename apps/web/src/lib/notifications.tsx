@@ -151,6 +151,13 @@ async function notifySubscribers(event: NotifyEvent) {
 
   const statusPageIds = statusPageMonitors.map((spm) => spm.statusPageId);
 
+  // Get status pages with slugs for unsubscribe URLs
+  const statusPages = await prisma.statusPage.findMany({
+    where: { id: { in: statusPageIds } },
+    select: { id: true, slug: true },
+  });
+  const slugById = new Map(statusPages.map((p) => [p.id, p.slug]));
+
   // Get verified subscribers for these pages
   const subscribers = await prisma.statusPageSubscriber.findMany({
     where: {
@@ -174,14 +181,16 @@ async function notifySubscribers(event: NotifyEvent) {
 
   await Promise.allSettled(
     filtered.map(async (sub) => {
-      const unsubscribeUrl = `${domain}/status/unsubscribe?token=${sub.token}`;
+      const slug = slugById.get(sub.statusPageId) ?? "_";
+      const unsubscribeUrl = `${domain}/status/${slug}/verify?token=${sub.token}&action=unsubscribe`;
       await email.emails.send({
         from: env.INBOUND_FROM,
         to: sub.email,
         subject: buildEmailSubject(event),
-        react: <NotificationEmail {...emailProps} />,
+        react: <NotificationEmail {...emailProps} unsubscribeUrl={unsubscribeUrl} />,
         headers: {
           "List-Unsubscribe": `<${unsubscribeUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
       });
     }),

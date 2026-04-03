@@ -9,16 +9,19 @@ import {
   Hr,
   Preview,
   Button,
+  Link,
 } from "@react-email/components";
 
 export type SubscriptionVerifyEmailProps = {
   pageName: string;
   verifyUrl: string;
+  unsubscribeUrl?: string;
 };
 
 export function SubscriptionVerifyEmail({
   pageName,
   verifyUrl,
+  unsubscribeUrl,
 }: SubscriptionVerifyEmailProps) {
   return (
     <Html>
@@ -51,7 +54,12 @@ export function SubscriptionVerifyEmail({
           <Hr style={hr} />
           <Section style={footer}>
             <Text style={footerText}>
-              Sent by Unstatus
+              Sent by Unstatus.{" "}
+              {unsubscribeUrl && (
+                <Link href={unsubscribeUrl} style={unsubscribeLink}>
+                  Unsubscribe
+                </Link>
+              )}
             </Text>
           </Section>
         </Container>
@@ -140,6 +148,11 @@ const footerText: React.CSSProperties = {
   fontSize: "12px",
   color: "#9ca3af",
   margin: 0,
+};
+
+const unsubscribeLink: React.CSSProperties = {
+  color: "#9ca3af",
+  textDecoration: "underline",
 };
 
 export default SubscriptionVerifyEmail;

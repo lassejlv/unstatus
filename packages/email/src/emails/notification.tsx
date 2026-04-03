@@ -8,6 +8,7 @@ import {
   Heading,
   Hr,
   Preview,
+  Link,
 } from "@react-email/components";
 
 export type NotificationEmailProps = {
@@ -17,6 +18,7 @@ export type NotificationEmailProps = {
   severity?: string;
   message?: string;
   status?: string;
+  unsubscribeUrl?: string;
 };
 
 const EVENT_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -120,7 +122,12 @@ export function NotificationEmail(props: NotificationEmailProps) {
           <Hr style={hr} />
           <Section style={footer}>
             <Text style={footerText}>
-              Sent by Unstatus. Manage notification preferences in your dashboard settings.
+              Sent by Unstatus.{" "}
+              {props.unsubscribeUrl && (
+                <Link href={props.unsubscribeUrl} style={unsubscribeLink}>
+                  Unsubscribe
+                </Link>
+              )}
             </Text>
           </Section>
         </Container>
@@ -218,6 +225,11 @@ const footerText: React.CSSProperties = {
   fontSize: "12px",
   color: "#9ca3af",
   margin: 0,
+};
+
+const unsubscribeLink: React.CSSProperties = {
+  color: "#9ca3af",
+  textDecoration: "underline",
 };
 
 export default NotificationEmail;

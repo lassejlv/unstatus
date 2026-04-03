@@ -62,12 +62,13 @@ export const subscribersRouter = {
 
     const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
     const verifyUrl = `${domain}/status/${page.slug}/verify?token=${subscriber.token}`;
+    const unsubscribeUrl = `${domain}/status/${page.slug}/verify?token=${subscriber.token}&action=unsubscribe`;
 
     await email.emails.send({
       from: env.INBOUND_FROM,
       to: normalizedEmail,
       subject: `Confirm your subscription to ${page.name} status updates`,
-      react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} />,
+      react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} unsubscribeUrl={unsubscribeUrl} />,
     });
 
     return { success: true };
@@ -97,12 +98,13 @@ export const subscribersRouter = {
 
       const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
       const verifyUrl = `${domain}/status/${subscriber.statusPage.slug}/verify?token=${subscriber.token}`;
+      const unsubscribeUrl = `${domain}/status/${subscriber.statusPage.slug}/verify?token=${subscriber.token}&action=unsubscribe`;
 
       await email.emails.send({
         from: env.INBOUND_FROM,
         to: subscriber.email,
         subject: `Confirm your subscription to ${subscriber.statusPage.name} status updates`,
-        react: <SubscriptionVerifyEmail pageName={subscriber.statusPage.name} verifyUrl={verifyUrl} />,
+        react: <SubscriptionVerifyEmail pageName={subscriber.statusPage.name} verifyUrl={verifyUrl} unsubscribeUrl={unsubscribeUrl} />,
       });
 
       return { success: true };

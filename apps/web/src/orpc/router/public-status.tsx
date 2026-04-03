@@ -611,12 +611,13 @@ export const publicStatusRouter = {
 
       const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
       const verifyUrl = `${domain}/status/${page.slug}/verify?token=${subscriber.token}`;
+      const unsubscribeUrl = `${domain}/status/${page.slug}/verify?token=${subscriber.token}&action=unsubscribe`;
 
       await email.emails.send({
         from: env.INBOUND_FROM,
         to: input.email,
         subject: `Confirm your subscription to ${page.name} status updates`,
-        react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} />,
+        react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} unsubscribeUrl={unsubscribeUrl} />,
       });
 
       return { success: true };
