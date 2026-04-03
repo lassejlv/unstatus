@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   skipToken,
   useQuery,
@@ -208,12 +208,15 @@ function MonitorSidecar({
   const monitorOpts = orpc.monitors.get.queryOptions({
     input: monitorId ? { id: monitorId } : skipToken,
   });
+  const [checkPage, setCheckPage] = useState(0);
   const checksOpts = orpc.monitors.checks.queryOptions({
-    input: monitorId ? { monitorId } : skipToken,
+    input: monitorId ? { monitorId, limit: 50, offset: checkPage * 50 } : skipToken,
   });
   const { data: monitor } = useQuery(monitorOpts);
   const { data: checksData } = useQuery(checksOpts);
   const checks = checksData?.items;
+  const checksTotal = checksData?.total ?? 0;
+  const checksHasMore = checksData?.hasMore ?? false;
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
   const [view, setView] = useState<"main" | "edit" | "confirmDelete">("main");
   const [copied, setCopied] = useState(false);
@@ -224,6 +227,8 @@ function MonitorSidecar({
     prevMonitorId.current = monitorId;
     setSelectedCheck(null);
     setView("main");
+    setCheckPage(0);
+    setTab("overview");
   }
 
   const runCheck = useMutation({
@@ -421,13 +426,23 @@ function MonitorSidecar({
                       <p className="px-6 pb-4 text-xs text-muted-foreground">No checks yet.</p>
                     )}
                   </div>
+
+                  {/* Dependencies */}
+                  <div className="border-t px-6 py-4">
+                    <MonitorDependencies monitorId={monitor.id} />
+                  </div>
                 </div>
               )}
 
               {tab === "checks" && (
                 <div className="flex flex-col">
-                  <div className="px-6 py-3 border-b">
+                  <div className="flex items-center justify-between px-6 py-3 border-b">
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">All checks</span>
+                    {checksTotal > 0 && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {checkPage * 50 + 1}–{Math.min((checkPage + 1) * 50, checksTotal)} of {checksTotal}
+                      </span>
+                    )}
                   </div>
                   {checks?.length ? (
                     <div className="divide-y">
@@ -453,15 +468,16 @@ function MonitorSidecar({
                   ) : (
                     <p className="px-6 py-8 text-center text-xs text-muted-foreground">No checks yet.</p>
                   )}
-                  <div className="px-6 py-3 border-t">
-                    <Link
-                      to="/dashboard/monitors/$monitorId"
-                      params={{ monitorId: monitor.id }}
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      View full history with pagination →
-                    </Link>
-                  </div>
+                  {(checkPage > 0 || checksHasMore) && (
+                    <div className="flex items-center justify-end gap-2 px-6 py-3 border-t">
+                      <Button variant="outline" size="sm" className="text-xs" disabled={checkPage === 0} onClick={() => setCheckPage((p) => p - 1)}>
+                        Previous
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-xs" disabled={!checksHasMore} onClick={() => setCheckPage((p) => p + 1)}>
+                        Next
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -964,6 +980,150 @@ function formatBody(body: string): string {
   } catch {
     return body;
   }
+}
+
+function MonitorDependencies({ monitorId }: { monitorId: string }) {
+  const qc = useQueryClient();
+  const depsOpts = orpc.dependencies.listForMonitor.queryOptions({ input: { monitorId } });
+  const { data: deps } = useQuery(depsOpts);
+  const { data: services } = useQuery(
+    orpc.dependencies.listExternalServices.queryOptions({ input: undefined }),
+  );
+  const [addOpen, setAddOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const addDep = useMutation({
+    ...orpc.dependencies.add.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: depsOpts.queryKey });
+      setAddOpen(false);
+      setSelectedServiceId("");
+      setSearchQuery("");
+      toast.success("Dependency added");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to add dependency");
+    },
+  });
+
+  const removeDep = useMutation({
+    ...orpc.dependencies.remove.mutationOptions(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: depsOpts.queryKey });
+      toast.success("Dependency removed");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to remove dependency");
+    },
+  });
+
+  const existingServiceIds = new Set(deps?.map((d) => d.externalServiceId) ?? []);
+  const filteredServices = services?.filter(
+    (s) =>
+      !existingServiceIds.has(s.id) &&
+      (searchQuery === "" || s.name.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
+  const DEP_COLORS: Record<string, string> = {
+    operational: "bg-emerald-500",
+    degraded_performance: "bg-yellow-500",
+    partial_outage: "bg-orange-500",
+    major_outage: "bg-red-500",
+    maintenance: "bg-blue-500",
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Dependencies</span>
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-6 text-xs">+ Add</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add dependency</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              <Input
+                placeholder="Search services..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
+                {filteredServices?.length === 0 && (
+                  <p className="p-3 text-xs text-muted-foreground">No services found.</p>
+                )}
+                {filteredServices?.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-colors ${selectedServiceId === s.id ? "bg-accent" : ""}`}
+                    onClick={() => setSelectedServiceId(s.id)}
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded border bg-background">
+                      {s.logoUrl ? (
+                        <img src={s.logoUrl} alt={s.name} className="size-4 rounded" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-muted-foreground">{s.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm">{s.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
+                    </div>
+                    <span className={`size-2 rounded-full ${DEP_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                disabled={!selectedServiceId || addDep.isPending}
+                onClick={() => addDep.mutate({ monitorId, externalServiceId: selectedServiceId })}
+              >
+                Add
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {deps && deps.length > 0 ? (
+        <div className="divide-y rounded-lg border">
+          {deps.map((dep) => (
+            <div key={dep.id} className="flex items-center gap-3 px-3 py-2">
+              <span className={`size-2 shrink-0 rounded-full ${DEP_COLORS[dep.externalService.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium">{dep.externalService.name}</span>
+                {dep.externalComponent && (
+                  <span className="text-xs text-muted-foreground"> / {dep.externalComponent.name}</span>
+                )}
+              </div>
+              <span className="text-[10px] text-muted-foreground">{dep.externalService.category}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => removeDep.mutate({ id: dep.id })}
+                disabled={removeDep.isPending}
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-muted-foreground">
+          No dependencies — link external services this monitor depends on.
+        </p>
+      )}
+    </div>
+  );
 }
 
 function CreateMonitorDialog({ organizationId, monitorCount }: { organizationId: string; monitorCount: number }) {
