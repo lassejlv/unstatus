@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/sidebar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { UnfoldMoreIcon } from "@hugeicons/core-free-icons";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, User } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useTheme } from "@/hooks/use-theme";
 
 export function UserDropdown({
@@ -72,6 +73,12 @@ export function UserDropdown({
               {theme === "auto" && <span className="ml-auto text-xs text-muted-foreground">✓</span>}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/account">
+                <User className="size-4 mr-2" />
+                Account
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={async () => {
                 await authClient.signOut();

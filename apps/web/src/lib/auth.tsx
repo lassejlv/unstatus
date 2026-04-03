@@ -20,6 +20,11 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+  },
   databaseHooks: {
     user: {
       create: {
@@ -41,6 +46,30 @@ export const auth = betterAuth({
               },
             },
           });
+        },
+      },
+      delete: {
+        before: async (user) => {
+          // Clean up all organizations this user owns
+          const ownedMembers = await prisma.member.findMany({
+            where: { userId: user.id, role: "owner" },
+            select: { organizationId: true },
+          });
+
+          for (const m of ownedMembers) {
+            // Cancel subscription in Autumn/Stripe
+            try {
+              await autumn.customers.delete({
+                customerId: m.organizationId,
+                deleteInStripe: true,
+              });
+            } catch {}
+
+            // Delete the org (cascades to monitors, status pages, incidents, etc.)
+            await prisma.organization.delete({
+              where: { id: m.organizationId },
+            }).catch(() => {});
+          }
         },
       },
     },
