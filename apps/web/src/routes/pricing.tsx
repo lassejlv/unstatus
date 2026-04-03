@@ -74,10 +74,10 @@ const featureGroups: {
   {
     label: "Limits",
     features: [
-      { name: "Monitors", free: "5", pro: "Unlimited" },
+      { name: "Monitors", free: "1", pro: "Unlimited" },
       { name: "Status pages", free: "1", pro: "Unlimited" },
       { name: "Team members", free: "3", pro: "Unlimited" },
-      { name: "Check interval", free: "5 min", pro: "10 sec" },
+      { name: "Check interval", free: "10 min", pro: "10 sec" },
       { name: "Incident history", free: "30 days", pro: "Unlimited" },
       { name: "Regions", free: "1", pro: "All (EU, US, Asia)" },
     ],
@@ -174,10 +174,10 @@ function PricingPage() {
                   </span>
                   <ul className="mt-4 space-y-3">
                     {[
-                      "5 monitors",
+                      "1 monitor",
                       "1 status page",
                       "3 team members",
-                      "5 min check interval",
+                      "10 min check interval",
                       "Email notifications",
                       "30 day history",
                     ].map((f) => (

@@ -4,12 +4,10 @@ import { useOrg } from "@/components/org-context";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
 } from "@/components/ui/card";
 import {
@@ -32,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useCustomer, useListPlans } from "autumn-js/react";
-import { Check, ArrowRight, CreditCard, ExternalLink } from "lucide-react";
+import { CreditCard, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
@@ -221,148 +219,6 @@ function CurrentPlanCard() {
 }
 
 // --- Plan Comparison ---
-
-function PlanComparisonCard() {
-  const { data: plans } = useListPlans();
-  const { customer } = useSubscription();
-  const { attach } = useCustomer();
-
-  const allPlans = plans?.filter((p) => !p.addOn) ?? [];
-  const activePlanId = customer?.subscriptions?.find(
-    (s) => s.status === "active" && !s.autoEnable,
-  )?.planId;
-
-  if (allPlans.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader className="border-b">
-        <CardTitle>Plans</CardTitle>
-        <CardDescription>Compare available plans and features.</CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className={`grid divide-x ${allPlans.length >= 3 ? "grid-cols-3" : allPlans.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
-          {/* Free column */}
-          <div className="p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">Free</span>
-              {!activePlanId && <Badge variant="default">Current</Badge>}
-            </div>
-            <p className="mt-1 text-2xl font-bold font-mono">€0</p>
-            <p className="mt-1 text-xs text-muted-foreground">Forever free</p>
-            <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5"><Check className="size-3 text-muted-foreground" /> 5 monitors</div>
-              <div className="flex items-center gap-1.5"><Check className="size-3 text-muted-foreground" /> 1 status page</div>
-              <div className="flex items-center gap-1.5"><Check className="size-3 text-muted-foreground" /> Email notifications</div>
-              <div className="flex items-center gap-1.5"><Check className="size-3 text-muted-foreground" /> 1 region</div>
-            </div>
-          </div>
-
-          {/* Paid plan columns */}
-          {allPlans
-            .filter((p) => !p.autoEnable)
-            .map((plan) => {
-              const isCurrent = plan.id === activePlanId;
-              const eligibility = plan.customerEligibility;
-              return (
-                <div key={plan.id} className={`p-5 ${isCurrent ? "bg-accent/30" : ""}`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">{plan.name}</span>
-                    {isCurrent && <Badge variant="default">Current</Badge>}
-                  </div>
-                  <p className="mt-1 text-2xl font-bold font-mono">
-                    {plan.price?.display?.primaryText ?? `€${plan.price?.amount ?? 0}`}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {plan.price?.display?.secondaryText ?? `/ ${plan.price?.interval ?? "month"}`}
-                  </p>
-
-                  {!isCurrent && (
-                    <Button
-                      size="sm"
-                      className="mt-3 w-full gap-1 text-xs"
-                      onClick={() => attach({ planId: plan.id })}
-                    >
-                      {eligibility?.attachAction === "upgrade" ? "Upgrade" : eligibility?.attachAction === "downgrade" ? "Downgrade" : "Get started"}
-                      <ArrowRight className="size-3" />
-                    </Button>
-                  )}
-
-                  {plan.items.length > 0 && (
-                    <div className="mt-4 space-y-2 text-xs">
-                      {plan.items.map((item) => (
-                        <div key={item.featureId} className="flex items-center gap-1.5">
-                          <Check className="size-3 text-emerald-500" />
-                          <span>
-                            {item.display?.primaryText
-                              ?? (item.unlimited
-                                ? `Unlimited ${item.feature?.display?.plural ?? item.feature?.name ?? item.featureId}`
-                                : item.feature?.name ?? item.featureId)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// --- Features / Usage ---
-
-function FeaturesCard() {
-  const { customer } = useSubscription();
-
-  const flags = customer?.flags ? Object.values(customer.flags) : [];
-  const balances = customer?.balances ? Object.values(customer.balances) : [];
-
-  if (flags.length === 0 && balances.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader className="border-b">
-        <CardTitle>Your features</CardTitle>
-        <CardDescription>Features included in your current plan.</CardDescription>
-      </CardHeader>
-      <CardContent className="p-0 divide-y">
-        {/* Boolean flags */}
-        {flags.map((flag: any) => (
-          <div key={flag.featureId} className="flex items-center justify-between px-5 py-3">
-            <div className="flex items-center gap-2">
-              <Check className="size-3.5 text-emerald-500" />
-              <span className="text-sm">{flag.feature?.name ?? flag.featureId}</span>
-            </div>
-            <Badge variant="secondary" className="text-[10px]">Included</Badge>
-          </div>
-        ))}
-
-        {/* Metered balances */}
-        {balances.map((bal: any) => {
-          const pct = bal.unlimited ? 100 : bal.granted > 0 ? Math.round((bal.remaining / bal.granted) * 100) : 0;
-          return (
-            <div key={bal.featureId} className="px-5 py-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{bal.feature?.name ?? bal.featureId}</span>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {bal.unlimited ? "Unlimited" : `${bal.remaining} / ${bal.granted}`}
-                </span>
-              </div>
-              {!bal.unlimited && bal.granted > 0 && (
-                <Progress value={pct} className="mt-2 h-1.5" />
-              )}
-            </div>
-          );
-        })}
-      </CardContent>
-    </Card>
-  );
-}
-
-// --- Payment Method ---
 
 function PaymentMethodCard() {
   const { customer } = useSubscription();
