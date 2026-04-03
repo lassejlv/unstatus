@@ -27,6 +27,7 @@ import { Route as ApiAutumnSplatRouteImport } from './routes/api/autumn/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
 import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
+import { Route as AuthedDashboardNotificationsRouteImport } from './routes/_authed/dashboard/notifications'
 import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
 import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors.index'
 import { Route as AuthedDashboardIncidentsIndexRouteImport } from './routes/_authed/dashboard/incidents/index'
@@ -125,6 +126,12 @@ const AuthedDashboardSettingsRoute = AuthedDashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthedDashboardRoute,
 } as any)
+const AuthedDashboardNotificationsRoute =
+  AuthedDashboardNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardStatusPagesIndexRoute =
   AuthedDashboardStatusPagesIndexRouteImport.update({
     id: '/status-pages/',
@@ -171,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
+  '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -195,6 +203,7 @@ export interface FileRoutesByTo {
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry': typeof RegistryIndexRoute
+  '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
+  '/_authed/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
+    | '/dashboard/notifications'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry'
+    | '/dashboard/notifications'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
@@ -299,6 +311,7 @@ export interface FileRouteTypes {
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
+    | '/_authed/dashboard/notifications'
     | '/_authed/dashboard/settings'
     | '/_authed/dashboard/subscribers'
     | '/api/auth/$'
@@ -461,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardSettingsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/notifications': {
+      id: '/_authed/dashboard/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof AuthedDashboardNotificationsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/status-pages/': {
       id: '/_authed/dashboard/status-pages/'
       path: '/status-pages'
@@ -507,6 +527,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthedDashboardRouteChildren {
+  AuthedDashboardNotificationsRoute: typeof AuthedDashboardNotificationsRoute
   AuthedDashboardSettingsRoute: typeof AuthedDashboardSettingsRoute
   AuthedDashboardSubscribersRoute: typeof AuthedDashboardSubscribersRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
@@ -519,6 +540,7 @@ interface AuthedDashboardRouteChildren {
 }
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
+  AuthedDashboardNotificationsRoute: AuthedDashboardNotificationsRoute,
   AuthedDashboardSettingsRoute: AuthedDashboardSettingsRoute,
   AuthedDashboardSubscribersRoute: AuthedDashboardSubscribersRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
