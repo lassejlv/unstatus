@@ -96,6 +96,7 @@ model Organization {
   monitors             Monitor[]
   statusPages          StatusPage[]
   notificationChannels NotificationChannel[]
+  maintenanceWindows   MaintenanceWindow[]
 
   @@unique([slug])
   @@map("organization")
@@ -144,7 +145,9 @@ model Monitor {
   dailyRollups  MonitorCheckDailyRollup[]
   statusPageMonitors StatusPageMonitor[]
   incidents   Incident[]
+  incidentMonitors IncidentMonitor[]
   dependencies MonitorDependency[]
+  maintenanceMonitors MaintenanceWindowMonitor[]
 
   @@index([organizationId])
   @@index([active])
@@ -307,10 +310,23 @@ model Incident {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   updates   IncidentUpdate[]
+  monitors  IncidentMonitor[]
 
   @@index([monitorId])
   @@index([status])
   @@map("incident")
+}
+
+model IncidentMonitor {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  monitorId  String
+  monitor    Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@unique([incidentId, monitorId])
+  @@index([monitorId])
+  @@map("incident_monitor")
 }
 
 model IncidentUpdate {
@@ -343,12 +359,52 @@ model NotificationChannel {
   onIncidentUpdated  Boolean @default(true)
   onMonitorDown      Boolean @default(true)
   onMonitorRecovered Boolean @default(true)
+  onMaintenanceScheduled Boolean @default(true)
+  onMaintenanceStarted   Boolean @default(true)
+  onMaintenanceCompleted Boolean @default(true)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([organizationId])
   @@map("notification_channel")
+}
+
+// --- Maintenance Windows ---
+
+model MaintenanceWindow {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String?
+  status         String       @default("scheduled") // scheduled | in_progress | completed | cancelled
+  scheduledStart DateTime
+  scheduledEnd   DateTime
+  actualStart    DateTime?
+  actualEnd      DateTime?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  monitors       MaintenanceWindowMonitor[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([status, scheduledStart])
+  @@map("maintenance_window")
+}
+
+model MaintenanceWindowMonitor {
+  id                  String            @id @default(cuid())
+  maintenanceWindowId String
+  maintenanceWindow   MaintenanceWindow @relation(fields: [maintenanceWindowId], references: [id], onDelete: Cascade)
+  monitorId           String
+  monitor             Monitor           @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@unique([maintenanceWindowId, monitorId])
+  @@index([monitorId])
+  @@map("maintenance_window_monitor")
 }
 
 // --- Global Status Registry ---

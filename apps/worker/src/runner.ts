@@ -36,6 +36,7 @@ async function handleAutoIncident(
           status: "investigating",
           severity: "major",
           updates: { create: { status: "investigating", message: "Monitor detected as down." } },
+          monitors: { create: { monitorId: monitor.id } },
         },
       });
       sendNotifications(monitor.organizationId, {

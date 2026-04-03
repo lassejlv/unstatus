@@ -401,6 +401,8 @@ export const ModelName = {
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
   NotificationChannel: 'NotificationChannel',
+  MaintenanceWindow: 'MaintenanceWindow',
+  MaintenanceWindowMonitor: 'MaintenanceWindowMonitor',
   ExternalService: 'ExternalService',
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
@@ -420,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1682,6 +1684,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MaintenanceWindow: {
+      payload: Prisma.$MaintenanceWindowPayload<ExtArgs>
+      fields: Prisma.MaintenanceWindowFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MaintenanceWindowFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MaintenanceWindowFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        findFirst: {
+          args: Prisma.MaintenanceWindowFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MaintenanceWindowFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        findMany: {
+          args: Prisma.MaintenanceWindowFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>[]
+        }
+        create: {
+          args: Prisma.MaintenanceWindowCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        createMany: {
+          args: Prisma.MaintenanceWindowCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MaintenanceWindowCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>[]
+        }
+        delete: {
+          args: Prisma.MaintenanceWindowDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        update: {
+          args: Prisma.MaintenanceWindowUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        deleteMany: {
+          args: Prisma.MaintenanceWindowDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MaintenanceWindowUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MaintenanceWindowUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>[]
+        }
+        upsert: {
+          args: Prisma.MaintenanceWindowUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowPayload>
+        }
+        aggregate: {
+          args: Prisma.MaintenanceWindowAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMaintenanceWindow>
+        }
+        groupBy: {
+          args: Prisma.MaintenanceWindowGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaintenanceWindowGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MaintenanceWindowCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaintenanceWindowCountAggregateOutputType> | number
+        }
+      }
+    }
+    MaintenanceWindowMonitor: {
+      payload: Prisma.$MaintenanceWindowMonitorPayload<ExtArgs>
+      fields: Prisma.MaintenanceWindowMonitorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MaintenanceWindowMonitorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MaintenanceWindowMonitorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        findFirst: {
+          args: Prisma.MaintenanceWindowMonitorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MaintenanceWindowMonitorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        findMany: {
+          args: Prisma.MaintenanceWindowMonitorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>[]
+        }
+        create: {
+          args: Prisma.MaintenanceWindowMonitorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        createMany: {
+          args: Prisma.MaintenanceWindowMonitorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MaintenanceWindowMonitorCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>[]
+        }
+        delete: {
+          args: Prisma.MaintenanceWindowMonitorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        update: {
+          args: Prisma.MaintenanceWindowMonitorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        deleteMany: {
+          args: Prisma.MaintenanceWindowMonitorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MaintenanceWindowMonitorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MaintenanceWindowMonitorUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>[]
+        }
+        upsert: {
+          args: Prisma.MaintenanceWindowMonitorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaintenanceWindowMonitorPayload>
+        }
+        aggregate: {
+          args: Prisma.MaintenanceWindowMonitorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMaintenanceWindowMonitor>
+        }
+        groupBy: {
+          args: Prisma.MaintenanceWindowMonitorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaintenanceWindowMonitorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MaintenanceWindowMonitorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaintenanceWindowMonitorCountAggregateOutputType> | number
+        }
+      }
+    }
     ExternalService: {
       payload: Prisma.$ExternalServicePayload<ExtArgs>
       fields: Prisma.ExternalServiceFieldRefs
@@ -2278,11 +2428,40 @@ export const NotificationChannelScalarFieldEnum = {
   onIncidentUpdated: 'onIncidentUpdated',
   onMonitorDown: 'onMonitorDown',
   onMonitorRecovered: 'onMonitorRecovered',
+  onMaintenanceScheduled: 'onMaintenanceScheduled',
+  onMaintenanceStarted: 'onMaintenanceStarted',
+  onMaintenanceCompleted: 'onMaintenanceCompleted',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
+
+
+export const MaintenanceWindowScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  scheduledStart: 'scheduledStart',
+  scheduledEnd: 'scheduledEnd',
+  actualStart: 'actualStart',
+  actualEnd: 'actualEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MaintenanceWindowScalarFieldEnum = (typeof MaintenanceWindowScalarFieldEnum)[keyof typeof MaintenanceWindowScalarFieldEnum]
+
+
+export const MaintenanceWindowMonitorScalarFieldEnum = {
+  id: 'id',
+  maintenanceWindowId: 'maintenanceWindowId',
+  monitorId: 'monitorId'
+} as const
+
+export type MaintenanceWindowMonitorScalarFieldEnum = (typeof MaintenanceWindowMonitorScalarFieldEnum)[keyof typeof MaintenanceWindowMonitorScalarFieldEnum]
 
 
 export const ExternalServiceScalarFieldEnum = {
@@ -2591,6 +2770,8 @@ export type GlobalOmitConfig = {
   incident?: Prisma.IncidentOmit
   incidentUpdate?: Prisma.IncidentUpdateOmit
   notificationChannel?: Prisma.NotificationChannelOmit
+  maintenanceWindow?: Prisma.MaintenanceWindowOmit
+  maintenanceWindowMonitor?: Prisma.MaintenanceWindowMonitorOmit
   externalService?: Prisma.ExternalServiceOmit
   externalServiceComponent?: Prisma.ExternalServiceComponentOmit
   externalServiceStatus?: Prisma.ExternalServiceStatusOmit

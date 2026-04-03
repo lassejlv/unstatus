@@ -7,6 +7,7 @@ import { billingRouter } from "./billing";
 import { subscribersRouter } from "./subscribers";
 import { registryRouter } from "./registry";
 import { dependenciesRouter } from "./dependencies";
+import { maintenanceRouter } from "./maintenance";
 
 const router = {
   monitors: monitorsRouter,
@@ -18,6 +19,7 @@ const router = {
   subscribers: subscribersRouter,
   registry: registryRouter,
   dependencies: dependenciesRouter,
+  maintenance: maintenanceRouter,
 };
 
 export default router;

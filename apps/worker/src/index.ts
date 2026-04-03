@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { runChecks, runSingleCheck } from "./runner.js";
 import { runMonitorPerfMaintenance } from "./monitor-perf.js";
 import { runExternalServiceChecks, runExternalServiceMaintenance } from "./external-service-runner.js";
+import { processMaintenanceWindows } from "./maintenance.js";
 
 const app = new Hono();
 
@@ -55,6 +56,13 @@ setInterval(() => {
   runMonitorPerfMaintenance().catch((e) => console.error("Perf maintenance failed:", e));
   runExternalServiceMaintenance().catch((e) => console.error("External service maintenance failed:", e));
 }, MAINTENANCE_INTERVAL);
+
+// Maintenance window auto-transitions (every 30s)
+const MAINT_POLL_INTERVAL = 30_000;
+setInterval(() => {
+  processMaintenanceWindows().catch((e) => console.error("Maintenance window processing failed:", e));
+}, MAINT_POLL_INTERVAL);
+console.log(`Maintenance window polling every ${MAINT_POLL_INTERVAL / 1000}s`);
 
 // External service status polling (every 60s)
 const EXT_POLL_INTERVAL = Number(process.env.EXT_POLL_INTERVAL ?? 60) * 1000;

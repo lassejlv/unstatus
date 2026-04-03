@@ -255,6 +255,11 @@ export async function listDueMonitors(now: Date, region: string) {
     WHERE active = true
       AND COALESCE(regions, '[]'::jsonb) @> jsonb_build_array($2::text)
       AND ("nextCheckAt" IS NULL OR "nextCheckAt" <= $1)
+      AND id NOT IN (
+        SELECT mwm."monitorId" FROM maintenance_window_monitor mwm
+        JOIN maintenance_window mw ON mw.id = mwm."maintenanceWindowId"
+        WHERE mw.status = 'in_progress'
+      )
     ORDER BY COALESCE("nextCheckAt", to_timestamp(0)) ASC
     LIMIT ${DUE_BATCH_SIZE}`,
     now,
@@ -272,6 +277,11 @@ export async function listLegacyDueMonitors(now: Date, region: string) {
       AND (
         "lastCheckedAt" IS NULL
         OR "lastCheckedAt" + make_interval(secs => interval) <= $1
+      )
+      AND id NOT IN (
+        SELECT mwm."monitorId" FROM maintenance_window_monitor mwm
+        JOIN maintenance_window mw ON mw.id = mwm."maintenanceWindowId"
+        WHERE mw.status = 'in_progress'
       )
     ORDER BY COALESCE("lastCheckedAt", to_timestamp(0)) ASC
     LIMIT ${DUE_BATCH_SIZE}`,

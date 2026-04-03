@@ -10,7 +10,10 @@ type NotifyEvent =
   | { type: "monitor.recovered"; monitorName: string }
   | { type: "incident.created"; monitorName: string; title: string; severity: string; message: string }
   | { type: "incident.resolved"; monitorName: string; title: string }
-  | { type: "incident.updated"; monitorName: string; title: string; status: string; message: string };
+  | { type: "incident.updated"; monitorName: string; title: string; status: string; message: string }
+  | { type: "maintenance.scheduled"; title: string; scheduledStart: string; scheduledEnd: string; monitorNames: string[] }
+  | { type: "maintenance.started"; title: string; monitorNames: string[] }
+  | { type: "maintenance.completed"; title: string; monitorNames: string[] };
 
 const EVENT_TO_FLAG: Record<NotifyEvent["type"], string> = {
   "monitor.down": "onMonitorDown",
@@ -18,6 +21,9 @@ const EVENT_TO_FLAG: Record<NotifyEvent["type"], string> = {
   "incident.created": "onIncidentCreated",
   "incident.resolved": "onIncidentResolved",
   "incident.updated": "onIncidentUpdated",
+  "maintenance.scheduled": "onMaintenanceScheduled",
+  "maintenance.started": "onMaintenanceStarted",
+  "maintenance.completed": "onMaintenanceCompleted",
 };
 
 const SEVERITY_COLORS: Record<string, number> = {
@@ -71,6 +77,28 @@ function buildEmbed(event: NotifyEvent) {
         ],
         timestamp: new Date().toISOString(),
       };
+    case "maintenance.scheduled":
+      return {
+        title: `Maintenance Scheduled: ${event.title}`,
+        description: `From ${new Date(event.scheduledStart).toLocaleString()} to ${new Date(event.scheduledEnd).toLocaleString()}`,
+        color: 0x3b82f6,
+        fields: [{ name: "Affected Monitors", value: event.monitorNames.join(", "), inline: false }],
+        timestamp: new Date().toISOString(),
+      };
+    case "maintenance.started":
+      return {
+        title: `Maintenance Started: ${event.title}`,
+        description: `Affected monitors: ${event.monitorNames.join(", ")}`,
+        color: 0xf59e0b,
+        timestamp: new Date().toISOString(),
+      };
+    case "maintenance.completed":
+      return {
+        title: `Maintenance Completed: ${event.title}`,
+        description: `Affected monitors: ${event.monitorNames.join(", ")}`,
+        color: 0x22c55e,
+        timestamp: new Date().toISOString(),
+      };
   }
 }
 
@@ -86,6 +114,12 @@ function buildEmailSubject(event: NotifyEvent): string {
       return `[Unstatus] Resolved: ${event.title}`;
     case "incident.updated":
       return `[Unstatus] Updated: ${event.title}`;
+    case "maintenance.scheduled":
+      return `[Unstatus] Maintenance Scheduled: ${event.title}`;
+    case "maintenance.started":
+      return `[Unstatus] Maintenance Started: ${event.title}`;
+    case "maintenance.completed":
+      return `[Unstatus] Maintenance Completed: ${event.title}`;
   }
 }
 
@@ -101,6 +135,12 @@ function eventToEmailProps(event: NotifyEvent): NotificationEmailProps {
       return { eventType: event.type, monitorName: event.monitorName, title: event.title };
     case "incident.updated":
       return { eventType: event.type, monitorName: event.monitorName, title: event.title, status: event.status, message: event.message };
+    case "maintenance.scheduled":
+      return { eventType: "incident.created" as const, monitorName: event.monitorNames.join(", "), title: event.title, severity: "minor", message: `Scheduled maintenance` };
+    case "maintenance.started":
+      return { eventType: "incident.created" as const, monitorName: event.monitorNames.join(", "), title: `Maintenance: ${event.title}`, severity: "minor", message: "Maintenance has started." };
+    case "maintenance.completed":
+      return { eventType: "incident.resolved" as const, monitorName: event.monitorNames.join(", "), title: `Maintenance: ${event.title}` };
   }
 }
 

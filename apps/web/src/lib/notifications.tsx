@@ -15,7 +15,10 @@ const DISCORD_WEBHOOK_HOSTS = new Set([
 type NotifyEvent =
   | { type: "incident.created"; monitorId: string; monitorName: string; title: string; severity: string; message: string }
   | { type: "incident.resolved"; monitorId: string; monitorName: string; title: string }
-  | { type: "incident.updated"; monitorId: string; monitorName: string; title: string; status: string; message: string };
+  | { type: "incident.updated"; monitorId: string; monitorName: string; title: string; status: string; message: string }
+  | { type: "maintenance.scheduled"; title: string; scheduledStart: string; scheduledEnd: string; monitorNames: string[] }
+  | { type: "maintenance.started"; title: string; monitorNames: string[] }
+  | { type: "maintenance.completed"; title: string; monitorNames: string[] };
 
 export function isAllowedDiscordWebhookUrl(webhookUrl: string): boolean {
   try {
@@ -32,6 +35,9 @@ const EVENT_TO_FLAG: Record<NotifyEvent["type"], string> = {
   "incident.created": "onIncidentCreated",
   "incident.resolved": "onIncidentResolved",
   "incident.updated": "onIncidentUpdated",
+  "maintenance.scheduled": "onMaintenanceScheduled",
+  "maintenance.started": "onMaintenanceStarted",
+  "maintenance.completed": "onMaintenanceCompleted",
 };
 
 const SEVERITY_COLORS: Record<string, number> = {
@@ -71,6 +77,30 @@ function buildEmbed(event: NotifyEvent) {
         ],
         timestamp: new Date().toISOString(),
       };
+    case "maintenance.scheduled":
+      return {
+        title: `Maintenance Scheduled: ${event.title}`,
+        description: `From ${new Date(event.scheduledStart).toLocaleString()} to ${new Date(event.scheduledEnd).toLocaleString()}`,
+        color: 0x3b82f6,
+        fields: [
+          { name: "Affected Monitors", value: event.monitorNames.join(", "), inline: false },
+        ],
+        timestamp: new Date().toISOString(),
+      };
+    case "maintenance.started":
+      return {
+        title: `Maintenance Started: ${event.title}`,
+        description: `Affected monitors: ${event.monitorNames.join(", ")}`,
+        color: 0xf59e0b,
+        timestamp: new Date().toISOString(),
+      };
+    case "maintenance.completed":
+      return {
+        title: `Maintenance Completed: ${event.title}`,
+        description: `Affected monitors: ${event.monitorNames.join(", ")}`,
+        color: 0x22c55e,
+        timestamp: new Date().toISOString(),
+      };
   }
 }
 
@@ -82,6 +112,12 @@ function buildEmailSubject(event: NotifyEvent): string {
       return `[Unstatus] Resolved: ${event.title}`;
     case "incident.updated":
       return `[Unstatus] Updated: ${event.title}`;
+    case "maintenance.scheduled":
+      return `[Unstatus] Maintenance Scheduled: ${event.title}`;
+    case "maintenance.started":
+      return `[Unstatus] Maintenance Started: ${event.title}`;
+    case "maintenance.completed":
+      return `[Unstatus] Maintenance Completed: ${event.title}`;
   }
 }
 
@@ -93,6 +129,12 @@ function eventToEmailProps(event: NotifyEvent): NotificationEmailProps {
       return { eventType: event.type, monitorName: event.monitorName, title: event.title };
     case "incident.updated":
       return { eventType: event.type, monitorName: event.monitorName, title: event.title, status: event.status, message: event.message };
+    case "maintenance.scheduled":
+      return { eventType: "incident.created" as const, monitorName: event.monitorNames.join(", "), title: event.title, severity: "minor", message: `Scheduled from ${new Date(event.scheduledStart).toLocaleString()} to ${new Date(event.scheduledEnd).toLocaleString()}` };
+    case "maintenance.started":
+      return { eventType: "incident.created" as const, monitorName: event.monitorNames.join(", "), title: `Maintenance: ${event.title}`, severity: "minor", message: "Maintenance has started." };
+    case "maintenance.completed":
+      return { eventType: "incident.resolved" as const, monitorName: event.monitorNames.join(", "), title: `Maintenance: ${event.title}` };
   }
 }
 
@@ -141,9 +183,14 @@ export async function sendNotifications(organizationId: string, event: NotifyEve
 }
 
 async function notifySubscribers(event: NotifyEvent) {
+  // Maintenance events don't have a monitorId — skip subscriber notifications for now
+  // (subscribers get notified via the public status page rendering)
+  if (event.type.startsWith("maintenance.")) return;
+
   // Find status pages that include this monitor
+  const incidentEvent = event as Extract<NotifyEvent, { monitorId: string }>;
   const statusPageMonitors = await prisma.statusPageMonitor.findMany({
-    where: { monitorId: event.monitorId },
+    where: { monitorId: incidentEvent.monitorId },
     select: { statusPageId: true },
   });
 
@@ -171,7 +218,7 @@ async function notifySubscribers(event: NotifyEvent) {
   // Filter subscribers by monitor preference
   const filtered = subscribers.filter((sub) => {
     const monitorIds = sub.monitorIds as string[];
-    return monitorIds.length === 0 || monitorIds.includes(event.monitorId);
+    return monitorIds.length === 0 || monitorIds.includes(incidentEvent.monitorId);
   });
 
   if (filtered.length === 0) return;

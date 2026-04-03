@@ -68,6 +68,8 @@ export const ModelName = {
   Incident: 'Incident',
   IncidentUpdate: 'IncidentUpdate',
   NotificationChannel: 'NotificationChannel',
+  MaintenanceWindow: 'MaintenanceWindow',
+  MaintenanceWindowMonitor: 'MaintenanceWindowMonitor',
   ExternalService: 'ExternalService',
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
@@ -351,11 +353,40 @@ export const NotificationChannelScalarFieldEnum = {
   onIncidentUpdated: 'onIncidentUpdated',
   onMonitorDown: 'onMonitorDown',
   onMonitorRecovered: 'onMonitorRecovered',
+  onMaintenanceScheduled: 'onMaintenanceScheduled',
+  onMaintenanceStarted: 'onMaintenanceStarted',
+  onMaintenanceCompleted: 'onMaintenanceCompleted',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
+
+
+export const MaintenanceWindowScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  scheduledStart: 'scheduledStart',
+  scheduledEnd: 'scheduledEnd',
+  actualStart: 'actualStart',
+  actualEnd: 'actualEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MaintenanceWindowScalarFieldEnum = (typeof MaintenanceWindowScalarFieldEnum)[keyof typeof MaintenanceWindowScalarFieldEnum]
+
+
+export const MaintenanceWindowMonitorScalarFieldEnum = {
+  id: 'id',
+  maintenanceWindowId: 'maintenanceWindowId',
+  monitorId: 'monitorId'
+} as const
+
+export type MaintenanceWindowMonitorScalarFieldEnum = (typeof MaintenanceWindowMonitorScalarFieldEnum)[keyof typeof MaintenanceWindowMonitorScalarFieldEnum]
 
 
 export const ExternalServiceScalarFieldEnum = {

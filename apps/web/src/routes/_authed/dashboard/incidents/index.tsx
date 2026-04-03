@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
   EmptyHeader,
@@ -157,7 +158,11 @@ function IncidentsPage() {
                     onClick={() => setSelectedId(selectedId === i.id ? null : i.id)}
                   >
                     <TableCell className="font-medium">{i.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{i.monitor?.name ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {i.monitors?.length > 0
+                        ? i.monitors.map((m: any) => m.monitor.name).join(", ")
+                        : i.monitor?.name ?? "—"}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={i.severity === "critical" ? "destructive" : "outline"}
@@ -428,10 +433,19 @@ function CreateIncidentDialog({
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [monitorId, setMonitorId] = useState(monitors[0]?.id ?? "");
+  const [selectedMonitors, setSelectedMonitors] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState("");
   const [severity, setSeverity] = useState<"minor" | "major" | "critical">("minor");
   const [message, setMessage] = useState("");
+
+  const toggleMonitor = (id: string) => {
+    setSelectedMonitors((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const create = useMutation({
     ...orpc.incidents.create.mutationOptions(),
@@ -462,19 +476,21 @@ function CreateIncidentDialog({
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label>Monitor</Label>
-            <Select value={monitorId} onValueChange={setMonitorId}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {monitors.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Affected Monitors</Label>
+            <div className="max-h-48 overflow-y-auto rounded-lg border divide-y">
+              {monitors.map((m) => (
+                <label key={m.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent/50 cursor-pointer">
+                  <Checkbox
+                    checked={selectedMonitors.has(m.id)}
+                    onCheckedChange={() => toggleMonitor(m.id)}
+                  />
+                  <span>{m.name}</span>
+                </label>
+              ))}
+            </div>
+            {selectedMonitors.size > 0 && (
+              <span className="text-[10px] text-muted-foreground">{selectedMonitors.size} selected</span>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Title</Label>
@@ -514,9 +530,9 @@ function CreateIncidentDialog({
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!title || !message || create.isPending}
+            disabled={!title || !message || selectedMonitors.size === 0 || create.isPending}
             onClick={() =>
-              create.mutate({ monitorId, title, severity, message })
+              create.mutate({ monitorIds: [...selectedMonitors], title, severity, message })
             }
           >
             Report

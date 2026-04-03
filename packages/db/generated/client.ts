@@ -127,6 +127,16 @@ export type IncidentUpdate = Prisma.IncidentUpdateModel
  */
 export type NotificationChannel = Prisma.NotificationChannelModel
 /**
+ * Model MaintenanceWindow
+ * 
+ */
+export type MaintenanceWindow = Prisma.MaintenanceWindowModel
+/**
+ * Model MaintenanceWindowMonitor
+ * 
+ */
+export type MaintenanceWindowMonitor = Prisma.MaintenanceWindowMonitorModel
+/**
  * Model ExternalService
  * 
  */

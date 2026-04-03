@@ -52,6 +52,9 @@ type NotificationChannelRow = {
   onIncidentUpdated: boolean;
   onMonitorDown: boolean;
   onMonitorRecovered: boolean;
+  onMaintenanceScheduled: boolean;
+  onMaintenanceStarted: boolean;
+  onMaintenanceCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -186,6 +189,9 @@ function NotificationsList({ orgId }: { orgId: string }) {
                   ["onIncidentCreated", "Incident created"],
                   ["onIncidentUpdated", "Incident updated"],
                   ["onIncidentResolved", "Incident resolved"],
+                  ["onMaintenanceScheduled", "Maintenance scheduled"],
+                  ["onMaintenanceStarted", "Maintenance started"],
+                  ["onMaintenanceCompleted", "Maintenance completed"],
                 ] as const).map(([key, label]) => (
                   <label key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Switch

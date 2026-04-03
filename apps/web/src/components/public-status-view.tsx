@@ -21,7 +21,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useTheme } from "@/hooks/use-theme";
 import { DependencyList, DependencyImpactBanner } from "@/components/-dependency-chain";
-import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle } from "lucide-react";
+import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle, Wrench, Clock } from "lucide-react";
 
 // --- Types ---
 
@@ -59,6 +59,16 @@ export type PublicStatusIncidentSummary = {
   lastUpdate: string | null;
 };
 
+export type PublicMaintenanceWindow = {
+  id: string;
+  title: string;
+  description: string | null;
+  scheduledStart: string | Date;
+  scheduledEnd: string | Date;
+  actualStart?: string | Date | null;
+  monitorNames: string[];
+};
+
 export type PublicStatusPageData = {
   name: string;
   slug: string;
@@ -73,6 +83,10 @@ export type PublicStatusPageData = {
   overallStatus: string;
   monitors: PublicStatusMonitorData[];
   incidents: PublicStatusIncidentSummary[];
+  maintenance?: {
+    active: PublicMaintenanceWindow[];
+    upcoming: PublicMaintenanceWindow[];
+  };
 };
 
 export type PublicIncidentData = {
@@ -202,6 +216,30 @@ export function PublicStatusPageView({
           <OverallBanner status={data.overallStatus} accent={accent} />
         </div>
 
+        {/* Active maintenance banners */}
+        {data.maintenance?.active && data.maintenance.active.length > 0 && (
+          <div className="mt-4 flex flex-col gap-2 animate-fade-in" style={{ animationDelay: "70ms" }}>
+            {data.maintenance.active.map((mw) => (
+              <div
+                key={mw.id}
+                className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3"
+              >
+                <Wrench className="size-4 text-blue-500 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{mw.title}</p>
+                  {mw.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{mw.description}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    <span>Ends {new Date(mw.scheduledEnd).toLocaleString()}</span>
+                    <span>{mw.monitorNames.join(", ")}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Monitors — grouped */}
         <div className="mt-6 flex flex-col gap-6">
           {(() => {
@@ -292,6 +330,35 @@ export function PublicStatusPageView({
             });
           })()}
         </div>
+
+        {/* Upcoming maintenance */}
+        {data.maintenance?.upcoming && data.maintenance.upcoming.length > 0 && (
+          <div className="animate-fade-in mt-10" style={{ animationDelay: `${100 + data.monitors.length * 40 + 30}ms` }}>
+            <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Scheduled maintenance
+            </h2>
+            <div className="flex flex-col gap-2">
+              {data.maintenance.upcoming.map((mw) => (
+                <div
+                  key={mw.id}
+                  className="flex items-start gap-3 rounded-lg border px-4 py-3"
+                >
+                  <Clock className="size-4 text-blue-500 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{mw.title}</p>
+                    {mw.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{mw.description}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
+                      <span>{new Date(mw.scheduledStart).toLocaleString()} — {new Date(mw.scheduledEnd).toLocaleString()}</span>
+                      <span>{mw.monitorNames.join(", ")}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Incidents */}
         {data.incidents.length > 0 && (
@@ -409,6 +476,12 @@ const STATUS_CONFIG = {
     dotClass: "bg-red-500",
     bgClass: "border-red-500/20 bg-red-500/5",
     textClass: "text-red-600 dark:text-red-400",
+  },
+  maintenance: {
+    label: "Scheduled Maintenance",
+    dotClass: "bg-blue-500",
+    bgClass: "border-blue-500/20 bg-blue-500/5",
+    textClass: "text-blue-600 dark:text-blue-400",
   },
   unknown: {
     label: "No Data",

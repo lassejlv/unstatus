@@ -37,6 +37,9 @@ export type NotificationChannelMinAggregateOutputType = {
   onIncidentUpdated: boolean | null
   onMonitorDown: boolean | null
   onMonitorRecovered: boolean | null
+  onMaintenanceScheduled: boolean | null
+  onMaintenanceStarted: boolean | null
+  onMaintenanceCompleted: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +57,9 @@ export type NotificationChannelMaxAggregateOutputType = {
   onIncidentUpdated: boolean | null
   onMonitorDown: boolean | null
   onMonitorRecovered: boolean | null
+  onMaintenanceScheduled: boolean | null
+  onMaintenanceStarted: boolean | null
+  onMaintenanceCompleted: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -71,6 +77,9 @@ export type NotificationChannelCountAggregateOutputType = {
   onIncidentUpdated: number
   onMonitorDown: number
   onMonitorRecovered: number
+  onMaintenanceScheduled: number
+  onMaintenanceStarted: number
+  onMaintenanceCompleted: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -90,6 +99,9 @@ export type NotificationChannelMinAggregateInputType = {
   onIncidentUpdated?: true
   onMonitorDown?: true
   onMonitorRecovered?: true
+  onMaintenanceScheduled?: true
+  onMaintenanceStarted?: true
+  onMaintenanceCompleted?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,6 +119,9 @@ export type NotificationChannelMaxAggregateInputType = {
   onIncidentUpdated?: true
   onMonitorDown?: true
   onMonitorRecovered?: true
+  onMaintenanceScheduled?: true
+  onMaintenanceStarted?: true
+  onMaintenanceCompleted?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +139,9 @@ export type NotificationChannelCountAggregateInputType = {
   onIncidentUpdated?: true
   onMonitorDown?: true
   onMonitorRecovered?: true
+  onMaintenanceScheduled?: true
+  onMaintenanceStarted?: true
+  onMaintenanceCompleted?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -214,6 +232,9 @@ export type NotificationChannelGroupByOutputType = {
   onIncidentUpdated: boolean
   onMonitorDown: boolean
   onMonitorRecovered: boolean
+  onMaintenanceScheduled: boolean
+  onMaintenanceStarted: boolean
+  onMaintenanceCompleted: boolean
   createdAt: Date
   updatedAt: Date
   _count: NotificationChannelCountAggregateOutputType | null
@@ -252,6 +273,9 @@ export type NotificationChannelWhereInput = {
   onIncidentUpdated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorDown?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorRecovered?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceScheduled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceStarted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceCompleted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   createdAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -270,6 +294,9 @@ export type NotificationChannelOrderByWithRelationInput = {
   onIncidentUpdated?: Prisma.SortOrder
   onMonitorDown?: Prisma.SortOrder
   onMonitorRecovered?: Prisma.SortOrder
+  onMaintenanceScheduled?: Prisma.SortOrder
+  onMaintenanceStarted?: Prisma.SortOrder
+  onMaintenanceCompleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -291,6 +318,9 @@ export type NotificationChannelWhereUniqueInput = Prisma.AtLeast<{
   onIncidentUpdated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorDown?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorRecovered?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceScheduled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceStarted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceCompleted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   createdAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -309,6 +339,9 @@ export type NotificationChannelOrderByWithAggregationInput = {
   onIncidentUpdated?: Prisma.SortOrder
   onMonitorDown?: Prisma.SortOrder
   onMonitorRecovered?: Prisma.SortOrder
+  onMaintenanceScheduled?: Prisma.SortOrder
+  onMaintenanceStarted?: Prisma.SortOrder
+  onMaintenanceCompleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.NotificationChannelCountOrderByAggregateInput
@@ -332,6 +365,9 @@ export type NotificationChannelScalarWhereWithAggregatesInput = {
   onIncidentUpdated?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
   onMonitorDown?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
   onMonitorRecovered?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
+  onMaintenanceScheduled?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
+  onMaintenanceStarted?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
+  onMaintenanceCompleted?: Prisma.BoolWithAggregatesFilter<"NotificationChannel"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"NotificationChannel"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"NotificationChannel"> | Date | string
 }
@@ -348,6 +384,9 @@ export type NotificationChannelCreateInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutNotificationChannelsInput
@@ -366,6 +405,9 @@ export type NotificationChannelUncheckedCreateInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -382,6 +424,9 @@ export type NotificationChannelUpdateInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutNotificationChannelsNestedInput
@@ -400,6 +445,9 @@ export type NotificationChannelUncheckedUpdateInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -417,6 +465,9 @@ export type NotificationChannelCreateManyInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -433,6 +484,9 @@ export type NotificationChannelUpdateManyMutationInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -450,6 +504,9 @@ export type NotificationChannelUncheckedUpdateManyInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -477,6 +534,9 @@ export type NotificationChannelCountOrderByAggregateInput = {
   onIncidentUpdated?: Prisma.SortOrder
   onMonitorDown?: Prisma.SortOrder
   onMonitorRecovered?: Prisma.SortOrder
+  onMaintenanceScheduled?: Prisma.SortOrder
+  onMaintenanceStarted?: Prisma.SortOrder
+  onMaintenanceCompleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -494,6 +554,9 @@ export type NotificationChannelMaxOrderByAggregateInput = {
   onIncidentUpdated?: Prisma.SortOrder
   onMonitorDown?: Prisma.SortOrder
   onMonitorRecovered?: Prisma.SortOrder
+  onMaintenanceScheduled?: Prisma.SortOrder
+  onMaintenanceStarted?: Prisma.SortOrder
+  onMaintenanceCompleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -511,6 +574,9 @@ export type NotificationChannelMinOrderByAggregateInput = {
   onIncidentUpdated?: Prisma.SortOrder
   onMonitorDown?: Prisma.SortOrder
   onMonitorRecovered?: Prisma.SortOrder
+  onMaintenanceScheduled?: Prisma.SortOrder
+  onMaintenanceStarted?: Prisma.SortOrder
+  onMaintenanceCompleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -569,6 +635,9 @@ export type NotificationChannelCreateWithoutOrganizationInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -585,6 +654,9 @@ export type NotificationChannelUncheckedCreateWithoutOrganizationInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -631,6 +703,9 @@ export type NotificationChannelScalarWhereInput = {
   onIncidentUpdated?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorDown?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   onMonitorRecovered?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceScheduled?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceStarted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
+  onMaintenanceCompleted?: Prisma.BoolFilter<"NotificationChannel"> | boolean
   createdAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"NotificationChannel"> | Date | string
 }
@@ -647,6 +722,9 @@ export type NotificationChannelCreateManyOrganizationInput = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -663,6 +741,9 @@ export type NotificationChannelUpdateWithoutOrganizationInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -679,6 +760,9 @@ export type NotificationChannelUncheckedUpdateWithoutOrganizationInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -695,6 +779,9 @@ export type NotificationChannelUncheckedUpdateManyWithoutOrganizationInput = {
   onIncidentUpdated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorDown?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onMonitorRecovered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceScheduled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceStarted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onMaintenanceCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -714,6 +801,9 @@ export type NotificationChannelSelect<ExtArgs extends runtime.Types.Extensions.I
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -732,6 +822,9 @@ export type NotificationChannelSelectCreateManyAndReturn<ExtArgs extends runtime
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -750,6 +843,9 @@ export type NotificationChannelSelectUpdateManyAndReturn<ExtArgs extends runtime
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -768,11 +864,14 @@ export type NotificationChannelSelectScalar = {
   onIncidentUpdated?: boolean
   onMonitorDown?: boolean
   onMonitorRecovered?: boolean
+  onMaintenanceScheduled?: boolean
+  onMaintenanceStarted?: boolean
+  onMaintenanceCompleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type NotificationChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "webhookUrl" | "recipientEmail" | "enabled" | "onIncidentCreated" | "onIncidentResolved" | "onIncidentUpdated" | "onMonitorDown" | "onMonitorRecovered" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationChannel"]>
+export type NotificationChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "webhookUrl" | "recipientEmail" | "enabled" | "onIncidentCreated" | "onIncidentResolved" | "onIncidentUpdated" | "onMonitorDown" | "onMonitorRecovered" | "onMaintenanceScheduled" | "onMaintenanceStarted" | "onMaintenanceCompleted" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationChannel"]>
 export type NotificationChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
@@ -801,6 +900,9 @@ export type $NotificationChannelPayload<ExtArgs extends runtime.Types.Extensions
     onIncidentUpdated: boolean
     onMonitorDown: boolean
     onMonitorRecovered: boolean
+    onMaintenanceScheduled: boolean
+    onMaintenanceStarted: boolean
+    onMaintenanceCompleted: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["notificationChannel"]>
@@ -1239,6 +1341,9 @@ export interface NotificationChannelFieldRefs {
   readonly onIncidentUpdated: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
   readonly onMonitorDown: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
   readonly onMonitorRecovered: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
+  readonly onMaintenanceScheduled: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
+  readonly onMaintenanceStarted: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
+  readonly onMaintenanceCompleted: Prisma.FieldRef<"NotificationChannel", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"NotificationChannel", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"NotificationChannel", 'DateTime'>
 }

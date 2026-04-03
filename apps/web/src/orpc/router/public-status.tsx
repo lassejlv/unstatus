@@ -466,6 +466,26 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     };
   });
 
+  // Fetch maintenance windows that affect monitors on this status page
+  const monitorIds = monitorRows.map((m) => m.monitorId);
+  const maintenanceWindows = monitorIds.length > 0
+    ? await prisma.maintenanceWindow.findMany({
+        where: {
+          status: { in: ["scheduled", "in_progress"] },
+          monitors: { some: { monitorId: { in: monitorIds } } },
+        },
+        include: {
+          monitors: {
+            include: { monitor: { select: { id: true, name: true } } },
+          },
+        },
+        orderBy: { scheduledStart: "asc" },
+      })
+    : [];
+
+  const activeMaintenance = maintenanceWindows.filter((mw) => mw.status === "in_progress");
+  const upcomingMaintenance = maintenanceWindows.filter((mw) => mw.status === "scheduled");
+
   const activeIncidents = incidentRows.filter(
     (incident) => incident.status !== "resolved",
   );
@@ -484,9 +504,11 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
         ? "degraded"
         : activeIncidents.length > 0
           ? "degraded"
-          : allCurrentStatuses.every((status) => status === "up")
-            ? "operational"
-            : "unknown";
+          : activeMaintenance.length > 0
+            ? "maintenance"
+            : allCurrentStatuses.every((status) => status === "up")
+              ? "operational"
+              : "unknown";
 
   return {
     name: page.name,
@@ -510,6 +532,25 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       resolvedAt: incident.resolvedAt,
       lastUpdate: incident.lastMessage,
     })),
+    maintenance: {
+      active: activeMaintenance.map((mw) => ({
+        id: mw.id,
+        title: mw.title,
+        description: mw.description,
+        scheduledStart: mw.scheduledStart,
+        scheduledEnd: mw.scheduledEnd,
+        actualStart: mw.actualStart,
+        monitorNames: mw.monitors.map((m) => m.monitor.name),
+      })),
+      upcoming: upcomingMaintenance.map((mw) => ({
+        id: mw.id,
+        title: mw.title,
+        description: mw.description,
+        scheduledStart: mw.scheduledStart,
+        scheduledEnd: mw.scheduledEnd,
+        monitorNames: mw.monitors.map((m) => m.monitor.name),
+      })),
+    },
   };
 }
 
