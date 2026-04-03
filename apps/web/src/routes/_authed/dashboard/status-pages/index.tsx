@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +54,14 @@ function StatusPagesPage() {
   const { data: pages, isLoading } = useQuery(pagesQuery);
   const { isPro } = useSubscription();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedId) setSelectedId(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedId]);
   const canCreateMore = isPro || !pages?.length;
 
   if (isLoading) {
@@ -172,10 +180,10 @@ function StatusPageSidecar({
   return (
     <div
       className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[380px] opacity-100" : "w-0 opacity-0"
+        isOpen ? "w-[440px] opacity-100" : "w-0 opacity-0"
       }`}
     >
-      <div className="relative flex h-full w-[380px] flex-col rounded-lg border bg-card overflow-hidden">
+      <div className="relative flex h-full w-[440px] flex-col rounded-xl border bg-card overflow-hidden shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="text-sm font-medium truncate">

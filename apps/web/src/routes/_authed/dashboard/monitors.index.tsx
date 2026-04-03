@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { X, ChevronLeft, Pencil } from "lucide-react";
+import { X, ChevronLeft, Pencil, Copy, Check, Activity } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge } from "@/components/upgrade-badge";
 
@@ -61,6 +61,14 @@ function MonitorsPage() {
   const { data: monitors, isLoading } = useQuery(monitorsQuery);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedId) setSelectedId(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedId]);
   const [statusFilter, setStatusFilter] = useState<"all" | "up" | "down" | "paused">("all");
 
   const filteredMonitors = useMemo(() => {
@@ -166,10 +174,13 @@ function MonitorsPage() {
           </div>
         ) : (
           <Empty>
+            <div className="flex size-12 items-center justify-center rounded-xl border bg-muted/50 mx-auto mb-3">
+              <Activity className="size-5 text-muted-foreground" />
+            </div>
             <EmptyHeader>
-              <EmptyTitle>No monitors</EmptyTitle>
+              <EmptyTitle>No monitors yet</EmptyTitle>
               <EmptyDescription>
-                Create your first monitor to start tracking uptime.
+                Add your first monitor to start tracking uptime.
               </EmptyDescription>
             </EmptyHeader>
             {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} monitorCount={monitors?.length ?? 0} />}
@@ -205,6 +216,7 @@ function MonitorSidecar({
   const checks = checksData?.items;
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
   const [view, setView] = useState<"main" | "edit" | "confirmDelete">("main");
+  const [copied, setCopied] = useState(false);
 
   // Reset overlays when switching monitors
   const prevMonitorId = useRef(monitorId);
@@ -253,21 +265,38 @@ function MonitorSidecar({
   return (
     <div
       className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[380px] opacity-100" : "w-0 opacity-0"
+        isOpen ? "w-[440px] opacity-100" : "w-0 opacity-0"
       }`}
     >
-      <div className="relative flex h-full w-[380px] flex-col rounded-lg border bg-card overflow-hidden">
+      <div className="relative flex h-full w-[440px] flex-col rounded-xl border bg-card overflow-hidden shadow-sm">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <span className="text-sm font-medium truncate">
-            {monitor?.name ?? "Loading..."}
-          </span>
+        <div className="flex items-center justify-between border-b px-5 py-3.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {monitor && (
+              <span
+                className={`size-2 shrink-0 rounded-full ${
+                  !monitor.active ? "bg-muted-foreground"
+                  : (monitor as any).lastStatus === "up" ? "bg-emerald-500"
+                  : (monitor as any).lastStatus === "down" ? "bg-red-500"
+                  : "bg-muted-foreground"
+                }`}
+              />
+            )}
+            <span className="text-sm font-semibold truncate">
+              {monitor?.name ?? "Loading..."}
+            </span>
+            {monitor && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+                {monitor.type.toUpperCase()}
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-1">
             {monitor && (
               <button
                 type="button"
                 onClick={() => setView("edit")}
-                className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 <Pencil className="size-3.5" />
               </button>
@@ -275,7 +304,7 @@ function MonitorSidecar({
             <button
               type="button"
               onClick={onClose}
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="size-4" />
             </button>
@@ -287,43 +316,62 @@ function MonitorSidecar({
             <Spinner className="size-5" />
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+          <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
             {/* Info */}
-            <div className="rounded-lg border">
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
+            <div className="rounded-lg border divide-y">
+              <div className="flex items-center justify-between px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">Status</span>
                 <Badge variant={monitor.active ? "default" : "secondary"}>
                   {monitor.active ? "Active" : "Paused"}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
-                <span className="text-xs text-muted-foreground">Type</span>
-                <span className="text-xs font-medium">{monitor.type.toUpperCase()}</span>
-              </div>
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
+              <div className="flex items-center justify-between px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">Target</span>
-                <span className="text-xs font-mono truncate ml-4 text-right">
-                  {monitor.type === "http" ? monitor.url : monitor.type === "ping" ? `ping ${monitor.host}` : `${monitor.host}:${monitor.port}`}
-                </span>
+                <div className="flex items-center gap-1.5 ml-6 min-w-0">
+                  <span className="text-xs font-mono truncate text-right max-w-[220px]">
+                    {monitor.type === "http" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`}
+                  </span>
+                  <button
+                    type="button"
+                    className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      const target = monitor.type === "http" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`;
+                      if (target) navigator.clipboard.writeText(target);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    }}
+                  >
+                    {copied ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
+              <div className="flex items-center justify-between px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">Interval</span>
                 <span className="text-xs font-mono">{monitor.interval}s</span>
               </div>
-              <div className="flex items-center justify-between px-3 py-2.5">
+              <div className="flex items-center justify-between px-3.5 py-2.5">
                 <span className="text-xs text-muted-foreground">Regions</span>
-                <span className="text-xs font-medium">
-                  {((monitor.regions as string[]) ?? []).map((r) => r.toUpperCase()).join(", ") || "—"}
-                </span>
+                <div className="flex gap-1">
+                  {((monitor.regions as string[]) ?? []).map((r) => (
+                    <Badge key={r} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {r.toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
               </div>
+              {(monitor as any).lastLatency != null && (
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-xs text-muted-foreground">Last latency</span>
+                  <span className="text-xs font-mono font-medium">{(monitor as any).lastLatency}ms</span>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
                 disabled={runCheck.isPending}
                 onClick={() => runCheck.mutate({ monitorId: monitor.id })}
               >
@@ -332,7 +380,6 @@ function MonitorSidecar({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
                 onClick={() =>
                   toggle.mutate({ id: monitor.id, active: !monitor.active })
                 }
@@ -343,38 +390,45 @@ function MonitorSidecar({
 
             {/* Recent checks */}
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium">Recent checks</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Recent checks</span>
+                {checks?.length ? (
+                  <Link
+                    to="/dashboard/monitors/$monitorId"
+                    params={{ monitorId: monitor.id }}
+                    className="text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    View all
+                  </Link>
+                ) : null}
+              </div>
               {checks?.length ? (
-                <div className="rounded-lg border">
-                  {checks.slice(0, 10).map((c, i) => (
+                <div className="rounded-lg border divide-y">
+                  {checks.slice(0, 8).map((c) => (
                     <button
                       type="button"
                       key={c.id}
                       onClick={() => setSelectedCheck(c)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-accent ${
-                        i < Math.min(checks.length, 10) - 1 ? "border-b" : ""
-                      }`}
+                      className="flex w-full items-center justify-between px-3.5 py-2 text-xs transition-colors hover:bg-accent/50"
                     >
                       <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            c.status === "up"
-                              ? "default"
-                              : c.status === "degraded"
-                                ? "secondary"
-                                : "destructive"
-                          }
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {c.status}
-                        </Badge>
-                        <span className="text-muted-foreground font-mono">
+                        <span
+                          className={`size-1.5 rounded-full ${
+                            c.status === "up" ? "bg-emerald-500"
+                            : c.status === "degraded" ? "bg-yellow-500"
+                            : "bg-red-500"
+                          }`}
+                        />
+                        <span className="font-mono text-muted-foreground">
                           {c.latency}ms
                         </span>
                       </div>
-                      <span className="text-muted-foreground">
-                        {c.region?.toUpperCase() ?? "—"}
-                      </span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span>{c.region?.toUpperCase() ?? "—"}</span>
+                        <span className="text-[10px]">
+                          {new Date(c.checkedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -384,11 +438,11 @@ function MonitorSidecar({
             </div>
 
             {/* Danger zone */}
-            <div className="mt-auto pt-2 border-t">
+            <div className="mt-auto pt-3 border-t">
               <Button
-                variant="destructive"
+                variant="ghost"
                 size="sm"
-                className="w-full"
+                className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={() => setView("confirmDelete")}
               >
                 Delete monitor

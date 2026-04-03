@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 
 const STATUSES = ["investigating", "identified", "monitoring", "resolved"] as const;
 
@@ -58,6 +58,15 @@ function IncidentsPage() {
   const { data: monitors, isLoading: monitorsLoading } = useQuery(monitorsQuery);
   const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedId) setSelectedId(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedId]);
+
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
 
@@ -126,7 +135,7 @@ function IncidentsPage() {
                 key={i.id}
                 type="button"
                 onClick={() => setSelectedId(selectedId === i.id ? null : i.id)}
-                className={`flex flex-col gap-2.5 rounded-lg border bg-card p-3.5 text-left transition-colors hover:border-foreground/20 ${
+                className={`flex flex-col gap-2.5 rounded-xl border bg-card shadow-sm p-3.5 text-left transition-colors hover:border-foreground/20 ${
                   selectedId === i.id ? "border-foreground/30 bg-accent" : ""
                 }`}
               >
@@ -157,11 +166,14 @@ function IncidentsPage() {
           </div>
         ) : (
           <Empty>
+            <div className="flex size-12 items-center justify-center rounded-xl border bg-muted/50 mx-auto mb-3">
+              <AlertTriangle className="size-5 text-muted-foreground" />
+            </div>
             <EmptyHeader>
               <EmptyTitle>No incidents</EmptyTitle>
               <EmptyDescription>
                 {monitors?.length
-                  ? "No incidents have been reported yet."
+                  ? "No incidents have been reported yet. That's a good thing!"
                   : "Create a monitor first to start reporting incidents."}
               </EmptyDescription>
             </EmptyHeader>
@@ -212,10 +224,10 @@ function IncidentSidecar({
   return (
     <div
       className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[380px] opacity-100" : "w-0 opacity-0"
+        isOpen ? "w-[440px] opacity-100" : "w-0 opacity-0"
       }`}
     >
-      <div className="flex h-full w-[380px] flex-col rounded-lg border bg-card">
+      <div className="flex h-full w-[440px] flex-col rounded-xl border bg-card shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="text-sm font-medium truncate">

@@ -25,8 +25,11 @@ import {
   Mail,
   Bell,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Canvas } from "@/components/canvas";
+import { useTheme } from "@/hooks/use-theme";
 
 export const Route = createFileRoute("/_authed/dashboard")({
   component: DashboardLayout,
@@ -45,6 +48,7 @@ const navItems = [
 function DashboardLayout() {
   const { data: session } = authClient.useSession();
   const matchRoute = useMatchRoute();
+  const { theme, setTheme } = useTheme();
 
   const currentPage = navItems.find((item) =>
     !!matchRoute({ to: item.to, fuzzy: true })
@@ -94,6 +98,15 @@ function DashboardLayout() {
                 <span className="text-sm font-medium">{currentPage.label}</span>
               </>
             )}
+            <div className="ml-auto">
+              <button
+                type="button"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                {theme === "dark" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+              </button>
+            </div>
           </header>
           <Canvas>
             <Outlet />
