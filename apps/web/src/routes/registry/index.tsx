@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ServiceCard, CATEGORY_LABELS } from "@/components/-registry/service-card";
 import { orpc } from "@/orpc/client";
 import { Search } from "lucide-react";
+import { PublicNav } from "@/components/-public-nav";
 
 export const Route = createFileRoute("/registry/")({
   component: RegistryPage,
@@ -31,35 +32,7 @@ function RegistryPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/Logo.png" alt="unstatus" className="size-7" />
-            <span className="text-sm font-semibold tracking-tight">unstatus</span>
-          </Link>
-          <nav className="flex items-center gap-6">
-            <Link
-              to="/registry"
-              className="text-sm font-medium text-foreground transition-colors"
-            >
-              Registry
-            </Link>
-            <Link
-              to="/pricing"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Pricing
-            </Link>
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Sign in</Button>
-            </Link>
-            <Link to="/login">
-              <Button size="sm">Get started</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <PublicNav active="/registry" />
 
       <main className="flex-1">
         <div className="mx-auto max-w-6xl px-6 pt-16 pb-24">

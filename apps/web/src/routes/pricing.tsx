@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ArrowRight, Check, Minus } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useCustomer, useListPlans } from "autumn-js/react";
+import { PublicNav } from "@/components/-public-nav";
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -130,33 +131,7 @@ function PricingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/Logo.png" alt="unstatus" className="size-7" />
-            <span className="text-sm font-semibold tracking-tight">
-              unstatus
-            </span>
-          </Link>
-          <nav className="flex items-center gap-6">
-            <Link
-              to="/pricing"
-              className="text-sm font-medium text-foreground"
-            >
-              Pricing
-            </Link>
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="sm">Get started</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <PublicNav active="/pricing" />
 
       <main className="flex-1">
         {/* Header */}

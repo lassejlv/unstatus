@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
@@ -9,6 +8,7 @@ import { ServiceStatusBadge, STATUS_CONFIG } from "@/components/-registry/servic
 import { CATEGORY_LABELS } from "@/components/-registry/service-card";
 import { orpc } from "@/orpc/client";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { PublicNav } from "@/components/-public-nav";
 
 export const Route = createFileRoute("/registry/$slug")({
   component: ServiceDetailPage,
@@ -46,26 +46,7 @@ function ServiceDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/Logo.png" alt="unstatus" className="size-7" />
-            <span className="text-sm font-semibold tracking-tight">unstatus</span>
-          </Link>
-          <nav className="flex items-center gap-6">
-            <Link
-              to="/registry"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Registry
-            </Link>
-            <Link to="/login">
-              <Button size="sm">Get started</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <PublicNav active="/registry" />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 pt-8 pb-24">
         {/* Back */}
