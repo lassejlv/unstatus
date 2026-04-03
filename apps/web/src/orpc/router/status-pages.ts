@@ -82,6 +82,8 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
+    // Check status pages quota (metered feature)
+    requireFeature(await checkFeature(input.organizationId, "status_pages"), "More status pages");
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -92,7 +94,7 @@ export const statusPagesRouter = {
 
     const orgId = statusPage.organizationId;
     if (data.customDomain) {
-      requireFeature(await checkFeature(orgId, "custom_domains"), "Custom domains");
+      requireFeature(await checkFeature(orgId, "custom_domain"), "Custom domains");
     }
     if (data.customCss) {
       requireFeature(await checkFeature(orgId, "custom_css"), "Custom CSS");

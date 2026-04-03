@@ -241,20 +241,12 @@ export const monitorsRouter = {
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     const orgId = input.organizationId;
-    const isPaid = await checkFeature(orgId, "auto_incidents");
 
-    if (!isPaid) {
-      const count = await prisma.monitor.count({ where: { organizationId: orgId } });
-      if (count >= 1) {
-        requireFeature(false, "More than 1 monitor");
-      }
-      if (input.interval < 600) {
-        requireFeature(false, "Check intervals under 10 minutes");
-      }
-    }
+    // Check monitors quota (metered feature)
+    requireFeature(await checkFeature(orgId, "monitors"), "More monitors");
 
     if (input.autoIncidents) {
-      requireFeature(isPaid, "Auto-create incidents");
+      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
     }
     if (input.regions.length > 1) {
       requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");
@@ -269,14 +261,9 @@ export const monitorsRouter = {
     await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = monitor.organizationId;
-    const isPaid = await checkFeature(orgId, "auto_incidents");
-
-    if (!isPaid && data.interval !== undefined && data.interval < 600) {
-      requireFeature(false, "Check intervals under 10 minutes");
-    }
 
     if (data.autoIncidents) {
-      requireFeature(isPaid, "Auto-create incidents");
+      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
     }
     if (data.regions && data.regions.length > 1) {
       requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");

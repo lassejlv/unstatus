@@ -66,6 +66,33 @@ export async function checkFeature(organizationId: string, featureId: string): P
   }
 }
 
+export async function checkAndTrackFeature(organizationId: string, featureId: string, value = 1): Promise<boolean> {
+  try {
+    const result = await autumn.check({
+      customerId: organizationId,
+      featureId,
+      sendEvent: true,
+      requiredBalance: value,
+    });
+    return result.allowed ?? false;
+  } catch (e) {
+    console.error(`[Autumn] check+track failed for ${featureId}:`, e);
+    return false;
+  }
+}
+
+export async function trackUsage(organizationId: string, featureId: string, value = 1): Promise<void> {
+  try {
+    await autumn.track({
+      customerId: organizationId,
+      featureId,
+      value,
+    });
+  } catch (e) {
+    console.error(`[Autumn] track failed for ${featureId}:`, e);
+  }
+}
+
 export async function getOrgSubscription(organizationId: string) {
   // Check any paid feature to determine if org has a paid plan
   const isPro = await checkFeature(organizationId, "auto_incidents");

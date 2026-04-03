@@ -3,6 +3,7 @@ import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
 import { sendNotifications } from "./notify";
+import { trackCheck } from "./autumn.js";
 import type { Monitor } from "@unstatus/db";
 import {
   claimLegacyMonitor,
@@ -76,6 +77,7 @@ export async function runSingleCheck(monitorId: string) {
   const check = await recordMonitorCheck(monitor, result, region, new Date());
 
   await handleAutoIncident(monitor, result.status);
+  trackCheck(monitor.organizationId).catch(() => {});
 
   return check;
 }
@@ -97,6 +99,7 @@ async function runLegacyChecks(now: Date) {
 
       await recordMonitorCheck(monitor, result, region, new Date());
       await handleAutoIncident(monitor, result.status);
+      trackCheck(monitor.organizationId).catch(() => {});
     }),
   );
 
@@ -124,6 +127,7 @@ export async function runChecks() {
 
         await recordMonitorCheck(monitor, result, region, new Date());
         await handleAutoIncident(monitor, result.status);
+        trackCheck(monitor.organizationId).catch(() => {});
       }),
     );
 

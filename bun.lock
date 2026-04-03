@@ -91,6 +91,7 @@
       "dependencies": {
         "@unstatus/db": "workspace:*",
         "@unstatus/email": "workspace:*",
+        "autumn-js": "latest",
         "hono": "^4.7.0",
         "react": "^19.0.0",
       },

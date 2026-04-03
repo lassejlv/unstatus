@@ -18,6 +18,7 @@ import { Route as RegistryIndexRouteImport } from './routes/registry/index'
 import { Route as RegistrySlugRouteImport } from './routes/registry/$slug'
 import { Route as AcceptInvitationInvitationIdRouteImport } from './routes/accept-invitation.$invitationId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
 import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
@@ -79,6 +80,11 @@ const AcceptInvitationInvitationIdRoute =
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAccountRoute = AuthedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => AuthedRoute,
 } as any)
 const StatusSlugIndexRoute = StatusSlugIndexRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/account': typeof AuthedAccountRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/account': typeof AuthedAccountRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry': typeof RegistryIndexRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/_authed/account': typeof AuthedAccountRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/$incidentId'
     | '/login'
     | '/pricing'
+    | '/account'
     | '/dashboard'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/$incidentId'
     | '/login'
     | '/pricing'
+    | '/account'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/pricing'
+    | '/_authed/account'
     | '/_authed/dashboard'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthedDashboardRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/account': {
+      id: '/_authed/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthedAccountRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/status/$slug/': {
@@ -579,10 +598,12 @@ const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
 )
 
 interface AuthedRouteChildren {
+  AuthedAccountRoute: typeof AuthedAccountRoute
   AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAccountRoute: AuthedAccountRoute,
   AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
 }
 
