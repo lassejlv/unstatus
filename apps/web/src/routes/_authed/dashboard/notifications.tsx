@@ -98,9 +98,9 @@ function NotificationsList({ orgId }: { orgId: string }) {
   const toggleMut = useMutation<
     NotificationChannelRow,
     Error,
-    { id: string; enabled: boolean }
+    { id: string; [key: string]: any }
   >({
-    mutationFn: ({ id, enabled }) => client.notifications.update({ id, enabled }),
+    mutationFn: (params) => client.notifications.update(params),
     onSuccess: () => qc.invalidateQueries({ queryKey }),
     onError: (err) => {
       toast.error(err.message || "Failed to update");
@@ -133,48 +133,71 @@ function NotificationsList({ orgId }: { orgId: string }) {
           {channels.map((ch, i) => (
             <div
               key={ch.id}
-              className={`flex items-center justify-between px-4 py-3 ${i < channels.length - 1 ? "border-b" : ""}`}
+              className={`px-4 py-3 ${i < channels.length - 1 ? "border-b" : ""}`}
             >
-              <div className="flex flex-col gap-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{ch.name}</span>
-                  <Badge variant="outline">
-                    {ch.type === "discord" ? "Discord" : "Email"}
-                  </Badge>
-                  {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{ch.name}</span>
+                    <Badge variant="outline">
+                      {ch.type === "discord" ? "Discord" : "Email"}
+                    </Badge>
+                    {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
+                  </div>
+                  <span className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
+                    {ch.type === "discord"
+                      ? ch.webhookUrl?.replace(
+                          /\/webhooks\/\d+\/.*/,
+                          "/webhooks/***",
+                        )
+                      : ch.recipientEmail}
+                  </span>
                 </div>
-                <span className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
-                  {ch.type === "discord"
-                    ? ch.webhookUrl?.replace(
-                        /\/webhooks\/\d+\/.*/,
-                        "/webhooks/***",
-                      )
-                    : ch.recipientEmail}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={ch.enabled}
+                    onCheckedChange={(enabled) =>
+                      toggleMut.mutate({ id: ch.id, enabled })
+                    }
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => testMut.mutate({ id: ch.id })}
+                    disabled={testMut.isPending}
+                  >
+                    Test
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => deleteMut.mutate({ id: ch.id })}
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={ch.enabled}
-                  onCheckedChange={(enabled) =>
-                    toggleMut.mutate({ id: ch.id, enabled })
-                  }
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => testMut.mutate({ id: ch.id })}
-                  disabled={testMut.isPending}
-                >
-                  Test
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground"
-                  onClick={() => deleteMut.mutate({ id: ch.id })}
-                >
-                  Remove
-                </Button>
+              {/* Event toggles */}
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+                {([
+                  ["onMonitorDown", "Monitor down"],
+                  ["onMonitorRecovered", "Monitor recovered"],
+                  ["onIncidentCreated", "Incident created"],
+                  ["onIncidentUpdated", "Incident updated"],
+                  ["onIncidentResolved", "Incident resolved"],
+                ] as const).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Switch
+                      className="scale-75"
+                      checked={ch[key]}
+                      onCheckedChange={(val) =>
+                        toggleMut.mutate({ id: ch.id, [key]: val })
+                      }
+                    />
+                    {label}
+                  </label>
+                ))}
               </div>
             </div>
           ))}

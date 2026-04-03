@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,17 @@ function IncidentsPage() {
   const { data: monitors, isLoading: monitorsLoading } = useQuery(monitorsQuery);
   const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+
+  const filteredIncidents = useMemo(() => {
+    if (!incidents) return [];
+    return incidents.filter((i) => {
+      if (statusFilter !== "all" && i.status !== statusFilter) return false;
+      if (severityFilter !== "all" && i.severity !== severityFilter) return false;
+      return true;
+    });
+  }, [incidents, statusFilter, severityFilter]);
 
   if (monitorsLoading || incidentsLoading) {
     return (
@@ -77,9 +88,40 @@ function IncidentsPage() {
             <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
           ) : null}
         </div>
-        {incidents?.length ? (
+        {(incidents?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex gap-1">
+              {["all", "investigating", "identified", "monitoring", "resolved"].map((s) => (
+                <Button
+                  key={s}
+                  variant={statusFilter === s ? "default" : "outline"}
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => setStatusFilter(s)}
+                >
+                  {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+                </Button>
+              ))}
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <div className="flex gap-1">
+              {["all", "minor", "major", "critical"].map((s) => (
+                <Button
+                  key={s}
+                  variant={severityFilter === s ? "default" : "outline"}
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => setSeverityFilter(s)}
+                >
+                  {s === "all" ? "All severity" : s.charAt(0).toUpperCase() + s.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+        {filteredIncidents.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {incidents.map((i) => (
+            {filteredIncidents.map((i) => (
               <button
                 key={i.id}
                 type="button"
@@ -108,6 +150,10 @@ function IncidentsPage() {
                 </div>
               </button>
             ))}
+          </div>
+        ) : incidents?.length ? (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            No incidents match your filters.
           </div>
         ) : (
           <Empty>

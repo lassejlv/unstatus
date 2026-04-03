@@ -107,7 +107,7 @@ function DashboardIndex() {
       </motion.div>
 
       {/* Stat cards */}
-      <motion.div {...fadeUp(0.05)} className="grid grid-cols-4 gap-3">
+      <motion.div {...fadeUp(0.05)} className="grid grid-cols-5 gap-3">
         <StatCard label="Monitors" value={monitors.length}>
           <span className="text-muted-foreground">
             {active} active · {paused} paused
@@ -115,6 +115,19 @@ function DashboardIndex() {
         </StatCard>
         <StatCard label="Up" value={monitors.filter((m) => m.currentStatus === "up").length} accent="border-l-emerald-500">
           <span className="text-emerald-500">operational</span>
+        </StatCard>
+        <StatCard
+          label="Uptime"
+          value={overview?.uptimePercent != null ? `${overview.uptimePercent}%` : "—"}
+          accent={
+            overview?.uptimePercent != null
+              ? overview.uptimePercent >= 99.5 ? "border-l-emerald-500"
+              : overview.uptimePercent >= 95 ? "border-l-yellow-500"
+              : "border-l-red-500"
+              : undefined
+          }
+        >
+          <span className="text-muted-foreground">30-day avg</span>
         </StatCard>
         <StatCard label="Status Pages" value={pages?.length ?? 0} />
         <StatCard
@@ -302,7 +315,7 @@ function StatCard({
   children,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   accent?: string;
   children?: ReactNode;
 }) {
@@ -314,7 +327,7 @@ function StatCard({
     >
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="text-lg font-medium">
-        <AnimatedNumber value={value} />
+        {typeof value === "number" ? <AnimatedNumber value={value} /> : value}
       </span>
       {children && <div className="text-[0.625rem]">{children}</div>}
     </motion.div>

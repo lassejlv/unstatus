@@ -62,13 +62,19 @@ export const Route = createFileRoute("/_authed/dashboard/monitors/$monitorId")({
   component: MonitorDetailPage,
 });
 
+const PAGE_SIZE = 50;
+
 function MonitorDetailPage() {
   const { monitorId } = Route.useParams();
   const qc = useQueryClient();
+  const [checkPage, setCheckPage] = useState(0);
   const monitorOpts = orpc.monitors.get.queryOptions({ input: { id: monitorId } });
-  const checksOpts = orpc.monitors.checks.queryOptions({ input: { monitorId } });
+  const checksOpts = orpc.monitors.checks.queryOptions({ input: { monitorId, limit: PAGE_SIZE, offset: checkPage * PAGE_SIZE } });
   const { data: monitor } = useQuery(monitorOpts);
-  const { data: checks } = useQuery(checksOpts);
+  const { data: checksData } = useQuery(checksOpts);
+  const checks = checksData?.items;
+  const checksTotal = checksData?.total ?? 0;
+  const checksHasMore = checksData?.hasMore ?? false;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: monitorOpts.queryKey });
 
@@ -189,52 +195,83 @@ function MonitorDetailPage() {
       {/* Dependencies */}
       <MonitorDependencies monitorId={monitor.id} />
 
-      <h2 className="text-xs font-medium">Check history</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-medium">Check history</h2>
+        {checksTotal > 0 && (
+          <span className="text-[11px] text-muted-foreground">
+            {checkPage * PAGE_SIZE + 1}–{Math.min((checkPage + 1) * PAGE_SIZE, checksTotal)} of {checksTotal}
+          </span>
+        )}
+      </div>
       {checks?.length ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Status</TableHead>
-              <TableHead>Latency</TableHead>
-              <TableHead>Status Code</TableHead>
-              <TableHead>Region</TableHead>
-              <TableHead>Time</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {checks.map((c) => (
-              <TableRow
-                key={c.id}
-                className="cursor-pointer"
-                onClick={() => setSelectedCheck(c)}
-              >
-                <TableCell>
-                  <Badge
-                    variant={
-                      c.status === "up"
-                        ? "default"
-                        : c.status === "degraded"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                  >
-                    {c.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{c.latency}ms</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {c.statusCode ?? "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {c.region ?? "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {new Date(c.checkedAt).toLocaleString()}
-                </TableCell>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Status</TableHead>
+                <TableHead>Latency</TableHead>
+                <TableHead>Status Code</TableHead>
+                <TableHead>Region</TableHead>
+                <TableHead>Time</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {checks.map((c) => (
+                <TableRow
+                  key={c.id}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedCheck(c)}
+                >
+                  <TableCell>
+                    <Badge
+                      variant={
+                        c.status === "up"
+                          ? "default"
+                          : c.status === "degraded"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {c.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{c.latency}ms</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {c.statusCode ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {c.region ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {new Date(c.checkedAt).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {(checkPage > 0 || checksHasMore) && (
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                disabled={checkPage === 0}
+                onClick={() => setCheckPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                disabled={!checksHasMore}
+                onClick={() => setCheckPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <p className="text-xs text-muted-foreground">No checks yet.</p>
       )}

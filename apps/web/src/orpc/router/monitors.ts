@@ -278,15 +278,26 @@ export const monitorsRouter = {
   ),
 
   checks: authedProcedure
-    .input(z.object({ monitorId: z.string(), limit: z.number().int().default(100) }))
+    .input(z.object({ monitorId: z.string(), limit: z.number().int().default(50), offset: z.number().int().default(0) }))
     .handler(async ({ input, context }) => {
       const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorId } });
       await verifyOrgMembership(context.session.user.id, monitor.organizationId);
-      return prisma.monitorCheck.findMany({
-        where: { monitorId: input.monitorId },
-        orderBy: { checkedAt: "desc" },
-        take: Math.min(input.limit, MAX_CHECK_HISTORY),
-      });
+      const take = Math.min(input.limit, MAX_CHECK_HISTORY);
+      const [items, total] = await Promise.all([
+        prisma.monitorCheck.findMany({
+          where: { monitorId: input.monitorId },
+          orderBy: { checkedAt: "desc" },
+          take: take + 1,
+          skip: input.offset,
+        }),
+        prisma.monitorCheck.count({ where: { monitorId: input.monitorId } }),
+      ]);
+      const hasMore = items.length > take;
+      return {
+        items: items.slice(0, take),
+        total,
+        hasMore,
+      };
     }),
 
   overview: orgProcedure(z.object({ organizationId: z.string(), hours: z.number().min(1).max(720).default(24) })).handler(
@@ -324,6 +335,24 @@ export const monitorsRouter = {
         );
       }
 
+      // Uptime % from daily rollups (last 30 days)
+      let uptimePercent: number | null = null;
+      try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000);
+        const uptimeRows = await prisma.$queryRawUnsafe<{ total: bigint; up: bigint }[]>(
+          `SELECT COALESCE(SUM("totalChecks"), 0)::bigint as total,
+                  COALESCE(SUM("upChecks"), 0)::bigint as up
+           FROM monitor_check_daily_rollup
+           WHERE "monitorId" = ANY($1) AND "bucketDate" >= $2`,
+          monitorIds,
+          thirtyDaysAgo,
+        );
+        const row = uptimeRows[0];
+        if (row && Number(row.total) > 0) {
+          uptimePercent = Math.round((Number(row.up) / Number(row.total)) * 10000) / 100;
+        }
+      } catch {}
+
       const latestMap = new Map(latestChecks.map((c) => [c.monitorId, c]));
       const avgMap = new Map(avgLatencies.map((a) => [a.monitorId, a]));
 
@@ -344,6 +373,7 @@ export const monitorsRouter = {
       });
 
       return {
+        uptimePercent,
         monitors: monitorSummaries,
         recentChecks: recentChecks.map((c) => ({
           id: c.id,
