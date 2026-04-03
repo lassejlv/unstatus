@@ -95,38 +95,6 @@ function useInView(threshold = 0.15) {
   return { ref, inView };
 }
 
-function AnimatedCounter({
-  target,
-  suffix = "",
-  duration = 2000,
-}: {
-  target: number;
-  suffix?: string;
-  duration?: number;
-}) {
-  const [value, setValue] = useState(0);
-  const { ref, inView } = useInView();
-
-  useEffect(() => {
-    if (!inView) return;
-    const start = performance.now();
-    function tick(now: number) {
-      const progress = Math.min((now - start) / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }, [inView, target, duration]);
-
-  return (
-    <span ref={ref} className="font-mono tabular-nums">
-      {value.toLocaleString()}
-      {suffix}
-    </span>
-  );
-}
 
 function FadeIn({
   children,
@@ -161,40 +129,33 @@ const features = [
   {
     icon: Wifi,
     title: "Uptime monitoring",
-    desc: "HTTP, TCP, and ping checks from multiple regions. Get alerted the second something goes wrong.",
+    desc: "HTTP, TCP, and ping checks from EU, US, and Asia. 10-second intervals. Zero false positives.",
   },
   {
     icon: Globe,
     title: "Status pages",
-    desc: "Public status pages with custom domains and branding. SSL provisioned automatically.",
+    desc: "Beautiful public pages on your own domain. Custom branding, SSL included. Your users will love it.",
   },
   {
     icon: AlertTriangle,
     title: "Incident management",
-    desc: "Track incidents with updates and timelines. Auto-create incidents when monitors go down.",
+    desc: "Auto-create incidents when things break. Timeline updates, severity tracking, post-mortems.",
   },
   {
     icon: Bell,
-    title: "Notifications",
-    desc: "Email and Discord alerts. Webhook support for integrating with your own tools.",
+    title: "Instant alerts",
+    desc: "Discord, email, webhooks. Get pinged before your users start tweeting about it.",
   },
   {
     icon: MapPin,
-    title: "Multi-region",
-    desc: "Run checks from EU, US, and Asia. Avoid false positives from a single point of failure.",
+    title: "Dependency chain",
+    desc: "Track Vercel, Cloudflare, AWS status. Know if it's you or your infra that's on fire.",
   },
   {
     icon: Code2,
-    title: "API access",
-    desc: "Full REST API for automating your monitoring setup. Integrate with your existing workflows.",
+    title: "API-first",
+    desc: "Full REST API. Automate everything. Integrate with your CI/CD, Slack, whatever.",
   },
-];
-
-const stats = [
-  { value: 99.99, suffix: "%", label: "Uptime SLA" },
-  { value: 30, suffix: "s", label: "Check interval" },
-  { value: 4, suffix: "", label: "Global regions" },
-  { value: 5000, suffix: "+", label: "Checks / day" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -358,46 +319,42 @@ function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative mx-auto max-w-6xl px-6 pt-28 pb-24">
+        <section className="relative mx-auto max-w-6xl px-6 pt-28 pb-24 overflow-hidden">
+          {/* Subtle grid background */}
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-20%,rgba(120,119,198,0.08),transparent_50%)]" />
+
           <div className="flex items-center gap-20">
             <div className="min-w-0 flex-1">
-              <FadeIn>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-muted/50 px-3 py-1">
-                  <Activity className="size-3 text-emerald-500" />
-                  <span className="font-mono text-[11px] text-muted-foreground">
-                    Monitoring active
-                  </span>
-                  <PulsingDot />
-                </div>
-              </FadeIn>
+
 
               <FadeIn delay={100}>
-                <h1 className="text-4xl font-semibold tracking-tight leading-[1.15] lg:text-5xl">
-                  Know when it breaks.
+                <h1 className="text-4xl font-semibold tracking-tight leading-[1.1] lg:text-5xl">
+                  Your site just went down.
                   <br />
-                  <span className="text-muted-foreground">
-                    Before your users do.
+                  <span className="bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+                    Who knew first?
                   </span>
                 </h1>
               </FadeIn>
 
               <FadeIn delay={200}>
                 <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-                  Uptime monitoring, status pages, and incident management.
-                  Simple, fast, and reliable.
+                  Uptime monitoring that actually tells you before Twitter does.
+                  Status pages your users will trust. Incident management that
+                  doesn't make you want to cry.
                 </p>
               </FadeIn>
 
               <FadeIn delay={300}>
                 <div className="mt-8 flex items-center gap-3">
                   <Link to="/login">
-                    <Button size="lg" className="gap-2">
+                    <Button size="lg" className="gap-2 h-12 px-6">
                       Start for free <ArrowRight className="size-4" />
                     </Button>
                   </Link>
-                  <Link to="/pricing">
-                    <Button variant="outline" size="lg">
-                      See pricing
+                  <Link to="/registry">
+                    <Button variant="outline" size="lg" className="h-12 px-6">
+                      Browse service registry
                     </Button>
                   </Link>
                 </div>
@@ -406,49 +363,62 @@ function HomePage() {
 
             {/* Live status mock */}
             <FadeIn delay={400} className="hidden shrink-0 lg:block">
-              <LiveStatusMock />
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10 blur-2xl" />
+                <div className="relative">
+                  <LiveStatusMock />
+                </div>
+              </div>
             </FadeIn>
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {stats.map((s, i) => (
-              <FadeIn key={s.label} delay={i * 100}>
-                <div className="rounded-lg border bg-card p-5 text-center">
-                  <div className="text-3xl font-semibold tracking-tight">
-                    <AnimatedCounter
-                      target={s.value}
-                      suffix={s.suffix}
-                    />
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {s.label}
-                  </div>
+        {/* Social proof / trust strip */}
+        <section className="border-t border-b bg-muted/30">
+          <div className="mx-auto max-w-6xl px-6 py-6">
+            <div className="flex items-center justify-center gap-12 text-muted-foreground">
+              <FadeIn delay={0}>
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-500" />
+                  <span className="font-mono text-sm">99.99% uptime</span>
                 </div>
               </FadeIn>
-            ))}
+              <FadeIn delay={100}>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm">10s check intervals</span>
+                </div>
+              </FadeIn>
+              <FadeIn delay={200}>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm">4 global regions</span>
+                </div>
+              </FadeIn>
+            </div>
           </div>
         </section>
 
         {/* Features */}
-        <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-20">
+        <section>
+          <div className="mx-auto max-w-6xl px-6 py-24">
             <FadeIn>
-              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                Everything you need
-              </h2>
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold tracking-tight lg:text-3xl">
+                  Everything you need to sleep at night
+                </h2>
+                <p className="mt-3 text-muted-foreground">
+                  No bloat. No dashboards-within-dashboards. Just the stuff that matters.
+                </p>
+              </div>
             </FadeIn>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((f, i) => (
                 <FadeIn key={f.title} delay={i * 80}>
-                  <div className="group rounded-lg border p-5 transition-all duration-300 hover:border-foreground/20 hover:-translate-y-0.5 hover:shadow-sm">
-                    <div className="flex size-9 items-center justify-center rounded-md border bg-muted/50 transition-colors group-hover:bg-muted">
-                      <f.icon className="size-4 text-muted-foreground" />
+                  <div className="group rounded-xl border p-6 transition-all duration-300 hover:border-foreground/20 hover:-translate-y-1 hover:shadow-md">
+                    <div className="flex size-10 items-center justify-center rounded-lg border bg-muted/50 transition-colors group-hover:bg-foreground group-hover:text-background">
+                      <f.icon className="size-4" />
                     </div>
-                    <h3 className="mt-4 text-sm font-medium">{f.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    <h3 className="mt-4 font-medium">{f.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       {f.desc}
                     </p>
                   </div>
@@ -460,38 +430,43 @@ function HomePage() {
 
         {/* How it works */}
         <section className="border-t bg-muted/20">
-          <div className="mx-auto max-w-6xl px-6 py-20">
+          <div className="mx-auto max-w-6xl px-6 py-24">
             <FadeIn>
-              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                How it works
-              </h2>
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold tracking-tight lg:text-3xl">
+                  Three steps. Under a minute.
+                </h2>
+                <p className="mt-3 text-muted-foreground">
+                  Seriously, it's embarrassingly easy.
+                </p>
+              </div>
             </FadeIn>
-            <div className="mt-10 grid gap-8 lg:grid-cols-3">
+            <div className="mt-14 grid gap-8 lg:grid-cols-3">
               {[
                 {
                   step: "01",
-                  title: "Add a monitor",
-                  desc: "Enter a URL or IP. Pick your check interval and regions. That's it.",
+                  title: "Paste a URL",
+                  desc: "Enter what you want monitored. Pick your check interval. Pick your regions. Done.",
                 },
                 {
                   step: "02",
-                  title: "Get notified instantly",
-                  desc: "When something goes down, you'll know within seconds via email or Discord.",
+                  title: "Get yelled at (nicely)",
+                  desc: "When something breaks, you'll know in seconds. Email, Discord, webhook — your call.",
                 },
                 {
                   step: "03",
-                  title: "Share status with users",
-                  desc: "Create a public status page with your own domain. Build trust with transparency.",
+                  title: "Look professional",
+                  desc: "Ship a status page on your own domain. Your users see transparency. You see fewer support tickets.",
                 },
               ].map((s, i) => (
                 <FadeIn key={s.step} delay={i * 120}>
-                  <div className="flex gap-4">
-                    <span className="font-mono text-3xl font-bold text-muted-foreground/30">
+                  <div className="flex gap-5">
+                    <span className="font-mono text-4xl font-bold text-foreground/10">
                       {s.step}
                     </span>
                     <div>
-                      <h3 className="text-sm font-semibold">{s.title}</h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      <h3 className="font-semibold">{s.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {s.desc}
                       </p>
                     </div>
@@ -502,21 +477,48 @@ function HomePage() {
           </div>
         </section>
 
+        {/* Registry callout */}
+        <section className="border-t">
+          <div className="mx-auto max-w-6xl px-6 py-24">
+            <FadeIn>
+              <div className="rounded-2xl border bg-card p-10 text-center">
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Is it you, or is it Vercel?
+                </h2>
+                <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
+                  Our service registry tracks the real-time status of 25+ popular services.
+                  Map your dependency chain and know exactly what's broken — and whose fault it is.
+                </p>
+                <Link to="/registry" className="mt-6 inline-block">
+                  <Button variant="outline" size="lg" className="gap-2">
+                    <Globe className="size-4" />
+                    Browse service registry
+                  </Button>
+                </Link>
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-24 text-center">
+          <div className="mx-auto max-w-6xl px-6 py-28 text-center">
             <FadeIn>
-              <h2 className="text-3xl font-semibold tracking-tight">
-                Start monitoring in under a minute
+              <h2 className="text-3xl font-semibold tracking-tight lg:text-4xl">
+                Stop refreshing your logs.
+                <br />
+                <span className="text-muted-foreground">Let us do it for you.</span>
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                No credit card required. Free forever for small projects.
+              <p className="mx-auto mt-5 max-w-md text-lg text-muted-foreground">
+                Join teams who'd rather ship features than babysit servers.
               </p>
-              <Link to="/login" className="mt-8 inline-block">
-                <Button size="lg" className="gap-2">
-                  Get started <ArrowRight className="size-4" />
-                </Button>
-              </Link>
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <Link to="/login">
+                  <Button size="lg" className="gap-2 h-12 px-8">
+                    Start for free <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              </div>
             </FadeIn>
           </div>
         </section>
@@ -524,16 +526,30 @@ function HomePage() {
 
       {/* Footer */}
       <footer className="border-t">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <span className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} unstatus
-          </span>
-          <Link
-            to="/pricing"
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Pricing
-          </Link>
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/Logo.png" alt="unstatus" className="size-5" />
+              <span className="text-xs font-semibold">unstatus</span>
+            </Link>
+            <span className="text-xs text-muted-foreground">
+              &copy; {new Date().getFullYear()}
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/registry"
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Registry
+            </Link>
+            <Link
+              to="/pricing"
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Pricing
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

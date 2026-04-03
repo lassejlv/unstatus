@@ -201,7 +201,8 @@ function MonitorSidecar({
     input: monitorId ? { monitorId } : skipToken,
   });
   const { data: monitor } = useQuery(monitorOpts);
-  const { data: checks } = useQuery(checksOpts);
+  const { data: checksData } = useQuery(checksOpts);
+  const checks = checksData?.items;
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
   const [view, setView] = useState<"main" | "edit" | "confirmDelete">("main");
 
