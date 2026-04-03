@@ -76,8 +76,8 @@ function DashboardLayout() {
                           isActive={!!matchRoute({ to: item.to, fuzzy: true })}
                         >
                           <Link to={item.to} search={item.search} className="group/nav">
-                            <Icon className="size-4 transition-transform duration-200 group-hover/nav:scale-125" />
-                            {item.label}
+                            <Icon className="size-4 transition-transform duration-200 ease-out group-hover/nav:translate-x-0.5" />
+                            <span className="transition-transform duration-200 ease-out group-hover/nav:translate-x-0.5">{item.label}</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
