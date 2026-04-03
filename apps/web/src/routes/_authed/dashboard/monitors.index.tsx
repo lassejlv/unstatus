@@ -983,11 +983,12 @@ function formatBody(body: string): string {
 }
 
 function MonitorDependencies({ monitorId }: { monitorId: string }) {
+  const { isPro } = useSubscription();
   const qc = useQueryClient();
-  const depsOpts = orpc.dependencies.listForMonitor.queryOptions({ input: { monitorId } });
+  const depsOpts = orpc.dependencies.listForMonitor.queryOptions({ input: monitorId && isPro ? { monitorId } : skipToken });
   const { data: deps } = useQuery(depsOpts);
   const { data: services } = useQuery(
-    orpc.dependencies.listExternalServices.queryOptions({ input: undefined }),
+    orpc.dependencies.listExternalServices.queryOptions({ input: isPro ? undefined : skipToken }),
   );
   const [addOpen, setAddOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
@@ -1032,6 +1033,20 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
     major_outage: "bg-red-500",
     maintenance: "bg-blue-500",
   };
+
+  if (!isPro) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Dependencies</span>
+          <ProBadge />
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Link external services your monitor depends on. Upgrade to Pro to use dependencies.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2">
