@@ -12,6 +12,7 @@ import {
   verifyOrgMembership,
   verifyOrgRole,
   checkFeature,
+  checkAndTrackFeature,
   requireFeature,
 } from "@/orpc/procedures";
 
@@ -82,8 +83,8 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    // Check status pages quota (metered feature)
-    requireFeature(await checkFeature(input.organizationId, "status_pages"), "More status pages");
+    // Check + track status pages quota (allocated metered feature)
+    requireFeature(await checkAndTrackFeature(input.organizationId, "status_pages"), "More status pages");
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -94,7 +95,7 @@ export const statusPagesRouter = {
 
     const orgId = statusPage.organizationId;
     if (data.customDomain) {
-      requireFeature(await checkFeature(orgId, "custom_domain"), "Custom domains");
+      requireFeature(await checkAndTrackFeature(orgId, "custom_domain"), "Custom domains");
     }
     if (data.customCss) {
       requireFeature(await checkFeature(orgId, "custom_css"), "Custom CSS");

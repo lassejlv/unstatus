@@ -6,6 +6,8 @@ import {
   verifyOrgMembership,
   verifyOrgRole,
   checkFeature,
+  checkAndTrackFeature,
+  trackUsage,
   requireFeature,
 } from "@/orpc/procedures";
 import { ORPCError } from "@orpc/server";
@@ -242,8 +244,8 @@ export const monitorsRouter = {
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     const orgId = input.organizationId;
 
-    // Check monitors quota (metered feature)
-    requireFeature(await checkFeature(orgId, "monitors"), "More monitors");
+    // Check + track monitors quota (allocated metered feature)
+    requireFeature(await checkAndTrackFeature(orgId, "monitors"), "More monitors");
 
     if (input.autoIncidents) {
       requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
@@ -429,6 +431,9 @@ export const monitorsRouter = {
         console.error(`Worker check failed: ${res.status} ${body}`);
         throw new ORPCError("BAD_GATEWAY", { message: "Monitor check failed. Please try again later." });
       }
+      // Track the check usage
+      trackUsage(monitor.organizationId, "checks").catch(() => {});
+
       return res.json();
     }),
 };
