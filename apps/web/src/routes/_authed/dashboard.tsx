@@ -53,7 +53,7 @@ function DashboardLayout() {
   const { theme, setTheme } = useTheme();
 
   const currentPage = navItems.find((item) =>
-    !!matchRoute({ to: item.to, fuzzy: true })
+    !!matchRoute({ to: item.to, fuzzy: item.to !== "/dashboard" })
   );
 
   return (
@@ -73,7 +73,7 @@ function DashboardLayout() {
                       <SidebarMenuItem key={item.to}>
                         <SidebarMenuButton
                           asChild
-                          isActive={!!matchRoute({ to: item.to, fuzzy: true })}
+                          isActive={!!matchRoute({ to: item.to, fuzzy: item.to !== "/dashboard" })}
                         >
                           <Link to={item.to} search={item.search} className="group/nav">
                             <Icon className="size-4 transition-transform duration-200 ease-out group-hover/nav:translate-x-0.5" />
