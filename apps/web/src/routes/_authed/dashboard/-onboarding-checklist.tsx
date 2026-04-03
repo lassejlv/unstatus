@@ -68,9 +68,9 @@ export function OnboardingChecklist({
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h2 className="text-sm font-semibold">Getting started</h2>
+            <h2 className="text-sm font-semibold">Set up your workspace</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {completedCount} of 3 complete
+              Complete these steps to start monitoring — {completedCount} of 3 done
             </p>
           </div>
           <button

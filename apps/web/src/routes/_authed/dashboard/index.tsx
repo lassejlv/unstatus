@@ -62,8 +62,9 @@ function DashboardIndex() {
   const { data: overview, isLoading: overviewLoading } = useQuery(overviewQuery);
   const { data: pages, isLoading: pagesLoading } = useQuery(pagesQuery);
   const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
-  const { data: notifications } = useQuery(notificationsQuery);
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(notificationsQuery);
 
+  const dataReady = !overviewLoading && !pagesLoading && !notificationsLoading;
   const { showOnboarding, steps: onboardingSteps, completedCount, dismiss } = useOnboarding({
     orgId,
     monitorCount: overview?.monitors?.length ?? 0,
@@ -120,7 +121,7 @@ function DashboardIndex() {
       </motion.div>
 
       {/* Onboarding */}
-      {showOnboarding && (
+      {dataReady && showOnboarding && (
         <OnboardingChecklist
           steps={onboardingSteps}
           completedCount={completedCount}
