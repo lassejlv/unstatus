@@ -5,6 +5,8 @@ import { useOrg } from "@/components/org-context";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useOnboarding } from "@/hooks/use-onboarding";
+import { OnboardingChecklist } from "./-onboarding-checklist";
 import { type ReactNode, useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -53,10 +55,21 @@ function DashboardIndex() {
   const incidentsQuery = orpc.incidents.listByOrg.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
   });
+  const notificationsQuery = orpc.notifications.list.queryOptions({
+    input: orgId ? { organizationId: orgId } : skipToken,
+  });
 
   const { data: overview, isLoading: overviewLoading } = useQuery(overviewQuery);
   const { data: pages, isLoading: pagesLoading } = useQuery(pagesQuery);
   const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
+  const { data: notifications } = useQuery(notificationsQuery);
+
+  const { showOnboarding, steps: onboardingSteps, completedCount, dismiss } = useOnboarding({
+    orgId,
+    monitorCount: overview?.monitors?.length ?? 0,
+    statusPageCount: pages?.length ?? 0,
+    notificationCount: (notifications as any[])?.length ?? 0,
+  });
 
   if (overviewLoading || pagesLoading || incidentsLoading) {
     return (
@@ -105,6 +118,15 @@ function DashboardIndex() {
           </span>
         </div>
       </motion.div>
+
+      {/* Onboarding */}
+      {showOnboarding && (
+        <OnboardingChecklist
+          steps={onboardingSteps}
+          completedCount={completedCount}
+          onDismiss={dismiss}
+        />
+      )}
 
       {/* Stat cards */}
       <motion.div {...fadeUp(0.05)} className="grid grid-cols-5 gap-3">

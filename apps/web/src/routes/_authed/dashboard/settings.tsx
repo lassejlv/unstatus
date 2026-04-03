@@ -135,11 +135,11 @@ function OrgDetails({ orgId }: { orgId: string }) {
 
   const org = activeOrg;
   const userId = session?.user.id;
-  const { data: members } = authClient.useListMembers({ query: { organizationId: orgId } });
+  const { data: members, isLoading: membersLoading } = authClient.useListMembers({ query: { organizationId: orgId } });
   const currentMember = userId
     ? members?.data?.find((m: any) => m.userId === userId)
     : null;
-  const isOwner = currentMember?.role === "owner";
+  const isOwner = membersLoading ? true : currentMember?.role === "owner";
   const isPersonalOrg = Boolean(
     userId
     && org.name === "Personal"
