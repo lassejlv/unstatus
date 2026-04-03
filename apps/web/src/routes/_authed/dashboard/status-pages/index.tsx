@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,9 +37,27 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { X, ChevronLeft, ExternalLink, Trash2, Globe } from "lucide-react";
+import { X, ChevronLeft, ExternalLink, Trash2, Globe, GripVertical, Plus, Pencil } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  type DragEndEvent,
+  type DragStartEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/")({
   component: StatusPagesPage,
@@ -349,7 +367,8 @@ function StatusPageSidecar({
             <AddMonitorOverlay
               statusPageId={page.id}
               organizationId={activeOrg.id}
-              existingMonitorIds={page.monitors.map((m) => m.monitorId)}
+              existingMonitorIds={page.monitors.map((m: any) => m.monitorId)}
+              groupNames={[...new Set(page.monitors.map((m: any) => m.groupName).filter(Boolean))]}
               onBack={() => setView("main")}
               onSuccess={() => {
                 invalidate();
@@ -407,6 +426,194 @@ function StatusPageSidecar({
   );
 }
 
+// ── Drag-and-drop monitor grouping ──────────────────────────────────────────
+
+const UNGROUPED_ID = "__ungrouped";
+
+interface MonitorItem {
+  id: string;
+  monitorId: string;
+  sortOrder: number;
+  groupName: string | null;
+  displayName: string | null;
+  monitor: { name: string; id: string };
+}
+
+function SortableMonitorItem({
+  spm,
+  onRemove,
+}: {
+  spm: MonitorItem;
+  onRemove: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: spm.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 px-3 py-2 rounded-md bg-background border transition-colors hover:border-foreground/20 group"
+    >
+      <button
+        type="button"
+        className="shrink-0 cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-3.5" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm truncate">{spm.displayName || spm.monitor.name}</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => onRemove(spm.id)}
+        className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:text-destructive hover:bg-destructive/10"
+      >
+        <Trash2 className="size-3" />
+      </button>
+    </div>
+  );
+}
+
+function MonitorDragOverlay({ spm }: { spm: MonitorItem }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-background border border-foreground/20 shadow-lg">
+      <GripVertical className="size-3.5 text-muted-foreground shrink-0" />
+      <span className="text-sm truncate">{spm.displayName || spm.monitor.name}</span>
+    </div>
+  );
+}
+
+function DroppableGroup({
+  groupId,
+  groupName,
+  monitors,
+  onRemoveMonitor,
+  onRenameGroup,
+  onDeleteGroup,
+  isUngrouped,
+}: {
+  groupId: string;
+  groupName: string;
+  monitors: MonitorItem[];
+  onRemoveMonitor: (id: string) => void;
+  onRenameGroup?: (oldName: string, newName: string) => void;
+  onDeleteGroup?: (name: string) => void;
+  isUngrouped?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(groupName);
+  const { setNodeRef, isOver } = useDroppable({
+    id: groupId,
+    data: { type: "group", groupName: isUngrouped ? null : groupName },
+  });
+
+  const handleRename = () => {
+    if (!editName.trim() || editName === groupName) {
+      setEditing(false);
+      setEditName(groupName);
+      return;
+    }
+    onRenameGroup?.(groupName, editName.trim());
+    setEditing(false);
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`rounded-lg border transition-colors ${
+        isOver ? "border-foreground/30 bg-accent/50" : "border-border"
+      }`}
+    >
+      {/* Group header */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b">
+        {isUngrouped ? (
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-xs font-medium text-muted-foreground">Ungrouped</span>
+            {monitors.length > 0 && (
+              <span className="text-[10px] text-muted-foreground/60">{monitors.length}</span>
+            )}
+          </div>
+        ) : editing ? (
+          <div className="flex items-center gap-1 flex-1">
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="h-6 text-xs flex-1"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRename();
+                if (e.key === "Escape") { setEditing(false); setEditName(groupName); }
+              }}
+              onBlur={handleRename}
+            />
+          </div>
+        ) : (
+          <>
+            <span className="text-xs font-medium">{groupName}</span>
+            {monitors.length > 0 && (
+              <span className="text-[10px] text-muted-foreground/60">{monitors.length}</span>
+            )}
+            <div className="flex-1" />
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => { setEditing(true); setEditName(groupName); }}
+                className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Pencil className="size-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDeleteGroup?.(groupName)}
+                className="rounded p-1 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 className="size-3" />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Monitor list */}
+      <div className="p-2 flex flex-col gap-1 min-h-[40px]">
+        <SortableContext
+          items={monitors.map((m) => m.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {monitors.length === 0 ? (
+            <div className="flex items-center justify-center py-3 text-xs text-muted-foreground">
+              Drag monitors here
+            </div>
+          ) : (
+            monitors.map((spm) => (
+              <SortableMonitorItem
+                key={spm.id}
+                spm={spm}
+                onRemove={onRemoveMonitor}
+              />
+            ))
+          )}
+        </SortableContext>
+      </div>
+    </div>
+  );
+}
+
 function MonitorsTab({
   page,
   activeOrg,
@@ -422,6 +629,9 @@ function MonitorsTab({
 }) {
   const [newGroup, setNewGroup] = useState("");
   const [addingGroup, setAddingGroup] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  // Track empty groups that haven't been persisted yet (no monitors assigned)
+  const [emptyGroups, setEmptyGroups] = useState<string[]>([]);
   const qc = useQueryClient();
 
   const updateMonitors = useMutation({
@@ -435,61 +645,220 @@ function MonitorsTab({
     },
   });
 
-  // Group monitors
-  const groups = new Map<string, typeof page.monitors>();
-  const ungrouped: typeof page.monitors = [];
-  for (const spm of page.monitors) {
-    if (spm.groupName) {
-      const existing = groups.get(spm.groupName) ?? [];
-      existing.push(spm);
-      groups.set(spm.groupName, existing);
-    } else {
-      ungrouped.push(spm);
+  // Build group structure: ordered list of group names + ungrouped
+  const monitors: MonitorItem[] = page.monitors;
+
+  // Groups that have monitors assigned (from DB)
+  const dbGroupOrder = useMemo(() => {
+    const seen = new Set<string>();
+    const order: string[] = [];
+    for (const spm of monitors) {
+      if (spm.groupName && !seen.has(spm.groupName)) {
+        seen.add(spm.groupName);
+        order.push(spm.groupName);
+      }
     }
-  }
+    return order;
+  }, [monitors]);
 
-  const allGroupNames = [...groups.keys()];
+  // Merge DB groups + local empty groups (deduped)
+  const groupOrder = useMemo(() => {
+    const all = [...dbGroupOrder];
+    for (const g of emptyGroups) {
+      if (!all.includes(g)) all.push(g);
+    }
+    return all;
+  }, [dbGroupOrder, emptyGroups]);
 
-  const moveToGroup = (spmId: string, groupName: string | null) => {
-    const updated = page.monitors.map((m: any, i: number) => ({
-      id: m.id,
-      sortOrder: i,
-      groupName: m.id === spmId ? groupName : m.groupName ?? null,
-    }));
-    updateMonitors.mutate({ statusPageId: page.id, monitors: updated });
+  // Clean up emptyGroups that now have monitors (became real)
+  useEffect(() => {
+    setEmptyGroups((prev) => prev.filter((g) => !dbGroupOrder.includes(g)));
+  }, [dbGroupOrder]);
+
+  const hasGroups = groupOrder.length > 0;
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, MonitorItem[]>();
+    map.set(UNGROUPED_ID, []);
+    for (const g of groupOrder) map.set(g, []);
+    for (const spm of monitors) {
+      const key = spm.groupName ?? UNGROUPED_ID;
+      const arr = map.get(key) ?? [];
+      arr.push(spm);
+      map.set(key, arr);
+    }
+    return map;
+  }, [monitors, groupOrder]);
+
+  const activeMonitor = useMemo(
+    () => monitors.find((m) => m.id === activeId) ?? null,
+    [monitors, activeId],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  // Find which group a monitor belongs to
+  const findGroupOfMonitor = useCallback(
+    (monitorId: string): string => {
+      for (const [groupKey, items] of grouped) {
+        if (items.some((m) => m.id === monitorId)) return groupKey;
+      }
+      return UNGROUPED_ID;
+    },
+    [grouped],
+  );
+
+  const persistOrder = useCallback(
+    (allMonitors: MonitorItem[]) => {
+      updateMonitors.mutate({
+        statusPageId: page.id,
+        monitors: allMonitors.map((m, i) => ({
+          id: m.id,
+          sortOrder: i,
+          groupName: m.groupName ?? null,
+        })),
+      });
+    },
+    [page.id, updateMonitors],
+  );
+
+  // Flatten the grouped structure back into a sorted array
+  const flattenGroups = useCallback(
+    (groupedMap: Map<string, MonitorItem[]>): MonitorItem[] => {
+      const result: MonitorItem[] = [];
+      // Ungrouped first
+      const ungrouped = groupedMap.get(UNGROUPED_ID) ?? [];
+      result.push(...ungrouped);
+      // Then each group in order
+      for (const g of groupOrder) {
+        const items = groupedMap.get(g) ?? [];
+        result.push(...items);
+      }
+      return result;
+    },
+    [groupOrder],
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeMonitorId = active.id as string;
+    const overId = over.id as string;
+
+    // Determine target group
+    let targetGroup: string;
+    const overData = over.data.current;
+    if (overData?.type === "group") {
+      // Dropped on a group container
+      targetGroup = overData.groupName === null ? UNGROUPED_ID : overData.groupName;
+    } else {
+      // Dropped on another monitor — find its group
+      targetGroup = findGroupOfMonitor(overId);
+    }
+
+    const sourceGroup = findGroupOfMonitor(activeMonitorId);
+
+    // Clone grouped map
+    const newGrouped = new Map<string, MonitorItem[]>();
+    for (const [key, items] of grouped) {
+      newGrouped.set(key, [...items]);
+    }
+
+    // Remove from source
+    const sourceItems = newGrouped.get(sourceGroup) ?? [];
+    const activeIdx = sourceItems.findIndex((m) => m.id === activeMonitorId);
+    if (activeIdx === -1) return;
+    const [movedItem] = sourceItems.splice(activeIdx, 1);
+
+    // Update groupName
+    const newGroupName = targetGroup === UNGROUPED_ID ? null : targetGroup;
+    const updatedItem = { ...movedItem, groupName: newGroupName };
+
+    // Insert into target
+    const targetItems = newGrouped.get(targetGroup) ?? [];
+    if (sourceGroup === targetGroup) {
+      // Reorder within same group
+      const overIdx = targetItems.findIndex((m) => m.id === overId);
+      if (overIdx !== -1) {
+        targetItems.splice(overIdx, 0, updatedItem);
+      } else {
+        targetItems.push(updatedItem);
+      }
+    } else {
+      // Moved to different group
+      if (overData?.type === "group") {
+        // Dropped on group header — add at end
+        targetItems.push(updatedItem);
+      } else {
+        const overIdx = targetItems.findIndex((m) => m.id === overId);
+        if (overIdx !== -1) {
+          targetItems.splice(overIdx, 0, updatedItem);
+        } else {
+          targetItems.push(updatedItem);
+        }
+      }
+    }
+
+    newGrouped.set(sourceGroup, sourceItems);
+    newGrouped.set(targetGroup, targetItems);
+
+    persistOrder(flattenGroups(newGrouped));
   };
 
   const addGroup = () => {
-    if (!newGroup.trim()) return;
-    // Just adding a group name — we'll assign monitors to it later
-    // For now, move the first ungrouped monitor to this group if any
+    const name = newGroup.trim();
+    if (!name) return;
+    if (groupOrder.includes(name)) {
+      toast.error("Group already exists");
+      return;
+    }
+    // Create an empty group in local state — drag monitors into it later
+    setEmptyGroups((prev) => [...prev, name]);
     setAddingGroup(false);
     setNewGroup("");
-    // If no monitors, just store it — but we need at least one monitor in the group
-    // For simplicity, just create the group concept by letting users select it from dropdowns
-    toast.success(`Group "${newGroup}" created. Assign monitors from the dropdown.`);
   };
 
-  const moveUp = (spmId: string) => {
-    const idx = page.monitors.findIndex((m: any) => m.id === spmId);
-    if (idx <= 0) return;
-    const reordered = [...page.monitors];
-    [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
-    updateMonitors.mutate({
-      statusPageId: page.id,
-      monitors: reordered.map((m: any, i: number) => ({ id: m.id, sortOrder: i, groupName: m.groupName ?? null })),
-    });
+  const renameGroup = (oldName: string, newName: string) => {
+    if (groupOrder.includes(newName)) {
+      toast.error("Group already exists");
+      return;
+    }
+    // If it's a local empty group, just rename in state
+    if (emptyGroups.includes(oldName)) {
+      setEmptyGroups((prev) => prev.map((g) => (g === oldName ? newName : g)));
+      return;
+    }
+    const allMonitors = monitors.map((m, i) => ({
+      id: m.id,
+      sortOrder: i,
+      groupName: m.groupName === oldName ? newName : (m.groupName ?? null),
+    }));
+    updateMonitors.mutate({ statusPageId: page.id, monitors: allMonitors });
   };
 
-  const moveDown = (spmId: string) => {
-    const idx = page.monitors.findIndex((m: any) => m.id === spmId);
-    if (idx >= page.monitors.length - 1) return;
-    const reordered = [...page.monitors];
-    [reordered[idx], reordered[idx + 1]] = [reordered[idx + 1], reordered[idx]];
-    updateMonitors.mutate({
-      statusPageId: page.id,
-      monitors: reordered.map((m: any, i: number) => ({ id: m.id, sortOrder: i, groupName: m.groupName ?? null })),
-    });
+  const deleteGroup = (name: string) => {
+    // If it's a local empty group, just remove from state
+    if (emptyGroups.includes(name)) {
+      setEmptyGroups((prev) => prev.filter((g) => g !== name));
+      return;
+    }
+    // Move all monitors from the group to ungrouped
+    const allMonitors = monitors.map((m, i) => ({
+      id: m.id,
+      sortOrder: i,
+      groupName: m.groupName === name ? null : (m.groupName ?? null),
+    }));
+    updateMonitors.mutate({ statusPageId: page.id, monitors: allMonitors });
+    toast.success(`Group "${name}" removed`);
   };
 
   return (
@@ -503,9 +872,10 @@ function MonitorsTab({
             <button
               type="button"
               onClick={() => setAddingGroup(true)}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              + Group
+              <Plus className="size-3" />
+              Group
             </button>
           ) : (
             <div className="flex items-center gap-1">
@@ -514,86 +884,90 @@ function MonitorsTab({
                 onChange={(e) => setNewGroup(e.target.value)}
                 placeholder="Group name"
                 className="h-6 w-28 text-xs"
-                onKeyDown={(e) => e.key === "Enter" && addGroup()}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addGroup();
+                  if (e.key === "Escape") { setAddingGroup(false); setNewGroup(""); }
+                }}
               />
               <Button size="sm" className="h-6 text-xs px-2" onClick={addGroup}>Add</Button>
-              <Button variant="ghost" size="sm" className="h-6 text-xs px-1" onClick={() => setAddingGroup(false)}>×</Button>
+              <Button variant="ghost" size="sm" className="h-6 text-xs px-1" onClick={() => { setAddingGroup(false); setNewGroup(""); }}>
+                <X className="size-3" />
+              </Button>
             </div>
           )}
           {activeOrg && (
             <button
               type="button"
               onClick={onAddMonitor}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              + Monitor
+              <Plus className="size-3" />
+              Monitor
             </button>
           )}
         </div>
       </div>
-      {page.monitors.length ? (
-        <div className="divide-y">
-          {page.monitors.map((spm: any, i: number) => (
-            <div
-              key={spm.id}
-              className="flex items-center gap-2 px-6 py-2.5 transition-colors hover:bg-accent/30"
-            >
-              {/* Reorder buttons */}
-              <div className="flex flex-col gap-0.5 shrink-0">
-                <button
-                  type="button"
-                  disabled={i === 0}
-                  onClick={() => moveUp(spm.id)}
-                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-20"
-                >
-                  ▲
-                </button>
-                <button
-                  type="button"
-                  disabled={i === page.monitors.length - 1}
-                  onClick={() => moveDown(spm.id)}
-                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-20"
-                >
-                  ▼
-                </button>
-              </div>
 
-              {/* Monitor info */}
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium">{spm.monitor.name}</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Select
-                    value={spm.groupName ?? "__none"}
-                    onValueChange={(v) => moveToGroup(spm.id, v === "__none" ? null : v)}
-                  >
-                    <SelectTrigger className="h-5 w-auto text-[10px] px-1.5 py-0 border-dashed">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none">No group</SelectItem>
-                      {allGroupNames.map((g) => (
-                        <SelectItem key={g} value={g}>{g}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Remove */}
-              <button
-                type="button"
-                onClick={() => onRemoveMonitor(spm.id)}
-                className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="size-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : (
+      {page.monitors.length === 0 && !hasGroups ? (
         <p className="px-6 py-8 text-center text-xs text-muted-foreground">
           No monitors added yet.
         </p>
+      ) : (
+        <div className="p-4 flex flex-col gap-3">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            {hasGroups ? (
+              <>
+                {/* Ungrouped monitors — always visible when groups exist */}
+                <DroppableGroup
+                  groupId={UNGROUPED_ID}
+                  groupName="Ungrouped"
+                  monitors={grouped.get(UNGROUPED_ID) ?? []}
+                  onRemoveMonitor={onRemoveMonitor}
+                  isUngrouped
+                />
+
+                {/* Named groups */}
+                {groupOrder.map((gName) => (
+                  <DroppableGroup
+                    key={gName}
+                    groupId={`group:${gName}`}
+                    groupName={gName}
+                    monitors={grouped.get(gName) ?? []}
+                    onRemoveMonitor={onRemoveMonitor}
+                    onRenameGroup={renameGroup}
+                    onDeleteGroup={deleteGroup}
+                  />
+                ))}
+              </>
+            ) : (
+              /* No groups — flat sortable list */
+              <SortableContext
+                items={monitors.map((m) => m.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="flex flex-col gap-1">
+                  {monitors.map((spm) => (
+                    <SortableMonitorItem
+                      key={spm.id}
+                      spm={spm}
+                      onRemove={onRemoveMonitor}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            )}
+
+            <DragOverlay>
+              {activeMonitor ? <MonitorDragOverlay spm={activeMonitor} /> : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
       )}
     </div>
   );
@@ -1015,18 +1389,21 @@ function AddMonitorOverlay({
   statusPageId,
   organizationId,
   existingMonitorIds,
+  groupNames,
   onBack,
   onSuccess,
 }: {
   statusPageId: string;
   organizationId: string;
   existingMonitorIds: string[];
+  groupNames: string[];
   onBack: () => void;
   onSuccess: () => void;
 }) {
   const [monitorId, setMonitorId] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
+  const [groupName, setGroupName] = useState<string>("__none");
 
   const { data: monitors } = useQuery(
     orpc.monitors.list.queryOptions({ input: { organizationId } }),
@@ -1088,6 +1465,22 @@ function AddMonitorOverlay({
             className="h-8 text-xs"
           />
         </div>
+        {groupNames.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs">Group (optional)</Label>
+            <Select value={groupName} onValueChange={setGroupName}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">No group</SelectItem>
+                {groupNames.map((g) => (
+                  <SelectItem key={g} value={g}>{g}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="mt-auto flex gap-2 pt-2 border-t">
           <Button variant="outline" size="sm" className="flex-1" onClick={onBack}>
             Cancel
@@ -1102,6 +1495,7 @@ function AddMonitorOverlay({
                 monitorId,
                 displayName: displayName || undefined,
                 sortOrder: Number(sortOrder),
+                groupName: groupName === "__none" ? undefined : groupName,
               })
             }
           >
