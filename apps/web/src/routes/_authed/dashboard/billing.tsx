@@ -53,8 +53,6 @@ function BillingPage() {
       </div>
 
       <CurrentPlanCard />
-      <PlanComparisonCard />
-      <FeaturesCard />
       <PaymentMethodCard />
       <InvoicesCard />
     </div>
