@@ -94,7 +94,8 @@ export const statusPagesRouter = {
     await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = statusPage.organizationId;
-    if (data.customDomain) {
+    // Only track custom domain when adding a NEW one (not re-saving the same)
+    if (data.customDomain && data.customDomain !== statusPage.customDomain) {
       requireFeature(await checkAndTrackFeature(orgId, "custom_domain"), "Custom domains");
     }
     if (data.customCss) {
