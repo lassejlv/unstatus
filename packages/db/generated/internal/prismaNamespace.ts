@@ -2204,6 +2204,7 @@ export const StatusPageScalarFieldEnum = {
   headerText: 'headerText',
   footerText: 'footerText',
   customCss: 'customCss',
+  customJs: 'customJs',
   showResponseTimes: 'showResponseTimes',
   showDependencies: 'showDependencies',
   createdAt: 'createdAt',
@@ -2231,7 +2232,8 @@ export const StatusPageMonitorScalarFieldEnum = {
   statusPageId: 'statusPageId',
   monitorId: 'monitorId',
   sortOrder: 'sortOrder',
-  displayName: 'displayName'
+  displayName: 'displayName',
+  groupName: 'groupName'
 } as const
 
 export type StatusPageMonitorScalarFieldEnum = (typeof StatusPageMonitorScalarFieldEnum)[keyof typeof StatusPageMonitorScalarFieldEnum]

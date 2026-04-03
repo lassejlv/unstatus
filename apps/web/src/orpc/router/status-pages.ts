@@ -42,6 +42,7 @@ const createInput = z.object({
   headerText: z.string().optional(),
   footerText: z.string().optional(),
   customCss: z.string().optional(),
+  customJs: z.string().optional(),
   showResponseTimes: z.boolean().default(true),
   showDependencies: z.boolean().default(false),
 });
@@ -96,6 +97,9 @@ export const statusPagesRouter = {
     if (data.customCss) {
       requireFeature(await checkFeature(orgId, "custom_css"), "Custom CSS");
     }
+    if (data.customJs) {
+      requireFeature(await checkFeature(orgId, "custom_css"), "Custom JavaScript");
+    }
     if (data.showDependencies) {
       requireFeature(await checkFeature(orgId, "dependency_chain"), "Dependency chain");
     }
@@ -125,6 +129,7 @@ export const statusPagesRouter = {
         monitorId: z.string(),
         displayName: z.string().optional(),
         sortOrder: z.number().int().default(0),
+        groupName: z.string().nullable().optional(),
       }),
     )
     .handler(async ({ input, context }) => {
@@ -135,6 +140,31 @@ export const statusPagesRouter = {
         throw new ORPCError("FORBIDDEN", { message: "Monitor does not belong to this organization" });
       }
       return prisma.statusPageMonitor.create({ data: input });
+    }),
+
+  updateMonitors: authedProcedure
+    .input(
+      z.object({
+        statusPageId: z.string(),
+        monitors: z.array(z.object({
+          id: z.string(),
+          sortOrder: z.number().int(),
+          groupName: z.string().nullable(),
+        })),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.statusPageId } });
+      await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
+      await Promise.all(
+        input.monitors.map((m) =>
+          prisma.statusPageMonitor.update({
+            where: { id: m.id },
+            data: { sortOrder: m.sortOrder, groupName: m.groupName },
+          }),
+        ),
+      );
+      return { success: true };
     }),
 
   removeMonitor: authedProcedure

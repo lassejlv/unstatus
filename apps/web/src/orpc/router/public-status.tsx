@@ -18,12 +18,15 @@ type ResolvedPublicPage = {
   footerText: string | null;
   showResponseTimes: boolean;
   showDependencies: boolean;
+  customCss: string | null;
+  customJs: string | null;
 };
 
 type MonitorRow = {
   monitorId: string;
   monitorName: string;
   displayName: string | null;
+  groupName: string | null;
 };
 
 type StatsRow = {
@@ -142,6 +145,8 @@ async function resolvePublicPage(
       footerText: true,
       showResponseTimes: true,
       showDependencies: true,
+      customCss: true,
+      customJs: true,
     },
   });
 
@@ -159,7 +164,7 @@ async function getLegacyPublicStatusRows(
 ) {
   return Promise.all([
     prisma.$queryRawUnsafe<MonitorRow[]>(
-      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName"
+      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName", spm."groupName"
       FROM status_page_monitor spm
       JOIN monitor m ON m.id = spm."monitorId"
       WHERE spm."statusPageId" = $1
@@ -222,7 +227,7 @@ async function getRollupPublicStatusRows(
 ) {
   return Promise.all([
     prisma.$queryRawUnsafe<MonitorRow[]>(
-      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName"
+      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName", spm."groupName"
       FROM status_page_monitor spm
       JOIN monitor m ON m.id = spm."monitorId"
       WHERE spm."statusPageId" = $1
@@ -441,6 +446,7 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     return {
       id: monitor.monitorId,
       name: monitor.displayName ?? monitor.monitorName,
+      groupName: monitor.groupName,
       currentStatus: latestByMonitor.get(monitor.monitorId) ?? "unknown",
       uptimePercent,
       avgLatency: latencyDays > 0 ? Math.round(latencySum / latencyDays) : 0,
@@ -491,6 +497,8 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
     footerText: page.footerText,
     showResponseTimes: page.showResponseTimes,
     showDependencies: page.showDependencies,
+    customCss: page.customCss,
+    customJs: page.customJs,
     overallStatus,
     monitors,
     incidents: incidentRows.map((incident) => ({

@@ -40,6 +40,7 @@ export type StatusPageMonitorMinAggregateOutputType = {
   monitorId: string | null
   sortOrder: number | null
   displayName: string | null
+  groupName: string | null
 }
 
 export type StatusPageMonitorMaxAggregateOutputType = {
@@ -48,6 +49,7 @@ export type StatusPageMonitorMaxAggregateOutputType = {
   monitorId: string | null
   sortOrder: number | null
   displayName: string | null
+  groupName: string | null
 }
 
 export type StatusPageMonitorCountAggregateOutputType = {
@@ -56,6 +58,7 @@ export type StatusPageMonitorCountAggregateOutputType = {
   monitorId: number
   sortOrder: number
   displayName: number
+  groupName: number
   _all: number
 }
 
@@ -74,6 +77,7 @@ export type StatusPageMonitorMinAggregateInputType = {
   monitorId?: true
   sortOrder?: true
   displayName?: true
+  groupName?: true
 }
 
 export type StatusPageMonitorMaxAggregateInputType = {
@@ -82,6 +86,7 @@ export type StatusPageMonitorMaxAggregateInputType = {
   monitorId?: true
   sortOrder?: true
   displayName?: true
+  groupName?: true
 }
 
 export type StatusPageMonitorCountAggregateInputType = {
@@ -90,6 +95,7 @@ export type StatusPageMonitorCountAggregateInputType = {
   monitorId?: true
   sortOrder?: true
   displayName?: true
+  groupName?: true
   _all?: true
 }
 
@@ -185,6 +191,7 @@ export type StatusPageMonitorGroupByOutputType = {
   monitorId: string
   sortOrder: number
   displayName: string | null
+  groupName: string | null
   _count: StatusPageMonitorCountAggregateOutputType | null
   _avg: StatusPageMonitorAvgAggregateOutputType | null
   _sum: StatusPageMonitorSumAggregateOutputType | null
@@ -216,6 +223,7 @@ export type StatusPageMonitorWhereInput = {
   monitorId?: Prisma.StringFilter<"StatusPageMonitor"> | string
   sortOrder?: Prisma.IntFilter<"StatusPageMonitor"> | number
   displayName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
+  groupName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
   statusPage?: Prisma.XOR<Prisma.StatusPageScalarRelationFilter, Prisma.StatusPageWhereInput>
   monitor?: Prisma.XOR<Prisma.MonitorScalarRelationFilter, Prisma.MonitorWhereInput>
 }
@@ -226,6 +234,7 @@ export type StatusPageMonitorOrderByWithRelationInput = {
   monitorId?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupName?: Prisma.SortOrderInput | Prisma.SortOrder
   statusPage?: Prisma.StatusPageOrderByWithRelationInput
   monitor?: Prisma.MonitorOrderByWithRelationInput
 }
@@ -240,6 +249,7 @@ export type StatusPageMonitorWhereUniqueInput = Prisma.AtLeast<{
   monitorId?: Prisma.StringFilter<"StatusPageMonitor"> | string
   sortOrder?: Prisma.IntFilter<"StatusPageMonitor"> | number
   displayName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
+  groupName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
   statusPage?: Prisma.XOR<Prisma.StatusPageScalarRelationFilter, Prisma.StatusPageWhereInput>
   monitor?: Prisma.XOR<Prisma.MonitorScalarRelationFilter, Prisma.MonitorWhereInput>
 }, "id" | "statusPageId_monitorId">
@@ -250,6 +260,7 @@ export type StatusPageMonitorOrderByWithAggregationInput = {
   monitorId?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupName?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StatusPageMonitorCountOrderByAggregateInput
   _avg?: Prisma.StatusPageMonitorAvgOrderByAggregateInput
   _max?: Prisma.StatusPageMonitorMaxOrderByAggregateInput
@@ -266,12 +277,14 @@ export type StatusPageMonitorScalarWhereWithAggregatesInput = {
   monitorId?: Prisma.StringWithAggregatesFilter<"StatusPageMonitor"> | string
   sortOrder?: Prisma.IntWithAggregatesFilter<"StatusPageMonitor"> | number
   displayName?: Prisma.StringNullableWithAggregatesFilter<"StatusPageMonitor"> | string | null
+  groupName?: Prisma.StringNullableWithAggregatesFilter<"StatusPageMonitor"> | string | null
 }
 
 export type StatusPageMonitorCreateInput = {
   id?: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
   statusPage: Prisma.StatusPageCreateNestedOneWithoutMonitorsInput
   monitor: Prisma.MonitorCreateNestedOneWithoutStatusPageMonitorsInput
 }
@@ -282,12 +295,14 @@ export type StatusPageMonitorUncheckedCreateInput = {
   monitorId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   statusPage?: Prisma.StatusPageUpdateOneRequiredWithoutMonitorsNestedInput
   monitor?: Prisma.MonitorUpdateOneRequiredWithoutStatusPageMonitorsNestedInput
 }
@@ -298,6 +313,7 @@ export type StatusPageMonitorUncheckedUpdateInput = {
   monitorId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorCreateManyInput = {
@@ -306,12 +322,14 @@ export type StatusPageMonitorCreateManyInput = {
   monitorId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorUncheckedUpdateManyInput = {
@@ -320,6 +338,7 @@ export type StatusPageMonitorUncheckedUpdateManyInput = {
   monitorId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorListRelationFilter = {
@@ -343,6 +362,7 @@ export type StatusPageMonitorCountOrderByAggregateInput = {
   monitorId?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  groupName?: Prisma.SortOrder
 }
 
 export type StatusPageMonitorAvgOrderByAggregateInput = {
@@ -355,6 +375,7 @@ export type StatusPageMonitorMaxOrderByAggregateInput = {
   monitorId?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  groupName?: Prisma.SortOrder
 }
 
 export type StatusPageMonitorMinOrderByAggregateInput = {
@@ -363,6 +384,7 @@ export type StatusPageMonitorMinOrderByAggregateInput = {
   monitorId?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  groupName?: Prisma.SortOrder
 }
 
 export type StatusPageMonitorSumOrderByAggregateInput = {
@@ -457,6 +479,7 @@ export type StatusPageMonitorCreateWithoutMonitorInput = {
   id?: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
   statusPage: Prisma.StatusPageCreateNestedOneWithoutMonitorsInput
 }
 
@@ -465,6 +488,7 @@ export type StatusPageMonitorUncheckedCreateWithoutMonitorInput = {
   statusPageId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorCreateOrConnectWithoutMonitorInput = {
@@ -502,12 +526,14 @@ export type StatusPageMonitorScalarWhereInput = {
   monitorId?: Prisma.StringFilter<"StatusPageMonitor"> | string
   sortOrder?: Prisma.IntFilter<"StatusPageMonitor"> | number
   displayName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
+  groupName?: Prisma.StringNullableFilter<"StatusPageMonitor"> | string | null
 }
 
 export type StatusPageMonitorCreateWithoutStatusPageInput = {
   id?: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
   monitor: Prisma.MonitorCreateNestedOneWithoutStatusPageMonitorsInput
 }
 
@@ -516,6 +542,7 @@ export type StatusPageMonitorUncheckedCreateWithoutStatusPageInput = {
   monitorId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorCreateOrConnectWithoutStatusPageInput = {
@@ -549,12 +576,14 @@ export type StatusPageMonitorCreateManyMonitorInput = {
   statusPageId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorUpdateWithoutMonitorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   statusPage?: Prisma.StatusPageUpdateOneRequiredWithoutMonitorsNestedInput
 }
 
@@ -563,6 +592,7 @@ export type StatusPageMonitorUncheckedUpdateWithoutMonitorInput = {
   statusPageId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorUncheckedUpdateManyWithoutMonitorInput = {
@@ -570,6 +600,7 @@ export type StatusPageMonitorUncheckedUpdateManyWithoutMonitorInput = {
   statusPageId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorCreateManyStatusPageInput = {
@@ -577,12 +608,14 @@ export type StatusPageMonitorCreateManyStatusPageInput = {
   monitorId: string
   sortOrder?: number
   displayName?: string | null
+  groupName?: string | null
 }
 
 export type StatusPageMonitorUpdateWithoutStatusPageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   monitor?: Prisma.MonitorUpdateOneRequiredWithoutStatusPageMonitorsNestedInput
 }
 
@@ -591,6 +624,7 @@ export type StatusPageMonitorUncheckedUpdateWithoutStatusPageInput = {
   monitorId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StatusPageMonitorUncheckedUpdateManyWithoutStatusPageInput = {
@@ -598,6 +632,7 @@ export type StatusPageMonitorUncheckedUpdateManyWithoutStatusPageInput = {
   monitorId?: Prisma.StringFieldUpdateOperationsInput | string
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -608,6 +643,7 @@ export type StatusPageMonitorSelect<ExtArgs extends runtime.Types.Extensions.Int
   monitorId?: boolean
   sortOrder?: boolean
   displayName?: boolean
+  groupName?: boolean
   statusPage?: boolean | Prisma.StatusPageDefaultArgs<ExtArgs>
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusPageMonitor"]>
@@ -618,6 +654,7 @@ export type StatusPageMonitorSelectCreateManyAndReturn<ExtArgs extends runtime.T
   monitorId?: boolean
   sortOrder?: boolean
   displayName?: boolean
+  groupName?: boolean
   statusPage?: boolean | Prisma.StatusPageDefaultArgs<ExtArgs>
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusPageMonitor"]>
@@ -628,6 +665,7 @@ export type StatusPageMonitorSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   monitorId?: boolean
   sortOrder?: boolean
   displayName?: boolean
+  groupName?: boolean
   statusPage?: boolean | Prisma.StatusPageDefaultArgs<ExtArgs>
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusPageMonitor"]>
@@ -638,9 +676,10 @@ export type StatusPageMonitorSelectScalar = {
   monitorId?: boolean
   sortOrder?: boolean
   displayName?: boolean
+  groupName?: boolean
 }
 
-export type StatusPageMonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "statusPageId" | "monitorId" | "sortOrder" | "displayName", ExtArgs["result"]["statusPageMonitor"]>
+export type StatusPageMonitorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "statusPageId" | "monitorId" | "sortOrder" | "displayName" | "groupName", ExtArgs["result"]["statusPageMonitor"]>
 export type StatusPageMonitorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   statusPage?: boolean | Prisma.StatusPageDefaultArgs<ExtArgs>
   monitor?: boolean | Prisma.MonitorDefaultArgs<ExtArgs>
@@ -666,6 +705,7 @@ export type $StatusPageMonitorPayload<ExtArgs extends runtime.Types.Extensions.I
     monitorId: string
     sortOrder: number
     displayName: string | null
+    groupName: string | null
   }, ExtArgs["result"]["statusPageMonitor"]>
   composites: {}
 }
@@ -1096,6 +1136,7 @@ export interface StatusPageMonitorFieldRefs {
   readonly monitorId: Prisma.FieldRef<"StatusPageMonitor", 'String'>
   readonly sortOrder: Prisma.FieldRef<"StatusPageMonitor", 'Int'>
   readonly displayName: Prisma.FieldRef<"StatusPageMonitor", 'String'>
+  readonly groupName: Prisma.FieldRef<"StatusPageMonitor", 'String'>
 }
     
 

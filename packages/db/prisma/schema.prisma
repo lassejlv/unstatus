@@ -248,6 +248,7 @@ model StatusPage {
   headerText         String?
   footerText         String?
   customCss          String?
+  customJs           String?
   showResponseTimes  Boolean  @default(true)
   showDependencies   Boolean  @default(false)
 
@@ -285,6 +286,7 @@ model StatusPageMonitor {
   monitor      Monitor    @relation(fields: [monitorId], references: [id], onDelete: Cascade)
   sortOrder    Int        @default(0)
   displayName  String?
+  groupName    String?
 
   @@unique([statusPageId, monitorId])
   @@index([statusPageId])

@@ -37,6 +37,7 @@ export type StatusPageMinAggregateOutputType = {
   headerText: string | null
   footerText: string | null
   customCss: string | null
+  customJs: string | null
   showResponseTimes: boolean | null
   showDependencies: boolean | null
   createdAt: Date | null
@@ -56,6 +57,7 @@ export type StatusPageMaxAggregateOutputType = {
   headerText: string | null
   footerText: string | null
   customCss: string | null
+  customJs: string | null
   showResponseTimes: boolean | null
   showDependencies: boolean | null
   createdAt: Date | null
@@ -75,6 +77,7 @@ export type StatusPageCountAggregateOutputType = {
   headerText: number
   footerText: number
   customCss: number
+  customJs: number
   showResponseTimes: number
   showDependencies: number
   createdAt: number
@@ -96,6 +99,7 @@ export type StatusPageMinAggregateInputType = {
   headerText?: true
   footerText?: true
   customCss?: true
+  customJs?: true
   showResponseTimes?: true
   showDependencies?: true
   createdAt?: true
@@ -115,6 +119,7 @@ export type StatusPageMaxAggregateInputType = {
   headerText?: true
   footerText?: true
   customCss?: true
+  customJs?: true
   showResponseTimes?: true
   showDependencies?: true
   createdAt?: true
@@ -134,6 +139,7 @@ export type StatusPageCountAggregateInputType = {
   headerText?: true
   footerText?: true
   customCss?: true
+  customJs?: true
   showResponseTimes?: true
   showDependencies?: true
   createdAt?: true
@@ -226,6 +232,7 @@ export type StatusPageGroupByOutputType = {
   headerText: string | null
   footerText: string | null
   customCss: string | null
+  customJs: string | null
   showResponseTimes: boolean
   showDependencies: boolean
   createdAt: Date
@@ -266,6 +273,7 @@ export type StatusPageWhereInput = {
   headerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   footerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   customCss?: Prisma.StringNullableFilter<"StatusPage"> | string | null
+  customJs?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   showResponseTimes?: Prisma.BoolFilter<"StatusPage"> | boolean
   showDependencies?: Prisma.BoolFilter<"StatusPage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
@@ -288,6 +296,7 @@ export type StatusPageOrderByWithRelationInput = {
   headerText?: Prisma.SortOrderInput | Prisma.SortOrder
   footerText?: Prisma.SortOrderInput | Prisma.SortOrder
   customCss?: Prisma.SortOrderInput | Prisma.SortOrder
+  customJs?: Prisma.SortOrderInput | Prisma.SortOrder
   showResponseTimes?: Prisma.SortOrder
   showDependencies?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -313,6 +322,7 @@ export type StatusPageWhereUniqueInput = Prisma.AtLeast<{
   headerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   footerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   customCss?: Prisma.StringNullableFilter<"StatusPage"> | string | null
+  customJs?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   showResponseTimes?: Prisma.BoolFilter<"StatusPage"> | boolean
   showDependencies?: Prisma.BoolFilter<"StatusPage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
@@ -335,6 +345,7 @@ export type StatusPageOrderByWithAggregationInput = {
   headerText?: Prisma.SortOrderInput | Prisma.SortOrder
   footerText?: Prisma.SortOrderInput | Prisma.SortOrder
   customCss?: Prisma.SortOrderInput | Prisma.SortOrder
+  customJs?: Prisma.SortOrderInput | Prisma.SortOrder
   showResponseTimes?: Prisma.SortOrder
   showDependencies?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -360,6 +371,7 @@ export type StatusPageScalarWhereWithAggregatesInput = {
   headerText?: Prisma.StringNullableWithAggregatesFilter<"StatusPage"> | string | null
   footerText?: Prisma.StringNullableWithAggregatesFilter<"StatusPage"> | string | null
   customCss?: Prisma.StringNullableWithAggregatesFilter<"StatusPage"> | string | null
+  customJs?: Prisma.StringNullableWithAggregatesFilter<"StatusPage"> | string | null
   showResponseTimes?: Prisma.BoolWithAggregatesFilter<"StatusPage"> | boolean
   showDependencies?: Prisma.BoolWithAggregatesFilter<"StatusPage"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StatusPage"> | Date | string
@@ -378,6 +390,7 @@ export type StatusPageCreateInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -400,6 +413,7 @@ export type StatusPageUncheckedCreateInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -420,6 +434,7 @@ export type StatusPageUpdateInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -442,6 +457,7 @@ export type StatusPageUncheckedUpdateInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,6 +479,7 @@ export type StatusPageCreateManyInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -481,6 +498,7 @@ export type StatusPageUpdateManyMutationInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -500,6 +518,7 @@ export type StatusPageUncheckedUpdateManyInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -529,6 +548,7 @@ export type StatusPageCountOrderByAggregateInput = {
   headerText?: Prisma.SortOrder
   footerText?: Prisma.SortOrder
   customCss?: Prisma.SortOrder
+  customJs?: Prisma.SortOrder
   showResponseTimes?: Prisma.SortOrder
   showDependencies?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -548,6 +568,7 @@ export type StatusPageMaxOrderByAggregateInput = {
   headerText?: Prisma.SortOrder
   footerText?: Prisma.SortOrder
   customCss?: Prisma.SortOrder
+  customJs?: Prisma.SortOrder
   showResponseTimes?: Prisma.SortOrder
   showDependencies?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -567,6 +588,7 @@ export type StatusPageMinOrderByAggregateInput = {
   headerText?: Prisma.SortOrder
   footerText?: Prisma.SortOrder
   customCss?: Prisma.SortOrder
+  customJs?: Prisma.SortOrder
   showResponseTimes?: Prisma.SortOrder
   showDependencies?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -660,6 +682,7 @@ export type StatusPageCreateWithoutOrganizationInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -680,6 +703,7 @@ export type StatusPageUncheckedCreateWithoutOrganizationInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -730,6 +754,7 @@ export type StatusPageScalarWhereInput = {
   headerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   footerText?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   customCss?: Prisma.StringNullableFilter<"StatusPage"> | string | null
+  customJs?: Prisma.StringNullableFilter<"StatusPage"> | string | null
   showResponseTimes?: Prisma.BoolFilter<"StatusPage"> | boolean
   showDependencies?: Prisma.BoolFilter<"StatusPage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"StatusPage"> | Date | string
@@ -748,6 +773,7 @@ export type StatusPageCreateWithoutSubscribersInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -769,6 +795,7 @@ export type StatusPageUncheckedCreateWithoutSubscribersInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -804,6 +831,7 @@ export type StatusPageUpdateWithoutSubscribersInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -825,6 +853,7 @@ export type StatusPageUncheckedUpdateWithoutSubscribersInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -844,6 +873,7 @@ export type StatusPageCreateWithoutMonitorsInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -865,6 +895,7 @@ export type StatusPageUncheckedCreateWithoutMonitorsInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -900,6 +931,7 @@ export type StatusPageUpdateWithoutMonitorsInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -921,6 +953,7 @@ export type StatusPageUncheckedUpdateWithoutMonitorsInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,6 +973,7 @@ export type StatusPageCreateManyOrganizationInput = {
   headerText?: string | null
   footerText?: string | null
   customCss?: string | null
+  customJs?: string | null
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: Date | string
@@ -958,6 +992,7 @@ export type StatusPageUpdateWithoutOrganizationInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -978,6 +1013,7 @@ export type StatusPageUncheckedUpdateWithoutOrganizationInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -998,6 +1034,7 @@ export type StatusPageUncheckedUpdateManyWithoutOrganizationInput = {
   headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customCss?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customJs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   showResponseTimes?: Prisma.BoolFieldUpdateOperationsInput | boolean
   showDependencies?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1057,6 +1094,7 @@ export type StatusPageSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   headerText?: boolean
   footerText?: boolean
   customCss?: boolean
+  customJs?: boolean
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: boolean
@@ -1080,6 +1118,7 @@ export type StatusPageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   headerText?: boolean
   footerText?: boolean
   customCss?: boolean
+  customJs?: boolean
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: boolean
@@ -1100,6 +1139,7 @@ export type StatusPageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   headerText?: boolean
   footerText?: boolean
   customCss?: boolean
+  customJs?: boolean
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: boolean
@@ -1120,13 +1160,14 @@ export type StatusPageSelectScalar = {
   headerText?: boolean
   footerText?: boolean
   customCss?: boolean
+  customJs?: boolean
   showResponseTimes?: boolean
   showDependencies?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type StatusPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "slug" | "customDomain" | "isPublic" | "logoUrl" | "faviconUrl" | "brandColor" | "headerText" | "footerText" | "customCss" | "showResponseTimes" | "showDependencies" | "createdAt" | "updatedAt", ExtArgs["result"]["statusPage"]>
+export type StatusPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "slug" | "customDomain" | "isPublic" | "logoUrl" | "faviconUrl" | "brandColor" | "headerText" | "footerText" | "customCss" | "customJs" | "showResponseTimes" | "showDependencies" | "createdAt" | "updatedAt", ExtArgs["result"]["statusPage"]>
 export type StatusPageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   monitors?: boolean | Prisma.StatusPage$monitorsArgs<ExtArgs>
@@ -1160,6 +1201,7 @@ export type $StatusPagePayload<ExtArgs extends runtime.Types.Extensions.Internal
     headerText: string | null
     footerText: string | null
     customCss: string | null
+    customJs: string | null
     showResponseTimes: boolean
     showDependencies: boolean
     createdAt: Date
@@ -1602,6 +1644,7 @@ export interface StatusPageFieldRefs {
   readonly headerText: Prisma.FieldRef<"StatusPage", 'String'>
   readonly footerText: Prisma.FieldRef<"StatusPage", 'String'>
   readonly customCss: Prisma.FieldRef<"StatusPage", 'String'>
+  readonly customJs: Prisma.FieldRef<"StatusPage", 'String'>
   readonly showResponseTimes: Prisma.FieldRef<"StatusPage", 'Boolean'>
   readonly showDependencies: Prisma.FieldRef<"StatusPage", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"StatusPage", 'DateTime'>

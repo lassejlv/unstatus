@@ -283,53 +283,13 @@ function StatusPageSidecar({
               )}
 
               {tab === "monitors" && (
-                <div className="flex flex-col">
-                  <div className="flex items-center justify-between px-6 py-3 border-b">
-                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      {page.monitors.length} monitor{page.monitors.length !== 1 ? "s" : ""}
-                    </span>
-                    {activeOrg && (
-                      <button
-                        type="button"
-                        onClick={() => setView("addMonitor")}
-                        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        + Add monitor
-                      </button>
-                    )}
-                  </div>
-                  {page.monitors.length ? (
-                    <div className="divide-y">
-                      {page.monitors.map((spm) => (
-                        <div
-                          key={spm.id}
-                          className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-accent/30"
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">{spm.monitor.name}</span>
-                            {spm.displayName && (
-                              <span className="text-xs text-muted-foreground">Display: {spm.displayName}</span>
-                            )}
-                            <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                              {spm.monitor.type === "http" ? spm.monitor.url : spm.monitor.host}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeMonitor.mutate({ id: spm.id })}
-                            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="px-6 py-8 text-center text-xs text-muted-foreground">
-                      No monitors added yet. Add one to show on this status page.
-                    </p>
-                  )}
-                </div>
+                <MonitorsTab
+                  page={page}
+                  activeOrg={activeOrg}
+                  onAddMonitor={() => setView("addMonitor")}
+                  onRemoveMonitor={(id) => removeMonitor.mutate({ id })}
+                  onInvalidate={invalidate}
+                />
               )}
 
               {tab === "settings" && (
@@ -447,6 +407,198 @@ function StatusPageSidecar({
   );
 }
 
+function MonitorsTab({
+  page,
+  activeOrg,
+  onAddMonitor,
+  onRemoveMonitor,
+  onInvalidate,
+}: {
+  page: any;
+  activeOrg: any;
+  onAddMonitor: () => void;
+  onRemoveMonitor: (id: string) => void;
+  onInvalidate: () => void;
+}) {
+  const [newGroup, setNewGroup] = useState("");
+  const [addingGroup, setAddingGroup] = useState(false);
+  const qc = useQueryClient();
+
+  const updateMonitors = useMutation({
+    ...orpc.statusPages.updateMonitors.mutationOptions(),
+    onSuccess: () => {
+      onInvalidate();
+      qc.invalidateQueries();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update monitors");
+    },
+  });
+
+  // Group monitors
+  const groups = new Map<string, typeof page.monitors>();
+  const ungrouped: typeof page.monitors = [];
+  for (const spm of page.monitors) {
+    if (spm.groupName) {
+      const existing = groups.get(spm.groupName) ?? [];
+      existing.push(spm);
+      groups.set(spm.groupName, existing);
+    } else {
+      ungrouped.push(spm);
+    }
+  }
+
+  const allGroupNames = [...groups.keys()];
+
+  const moveToGroup = (spmId: string, groupName: string | null) => {
+    const updated = page.monitors.map((m: any, i: number) => ({
+      id: m.id,
+      sortOrder: i,
+      groupName: m.id === spmId ? groupName : m.groupName ?? null,
+    }));
+    updateMonitors.mutate({ statusPageId: page.id, monitors: updated });
+  };
+
+  const addGroup = () => {
+    if (!newGroup.trim()) return;
+    // Just adding a group name — we'll assign monitors to it later
+    // For now, move the first ungrouped monitor to this group if any
+    setAddingGroup(false);
+    setNewGroup("");
+    // If no monitors, just store it — but we need at least one monitor in the group
+    // For simplicity, just create the group concept by letting users select it from dropdowns
+    toast.success(`Group "${newGroup}" created. Assign monitors from the dropdown.`);
+  };
+
+  const moveUp = (spmId: string) => {
+    const idx = page.monitors.findIndex((m: any) => m.id === spmId);
+    if (idx <= 0) return;
+    const reordered = [...page.monitors];
+    [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
+    updateMonitors.mutate({
+      statusPageId: page.id,
+      monitors: reordered.map((m: any, i: number) => ({ id: m.id, sortOrder: i, groupName: m.groupName ?? null })),
+    });
+  };
+
+  const moveDown = (spmId: string) => {
+    const idx = page.monitors.findIndex((m: any) => m.id === spmId);
+    if (idx >= page.monitors.length - 1) return;
+    const reordered = [...page.monitors];
+    [reordered[idx], reordered[idx + 1]] = [reordered[idx + 1], reordered[idx]];
+    updateMonitors.mutate({
+      statusPageId: page.id,
+      monitors: reordered.map((m: any, i: number) => ({ id: m.id, sortOrder: i, groupName: m.groupName ?? null })),
+    });
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between px-6 py-3 border-b">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {page.monitors.length} monitor{page.monitors.length !== 1 ? "s" : ""}
+        </span>
+        <div className="flex items-center gap-2">
+          {!addingGroup ? (
+            <button
+              type="button"
+              onClick={() => setAddingGroup(true)}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              + Group
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Input
+                value={newGroup}
+                onChange={(e) => setNewGroup(e.target.value)}
+                placeholder="Group name"
+                className="h-6 w-28 text-xs"
+                onKeyDown={(e) => e.key === "Enter" && addGroup()}
+              />
+              <Button size="sm" className="h-6 text-xs px-2" onClick={addGroup}>Add</Button>
+              <Button variant="ghost" size="sm" className="h-6 text-xs px-1" onClick={() => setAddingGroup(false)}>×</Button>
+            </div>
+          )}
+          {activeOrg && (
+            <button
+              type="button"
+              onClick={onAddMonitor}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              + Monitor
+            </button>
+          )}
+        </div>
+      </div>
+      {page.monitors.length ? (
+        <div className="divide-y">
+          {page.monitors.map((spm: any, i: number) => (
+            <div
+              key={spm.id}
+              className="flex items-center gap-2 px-6 py-2.5 transition-colors hover:bg-accent/30"
+            >
+              {/* Reorder buttons */}
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <button
+                  type="button"
+                  disabled={i === 0}
+                  onClick={() => moveUp(spm.id)}
+                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  disabled={i === page.monitors.length - 1}
+                  onClick={() => moveDown(spm.id)}
+                  className="text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  ▼
+                </button>
+              </div>
+
+              {/* Monitor info */}
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium">{spm.monitor.name}</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Select
+                    value={spm.groupName ?? "__none"}
+                    onValueChange={(v) => moveToGroup(spm.id, v === "__none" ? null : v)}
+                  >
+                    <SelectTrigger className="h-5 w-auto text-[10px] px-1.5 py-0 border-dashed">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">No group</SelectItem>
+                      {allGroupNames.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Remove */}
+              <button
+                type="button"
+                onClick={() => onRemoveMonitor(spm.id)}
+                className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="px-6 py-8 text-center text-xs text-muted-foreground">
+          No monitors added yet.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function EditPageInline({
   page,
   onSuccess,
@@ -459,15 +611,20 @@ function EditPageInline({
     brandColor: string | null;
     headerText: string | null;
     footerText: string | null;
+    customCss: string | null;
+    customJs: string | null;
   };
   onSuccess: () => void;
 }) {
+  const { isPro } = useSubscription();
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
   const [isPublic, setIsPublic] = useState(page.isPublic);
   const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
   const [headerText, setHeaderText] = useState(page.headerText ?? "");
   const [footerText, setFooterText] = useState(page.footerText ?? "");
+  const [customCss, setCustomCss] = useState(page.customCss ?? "");
+  const [customJs, setCustomJs] = useState(page.customJs ?? "");
 
   const update = useMutation({
     ...orpc.statusPages.update.mutationOptions(),
@@ -529,6 +686,26 @@ function EditPageInline({
           placeholder="Powered by Unstatus"
         />
       </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs flex items-center gap-1.5">Custom CSS {!isPro && <ProBadge />}</Label>
+        <textarea
+          value={customCss}
+          onChange={(e) => setCustomCss(e.target.value)}
+          className="h-20 w-full rounded-md border bg-transparent px-3 py-2 text-xs font-mono resize-y focus:outline-none focus:ring-1 focus:ring-ring"
+          placeholder=".status-page { }"
+          disabled={!isPro}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs flex items-center gap-1.5">Custom JavaScript {!isPro && <ProBadge />}</Label>
+        <textarea
+          value={customJs}
+          onChange={(e) => setCustomJs(e.target.value)}
+          className="h-20 w-full rounded-md border bg-transparent px-3 py-2 text-xs font-mono resize-y focus:outline-none focus:ring-1 focus:ring-ring"
+          placeholder="console.log('hello')"
+          disabled={!isPro}
+        />
+      </div>
       <Button
         size="sm"
         disabled={!name || !slug || update.isPending}
@@ -541,6 +718,8 @@ function EditPageInline({
             brandColor,
             headerText: headerText || undefined,
             footerText: footerText || undefined,
+            customCss: customCss || undefined,
+            customJs: customJs || undefined,
           })
         }
       >

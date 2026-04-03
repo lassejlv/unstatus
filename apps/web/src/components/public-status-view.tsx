@@ -1,4 +1,4 @@
-import { type ReactNode, Fragment, useState } from "react";
+import { type ReactNode, Fragment, useState, useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +40,7 @@ export type PublicStatusMonitorDependency = {
 export type PublicStatusMonitorData = {
   id: string;
   name: string;
+  groupName?: string | null;
   currentStatus: string;
   uptimePercent: number;
   avgLatency: number;
@@ -67,6 +68,8 @@ export type PublicStatusPageData = {
   footerText: string | null;
   showResponseTimes?: boolean;
   showDependencies?: boolean;
+  customCss?: string | null;
+  customJs?: string | null;
   overallStatus: string;
   monitors: PublicStatusMonitorData[];
   incidents: PublicStatusIncidentSummary[];
@@ -121,6 +124,15 @@ export function PublicStatusPageView({
   const accent = data.brandColor || undefined;
   const [expandedMonitor, setExpandedMonitor] = useState<string | null>(null);
 
+  // Inject custom JS
+  useEffect(() => {
+    if (!data.customJs) return;
+    const script = document.createElement("script");
+    script.textContent = data.customJs;
+    document.body.appendChild(script);
+    return () => { script.remove(); };
+  }, [data.customJs]);
+
   return (
     <TooltipProvider>
       {/* Brand accent bar */}
@@ -129,6 +141,11 @@ export function PublicStatusPageView({
           className="h-1 w-full"
           style={{ backgroundColor: accent }}
         />
+      )}
+
+      {/* Custom CSS injection */}
+      {data.customCss && (
+        <style dangerouslySetInnerHTML={{ __html: data.customCss }} />
       )}
 
       <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
@@ -165,26 +182,66 @@ export function PublicStatusPageView({
           <OverallBanner status={data.overallStatus} accent={accent} />
         </div>
 
-        {/* Monitors */}
-        <div className="mt-6 flex flex-col gap-3">
-          {data.monitors.map((monitor, i) => (
-            <div
-              key={monitor.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${100 + i * 40}ms` }}
-            >
-              <MonitorCard
-                monitor={monitor}
-                showResponseTimes={data.showResponseTimes !== false}
-                expanded={expandedMonitor === monitor.id}
-                onToggle={() =>
-                  setExpandedMonitor(
-                    expandedMonitor === monitor.id ? null : monitor.id,
-                  )
-                }
-              />
-            </div>
-          ))}
+        {/* Monitors — grouped */}
+        <div className="mt-6 flex flex-col gap-6">
+          {(() => {
+            const groups = new Map<string, PublicStatusMonitorData[]>();
+            const ungrouped: PublicStatusMonitorData[] = [];
+            for (const m of data.monitors) {
+              if (m.groupName) {
+                const existing = groups.get(m.groupName) ?? [];
+                existing.push(m);
+                groups.set(m.groupName, existing);
+              } else {
+                ungrouped.push(m);
+              }
+            }
+            const sections: { name: string | null; monitors: PublicStatusMonitorData[] }[] = [];
+            for (const [name, monitors] of groups) {
+              sections.push({ name, monitors });
+            }
+            if (ungrouped.length > 0) {
+              sections.push({ name: null, monitors: ungrouped });
+            }
+            // If no groups at all, just render flat
+            if (sections.length === 1 && sections[0]?.name === null) {
+              return sections[0]!.monitors.map((monitor, i) => (
+                <div key={monitor.id} className="animate-fade-in" style={{ animationDelay: `${100 + i * 40}ms` }}>
+                  <MonitorCard
+                    monitor={monitor}
+                    showResponseTimes={data.showResponseTimes !== false}
+                    expanded={expandedMonitor === monitor.id}
+                    onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
+                  />
+                </div>
+              ));
+            }
+            let idx = 0;
+            return sections.map((section) => (
+              <div key={section.name ?? "__ungrouped"}>
+                {section.name && (
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {section.name}
+                  </h3>
+                )}
+                <div className="flex flex-col gap-3">
+                  {section.monitors.map((monitor) => {
+                    const i = idx++;
+                    return (
+                      <div key={monitor.id} className="animate-fade-in" style={{ animationDelay: `${100 + i * 40}ms` }}>
+                        <MonitorCard
+                          monitor={monitor}
+                          showResponseTimes={data.showResponseTimes !== false}
+                          expanded={expandedMonitor === monitor.id}
+                          onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
 
         {/* Incidents */}
