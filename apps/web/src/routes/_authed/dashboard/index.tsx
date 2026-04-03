@@ -3,6 +3,7 @@ import { skipToken, useQuery } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { type ReactNode, useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
@@ -32,12 +33,19 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
 });
 
+const TIME_RANGES = [
+  { label: "24h", hours: 24 },
+  { label: "7d", hours: 168 },
+  { label: "30d", hours: 720 },
+] as const;
+
 function DashboardIndex() {
   const { activeOrg } = useOrg();
   const orgId = activeOrg?.id;
+  const [hours, setHours] = useState(24);
 
   const overviewQuery = orpc.monitors.overview.queryOptions({
-    input: orgId ? { organizationId: orgId } : skipToken,
+    input: orgId ? { organizationId: orgId, hours } : skipToken,
   });
   const pagesQuery = orpc.statusPages.list.queryOptions({
     input: orgId ? { organizationId: orgId } : skipToken,
@@ -123,7 +131,7 @@ function DashboardIndex() {
       {/* Response time chart */}
       {(overview?.responseTimeSeries?.length ?? 0) > 0 && (
         <motion.div {...fadeUp(0.1)}>
-          <ResponseTimeChart data={overview!.responseTimeSeries} />
+          <ResponseTimeChart data={overview!.responseTimeSeries} hours={hours} onHoursChange={setHours} />
         </motion.div>
       )}
 
@@ -322,8 +330,12 @@ const chartConfig = {
 
 function ResponseTimeChart({
   data,
+  hours,
+  onHoursChange,
 }: {
   data: { hour: Date | string; avgLatency: number; checkCount: number }[];
+  hours: number;
+  onHoursChange: (h: number) => void;
 }) {
   if (data.length === 0) return null;
 
@@ -334,12 +346,14 @@ function ResponseTimeChart({
     hour: new Date(d.hour).getTime(),
   }));
 
+  const rangeLabel = TIME_RANGES.find((r) => r.hours === hours)?.label ?? `${hours}h`;
+
   return (
     <div className="rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-sm font-medium">Response Time</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Average latency over the last 24 hours</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Average latency over the last {rangeLabel}</p>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span>
@@ -354,6 +368,19 @@ function ResponseTimeChart({
               {Math.round(maxLatency)}ms
             </span>
           </span>
+          <div className="flex gap-1 ml-2">
+            {TIME_RANGES.map((r) => (
+              <Button
+                key={r.hours}
+                variant={hours === r.hours ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                onClick={() => onHoursChange(r.hours)}
+              >
+                {r.label}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
       <ChartContainer config={chartConfig} className="aspect-[4/1] w-full">

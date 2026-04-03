@@ -7,9 +7,10 @@ import {
 } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -20,7 +21,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -60,6 +60,22 @@ function MonitorsPage() {
   });
   const { data: monitors, isLoading } = useQuery(monitorsQuery);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "up" | "down" | "paused">("all");
+
+  const filteredMonitors = useMemo(() => {
+    if (!monitors) return [];
+    return monitors.filter((m) => {
+      if (search && !m.name.toLowerCase().includes(search.toLowerCase()) &&
+          !(m.url ?? m.host ?? "").toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
+      if (statusFilter === "paused" && m.active) return false;
+      if (statusFilter === "up" && (m as any).lastStatus !== "up") return false;
+      if (statusFilter === "down" && (m as any).lastStatus !== "down") return false;
+      return true;
+    });
+  }, [monitors, search, statusFilter]);
 
   if (isLoading) {
     return (
@@ -77,9 +93,32 @@ function MonitorsPage() {
           <h1 className="text-sm font-medium">Monitors</h1>
           {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} monitorCount={monitors?.length ?? 0} />}
         </div>
-        {monitors?.length ? (
+        {(monitors?.length ?? 0) > 0 && (
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search monitors..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs h-8 text-xs"
+            />
+            <div className="flex gap-1">
+              {(["all", "up", "down", "paused"] as const).map((s) => (
+                <Button
+                  key={s}
+                  variant={statusFilter === s ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs px-2.5"
+                  onClick={() => setStatusFilter(s)}
+                >
+                  {s === "all" ? "All" : s === "up" ? "Up" : s === "down" ? "Down" : "Paused"}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+        {filteredMonitors.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {monitors.map((m) => (
+            {filteredMonitors.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -98,16 +137,32 @@ function MonitorsPage() {
                   {m.type === "http" ? m.url : m.type === "ping" ? `ping ${m.host}` : `${m.host}:${m.port}`}
                 </span>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <span
+                    className={`size-1.5 shrink-0 rounded-full ${
+                      !m.active ? "bg-muted-foreground"
+                      : (m as any).lastStatus === "up" ? "bg-emerald-500"
+                      : (m as any).lastStatus === "down" ? "bg-red-500"
+                      : (m as any).lastStatus === "degraded" ? "bg-yellow-500"
+                      : "bg-muted-foreground"
+                    }`}
+                  />
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                     {m.type.toUpperCase()}
                   </Badge>
                   <span>
                     {((m.regions as string[]) ?? []).map((r) => r.toUpperCase()).join(", ") || "—"}
                   </span>
-                  <span className="ml-auto">{m.interval}s</span>
+                  <span className="ml-auto">
+                    {(m as any).lastLatency != null ? `${(m as any).lastLatency}ms · ` : ""}
+                    {m.interval}s
+                  </span>
                 </div>
               </button>
             ))}
+          </div>
+        ) : monitors?.length ? (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            No monitors match your search.
           </div>
         ) : (
           <Empty>

@@ -289,7 +289,7 @@ export const monitorsRouter = {
       });
     }),
 
-  overview: orgProcedure(z.object({ organizationId: z.string() })).handler(
+  overview: orgProcedure(z.object({ organizationId: z.string(), hours: z.number().min(1).max(720).default(24) })).handler(
     async ({ input }) => {
       const monitors = await prisma.monitor.findMany({
         where: { organizationId: input.organizationId },
@@ -301,7 +301,7 @@ export const monitorsRouter = {
         return { monitors: [], recentChecks: [], responseTimeSeries: [] };
       }
 
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const twentyFourHoursAgo = new Date(Date.now() - input.hours * 60 * 60 * 1000);
 
       let latestChecks: LatestMonitorStateRow[];
       let avgLatencies: AvgLatencyRow[];

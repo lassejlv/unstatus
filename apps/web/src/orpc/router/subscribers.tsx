@@ -73,6 +73,41 @@ export const subscribersRouter = {
     return { success: true };
   }),
 
+  resend: authedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ context, input }) => {
+      const subscriber = await prisma.statusPageSubscriber.findUniqueOrThrow({
+        where: { id: input.id },
+        include: {
+          statusPage: {
+            select: { organizationId: true, name: true, slug: true },
+          },
+        },
+      });
+
+      await verifyOrgRole(
+        context.session.user.id,
+        subscriber.statusPage.organizationId,
+        ORG_MANAGER_ROLES,
+      );
+
+      if (subscriber.verified) {
+        throw new ORPCError("BAD_REQUEST", { message: "Subscriber is already verified" });
+      }
+
+      const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
+      const verifyUrl = `${domain}/status/${subscriber.statusPage.slug}/verify?token=${subscriber.token}`;
+
+      await email.emails.send({
+        from: env.INBOUND_FROM,
+        to: subscriber.email,
+        subject: `Confirm your subscription to ${subscriber.statusPage.name} status updates`,
+        react: <SubscriptionVerifyEmail pageName={subscriber.statusPage.name} verifyUrl={verifyUrl} />,
+      });
+
+      return { success: true };
+    }),
+
   delete: authedProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ context, input }) => {

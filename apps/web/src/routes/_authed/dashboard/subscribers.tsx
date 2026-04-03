@@ -168,6 +168,16 @@ function SubscribersList({ orgId }: { orgId: string }) {
     },
   });
 
+  const resendMut = useMutation<{ success: boolean }, Error, { id: string }>({
+    mutationFn: ({ id }) => client.subscribers.resend({ id }),
+    onSuccess: () => {
+      toast.success("Verification email resent");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to resend");
+    },
+  });
+
   return (
     <Card>
       <CardHeader className="border-b">
@@ -196,16 +206,29 @@ function SubscribersList({ orgId }: { orgId: string }) {
                   {sub.statusPageName}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={() =>
-                  deleteMut.mutate({ id: sub.id })
-                }
-              >
-                Remove
-              </Button>
+              <div className="flex items-center gap-1">
+                {!sub.verified && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    disabled={resendMut.isPending}
+                    onClick={() => resendMut.mutate({ id: sub.id })}
+                  >
+                    Resend
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() =>
+                    deleteMut.mutate({ id: sub.id })
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
             </div>
           ))}
         </CardContent>
