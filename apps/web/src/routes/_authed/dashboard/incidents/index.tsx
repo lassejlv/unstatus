@@ -37,6 +37,14 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 import { X, AlertTriangle } from "lucide-react";
 
 const STATUSES = ["investigating", "identified", "monitoring", "resolved"] as const;
@@ -129,36 +137,49 @@ function IncidentsPage() {
           </div>
         )}
         {filteredIncidents.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredIncidents.map((i) => (
-              <button
-                key={i.id}
-                type="button"
-                onClick={() => setSelectedId(selectedId === i.id ? null : i.id)}
-                className={`flex flex-col gap-2.5 rounded-xl border bg-card shadow-sm p-3.5 text-left transition-colors hover:border-foreground/20 ${
-                  selectedId === i.id ? "border-foreground/30 bg-accent" : ""
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium truncate">{i.title}</span>
-                  <Badge
-                    variant={i.status === "resolved" ? "secondary" : "destructive"}
-                    className="shrink-0 ml-2"
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Monitor</TableHead>
+                  <TableHead>Severity</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Started</TableHead>
+                  <TableHead>Resolved</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredIncidents.map((i) => (
+                  <TableRow
+                    key={i.id}
+                    className={`cursor-pointer ${selectedId === i.id ? "bg-accent" : ""}`}
+                    onClick={() => setSelectedId(selectedId === i.id ? null : i.id)}
                   >
-                    {i.status}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                    {i.severity}
-                  </Badge>
-                  <span>{new Date(i.startedAt).toLocaleDateString()}</span>
-                  {i.resolvedAt && (
-                    <span className="ml-auto">Resolved</span>
-                  )}
-                </div>
-              </button>
-            ))}
+                    <TableCell className="font-medium">{i.title}</TableCell>
+                    <TableCell className="text-muted-foreground">{i.monitor?.name ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={i.severity === "critical" ? "destructive" : "outline"}
+                      >
+                        {i.severity}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={i.status === "resolved" ? "secondary" : "destructive"}>
+                        {i.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(i.startedAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {i.resolvedAt ? new Date(i.resolvedAt).toLocaleString() : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         ) : incidents?.length ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
