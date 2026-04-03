@@ -936,6 +936,7 @@ function CreateMonitorDialog({ organizationId, monitorCount }: { organizationId:
   const [url, setUrl] = useState("");
   const [host, setHost] = useState("");
   const [port, setPort] = useState("");
+  const [interval, setInterval_] = useState(isPro ? "60" : "600");
   const [regions, setRegions] = useState<string[]>(["eu"]);
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
   const [body, setBody] = useState("");
@@ -1051,6 +1052,23 @@ function CreateMonitorDialog({ organizationId, monitorCount }: { organizationId:
               <RulesEditor rules={rules} onChange={setRules} />
             </>
           )}
+          <div className="flex flex-col gap-1.5">
+            <Label>Check interval</Label>
+            <Select value={interval} onValueChange={setInterval_}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {isPro && <SelectItem value="10">10 seconds</SelectItem>}
+                {isPro && <SelectItem value="30">30 seconds</SelectItem>}
+                {isPro && <SelectItem value="60">1 minute</SelectItem>}
+                {isPro && <SelectItem value="300">5 minutes</SelectItem>}
+                <SelectItem value="600">10 minutes</SelectItem>
+                <SelectItem value="1800">30 minutes</SelectItem>
+                <SelectItem value="3600">1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-2">
             <Switch checked={autoIncidents} onCheckedChange={setAutoIncidents} disabled={!isPro} />
             <Label className="flex items-center gap-1.5">Auto-create incidents on downtime{!isPro && <ProBadge />}</Label>
@@ -1086,12 +1104,13 @@ function CreateMonitorDialog({ organizationId, monitorCount }: { organizationId:
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!name || create.isPending || (monitorCount >= 5 && !isPro)}
+            disabled={!name || create.isPending || (monitorCount >= 1 && !isPro)}
             onClick={() =>
               create.mutate({
                 organizationId,
                 name,
                 type,
+                interval: Number(interval),
                 regions,
                 autoIncidents,
                 ...(type === "http"
