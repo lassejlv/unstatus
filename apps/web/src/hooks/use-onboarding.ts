@@ -1,21 +1,23 @@
-import { useSyncExternalStore, useCallback } from "react";
+import { useCallback, useRef, useSyncExternalStore } from "react";
 
 type OnboardingState = { dismissed: boolean };
+
+const DEFAULT_STATE: OnboardingState = { dismissed: false };
 
 function getKey(orgId: string) {
   return `unstatus:onboarding:${orgId}`;
 }
 
-function getSnapshot(orgId: string): OnboardingState {
+function readState(orgId: string | undefined): OnboardingState {
+  if (!orgId) return DEFAULT_STATE;
   try {
     const raw = localStorage.getItem(getKey(orgId));
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.dismissed === "boolean") return parsed;
+    }
   } catch {}
-  return { dismissed: false };
-}
-
-function getServerSnapshot(): OnboardingState {
-  return { dismissed: false };
+  return DEFAULT_STATE;
 }
 
 export function useOnboarding({
@@ -29,6 +31,8 @@ export function useOnboarding({
   statusPageCount: number;
   notificationCount: number;
 }) {
+  const cachedState = useRef<OnboardingState>(DEFAULT_STATE);
+
   const subscribe = useCallback(
     (callback: () => void) => {
       const handler = (e: StorageEvent) => {
@@ -44,11 +48,17 @@ export function useOnboarding({
     [orgId],
   );
 
-  const state = useSyncExternalStore(
-    subscribe,
-    () => (orgId ? getSnapshot(orgId) : { dismissed: false }),
-    () => getServerSnapshot(),
-  );
+  const getSnapshot = useCallback(() => {
+    const next = readState(orgId);
+    // Return the same reference if nothing changed to avoid re-renders
+    if (next.dismissed === cachedState.current.dismissed) {
+      return cachedState.current;
+    }
+    cachedState.current = next;
+    return next;
+  }, [orgId]);
+
+  const state = useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_STATE);
 
   const steps = {
     monitor: monitorCount > 0,
