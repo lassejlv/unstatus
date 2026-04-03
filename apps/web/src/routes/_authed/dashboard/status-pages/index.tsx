@@ -37,7 +37,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { X, ChevronLeft, Pencil, ExternalLink, Trash2, Globe } from "lucide-react";
+import { X, ChevronLeft, ExternalLink, Trash2, Globe } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
 
@@ -176,160 +176,193 @@ function StatusPageSidecar({
   });
 
   const isOpen = pageId !== null;
+  const [tab, setTab] = useState<"overview" | "monitors" | "settings">("overview");
 
   return (
     <div
       className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[440px] opacity-100" : "w-0 opacity-0"
+        isOpen ? "w-[520px] opacity-100" : "w-0 opacity-0"
       }`}
     >
-      <div className="relative flex h-full w-[440px] flex-col rounded-xl border bg-card overflow-hidden shadow-sm">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <span className="text-sm font-medium truncate">
-            {page?.name ?? "Loading..."}
-          </span>
-          <div className="flex items-center gap-1">
-            {page && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => window.open(`/status/${page.slug}`, "_blank")}
-                  className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <ExternalLink className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView("edit")}
-                  className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <Pencil className="size-3.5" />
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-        </div>
-
+      <div className="relative flex h-full w-[520px] flex-col border-l bg-background/95 backdrop-blur-sm overflow-hidden">
         {!page ? (
           <div className="flex flex-1 items-center justify-center">
             <Spinner className="size-5" />
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-            {/* Info */}
-            <div className="rounded-lg border">
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
-                <span className="text-xs text-muted-foreground">Visibility</span>
-                <Badge variant={page.isPublic ? "default" : "secondary"}>
-                  {page.isPublic ? "Public" : "Private"}
-                </Badge>
+          <>
+            {/* Header — Railway style */}
+            <div className="px-6 pt-6 pb-0">
+              <div className="flex items-start justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold truncate">{page.name}</h2>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                    <span className="font-mono">/status/{page.slug}</span>
+                    <Badge variant={page.isPublic ? "default" : "secondary"} className="text-[10px] px-2 py-0.5">
+                      {page.isPublic ? "Public" : "Private"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => window.open(`/status/${page.slug}`, "_blank")}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <ExternalLink className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center justify-between border-b px-3 py-2.5">
-                <span className="text-xs text-muted-foreground">Slug</span>
-                <span className="text-xs font-mono">/status/{page.slug}</span>
+
+              {/* Tabs — Railway style */}
+              <div className="flex gap-4 mt-4 border-b -mx-6 px-6">
+                {(["overview", "monitors", "settings"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`pb-2.5 text-sm transition-colors border-b-2 -mb-px ${
+                      tab === t
+                        ? "border-foreground text-foreground font-medium"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "overview" ? "Overview" : t === "monitors" ? "Monitors" : "Settings"}
+                  </button>
+                ))}
               </div>
-              {page.brandColor && (
-                <div className="flex items-center justify-between border-b px-3 py-2.5">
-                  <span className="text-xs text-muted-foreground">Brand color</span>
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      className="size-3 rounded-full border"
-                      style={{ backgroundColor: page.brandColor }}
-                    />
-                    <span className="text-xs font-mono">{page.brandColor}</span>
+            </div>
+
+            {/* Tab content */}
+            <div className="flex flex-1 flex-col overflow-y-auto">
+              {tab === "overview" && (
+                <div className="flex flex-col p-6 gap-5">
+                  {/* Quick info */}
+                  <div className="divide-y rounded-lg border">
+                    <div className="flex items-center justify-between px-4 py-2.5">
+                      <span className="text-xs text-muted-foreground">Monitors</span>
+                      <span className="text-xs font-medium">{page.monitors.length}</span>
+                    </div>
+                    {page.brandColor && (
+                      <div className="flex items-center justify-between px-4 py-2.5">
+                        <span className="text-xs text-muted-foreground">Brand color</span>
+                        <div className="flex items-center gap-1.5">
+                          <div className="size-3 rounded-full border" style={{ backgroundColor: page.brandColor }} />
+                          <span className="text-xs font-mono">{page.brandColor}</span>
+                        </div>
+                      </div>
+                    )}
+                    {page.customDomain && (
+                      <div className="flex items-center justify-between px-4 py-2.5">
+                        <span className="text-xs text-muted-foreground">Custom domain</span>
+                        <span className="text-xs font-mono">{page.customDomain}</span>
+                      </div>
+                    )}
+                    {page.headerText && (
+                      <div className="flex items-center justify-between px-4 py-2.5">
+                        <span className="text-xs text-muted-foreground">Header</span>
+                        <span className="text-xs truncate ml-4">{page.headerText}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Custom domain */}
+                  <CustomDomainInline
+                    pageId={page.id}
+                    currentDomain={page.customDomain}
+                    onSuccess={invalidate}
+                  />
+                </div>
+              )}
+
+              {tab === "monitors" && (
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between px-6 py-3 border-b">
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      {page.monitors.length} monitor{page.monitors.length !== 1 ? "s" : ""}
+                    </span>
+                    {activeOrg && (
+                      <button
+                        type="button"
+                        onClick={() => setView("addMonitor")}
+                        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        + Add monitor
+                      </button>
+                    )}
+                  </div>
+                  {page.monitors.length ? (
+                    <div className="divide-y">
+                      {page.monitors.map((spm) => (
+                        <div
+                          key={spm.id}
+                          className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-accent/30"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{spm.monitor.name}</span>
+                            {spm.displayName && (
+                              <span className="text-xs text-muted-foreground">Display: {spm.displayName}</span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                              {spm.monitor.type === "http" ? spm.monitor.url : spm.monitor.host}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeMonitor.mutate({ id: spm.id })}
+                            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="px-6 py-8 text-center text-xs text-muted-foreground">
+                      No monitors added yet. Add one to show on this status page.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {tab === "settings" && (
+                <div className="flex flex-col p-6 gap-5">
+                  {/* Edit form inline */}
+                  <EditPageInline
+                    page={page}
+                    onSuccess={() => {
+                      invalidate();
+                      qc.invalidateQueries();
+                    }}
+                  />
+
+                  {/* Danger zone */}
+                  <div className="border-t pt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setView("confirmDelete")}
+                    >
+                      Delete status page
+                    </Button>
                   </div>
                 </div>
               )}
-              {page.headerText && (
-                <div className="flex items-center justify-between border-b px-3 py-2.5">
-                  <span className="text-xs text-muted-foreground">Header</span>
-                  <span className="text-xs truncate ml-4">{page.headerText}</span>
-                </div>
-              )}
-              {page.footerText && (
-                <div className="flex items-center justify-between px-3 py-2.5">
-                  <span className="text-xs text-muted-foreground">Footer</span>
-                  <span className="text-xs truncate ml-4">{page.footerText}</span>
-                </div>
-              )}
             </div>
-
-            {/* Monitors */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Monitors</span>
-                {activeOrg && (
-                  <button
-                    type="button"
-                    onClick={() => setView("addMonitor")}
-                    className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-              {page.monitors.length ? (
-                <div className="rounded-lg border">
-                  {page.monitors.map((spm, i) => (
-                    <div
-                      key={spm.id}
-                      className={`flex items-center justify-between px-3 py-2 text-xs ${
-                        i < page.monitors.length - 1 ? "border-b" : ""
-                      }`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{spm.monitor.name}</span>
-                        {spm.displayName && (
-                          <span className="text-[10px] text-muted-foreground">as "{spm.displayName}"</span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeMonitor.mutate({ id: spm.id })}
-                        className="rounded p-1 text-muted-foreground transition-colors hover:text-destructive"
-                      >
-                        <Trash2 className="size-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">No monitors added yet.</p>
-              )}
-            </div>
-
-            {/* Custom domain */}
-            <CustomDomainInline
-              pageId={page.id}
-              currentDomain={page.customDomain}
-              onSuccess={invalidate}
-            />
-
-            {/* Danger zone */}
-            <div className="mt-auto pt-2 border-t">
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full"
-                onClick={() => setView("confirmDelete")}
-              >
-                Delete status page
-              </Button>
-            </div>
-          </div>
+          </>
         )}
 
         {/* Edit overlay */}
         <div
-          className={`absolute inset-0 flex flex-col bg-card transition-transform duration-200 ease-out ${
+          className={`absolute inset-0 flex flex-col bg-background/95 backdrop-blur-sm transition-transform duration-200 ease-out ${
             view === "edit" ? "translate-x-0" : "translate-x-full"
           }`}
         >
@@ -348,7 +381,7 @@ function StatusPageSidecar({
 
         {/* Add monitor overlay */}
         <div
-          className={`absolute inset-0 flex flex-col bg-card transition-transform duration-200 ease-out ${
+          className={`absolute inset-0 flex flex-col bg-background/95 backdrop-blur-sm transition-transform duration-200 ease-out ${
             view === "addMonitor" ? "translate-x-0" : "translate-x-full"
           }`}
         >
@@ -368,7 +401,7 @@ function StatusPageSidecar({
 
         {/* Confirm delete overlay */}
         <div
-          className={`absolute inset-0 flex flex-col bg-card transition-transform duration-200 ease-out ${
+          className={`absolute inset-0 flex flex-col bg-background/95 backdrop-blur-sm transition-transform duration-200 ease-out ${
             view === "confirmDelete" ? "translate-x-0" : "translate-x-full"
           }`}
         >
@@ -410,6 +443,109 @@ function StatusPageSidecar({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditPageInline({
+  page,
+  onSuccess,
+}: {
+  page: {
+    id: string;
+    name: string;
+    slug: string;
+    isPublic: boolean;
+    brandColor: string | null;
+    headerText: string | null;
+    footerText: string | null;
+  };
+  onSuccess: () => void;
+}) {
+  const [name, setName] = useState(page.name);
+  const [slug, setSlug] = useState(page.slug);
+  const [isPublic, setIsPublic] = useState(page.isPublic);
+  const [brandColor, setBrandColor] = useState(page.brandColor ?? "#000000");
+  const [headerText, setHeaderText] = useState(page.headerText ?? "");
+  const [footerText, setFooterText] = useState(page.footerText ?? "");
+
+  const update = useMutation({
+    ...orpc.statusPages.update.mutationOptions(),
+    onSuccess: () => {
+      onSuccess();
+      toast.success("Status page updated");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update");
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs">Name</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs">Slug</Label>
+        <Input value={slug} onChange={(e) => setSlug(e.target.value)} className="h-8 text-xs" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+        <Label className="text-xs">Public</Label>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs">Brand color</Label>
+        <div className="flex gap-2">
+          <input
+            type="color"
+            value={brandColor}
+            onChange={(e) => setBrandColor(e.target.value)}
+            className="h-8 w-8 shrink-0 cursor-pointer rounded border bg-transparent p-0.5"
+          />
+          <Input
+            value={brandColor}
+            onChange={(e) => setBrandColor(e.target.value)}
+            className="h-8 text-xs font-mono"
+            placeholder="#000000"
+          />
+        </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs">Header text</Label>
+        <Input
+          value={headerText}
+          onChange={(e) => setHeaderText(e.target.value)}
+          className="h-8 text-xs"
+          placeholder="Status of our services"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-xs">Footer text</Label>
+        <Input
+          value={footerText}
+          onChange={(e) => setFooterText(e.target.value)}
+          className="h-8 text-xs"
+          placeholder="Powered by Unstatus"
+        />
+      </div>
+      <Button
+        size="sm"
+        disabled={!name || !slug || update.isPending}
+        onClick={() =>
+          update.mutate({
+            id: page.id,
+            name,
+            slug,
+            isPublic,
+            brandColor,
+            headerText: headerText || undefined,
+            footerText: footerText || undefined,
+          })
+        }
+      >
+        {update.isPending ? "Saving..." : "Save changes"}
+      </Button>
     </div>
   );
 }
