@@ -21,7 +21,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useTheme } from "@/hooks/use-theme";
 import { DependencyList, DependencyImpactBanner } from "@/components/-dependency-chain";
-import { Sun, Moon, Monitor, ChevronDown, Check, Bell, MessageCircle } from "lucide-react";
+import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle } from "lucide-react";
 
 // --- Types ---
 
@@ -124,6 +124,26 @@ export function PublicStatusPageView({
   const accent = data.brandColor || undefined;
   const [expandedMonitor, setExpandedMonitor] = useState<string | null>(null);
 
+  // Collapsed groups persisted to localStorage, keyed by page slug
+  const storageKey = `unstatus:collapsed-groups:${data.slug}`;
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) return new Set(JSON.parse(stored));
+    } catch {}
+    return new Set();
+  });
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupName)) next.delete(groupName);
+      else next.add(groupName);
+      try { localStorage.setItem(storageKey, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
+
   // Inject custom JS
   useEffect(() => {
     if (!data.customJs) return;
@@ -217,30 +237,59 @@ export function PublicStatusPageView({
               ));
             }
             let idx = 0;
-            return sections.map((section) => (
-              <div key={section.name ?? "__ungrouped"}>
-                {section.name && (
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {section.name}
-                  </h3>
-                )}
-                <div className="flex flex-col gap-3">
-                  {section.monitors.map((monitor) => {
-                    const i = idx++;
-                    return (
-                      <div key={monitor.id} className="animate-fade-in" style={{ animationDelay: `${100 + i * 40}ms` }}>
-                        <MonitorCard
-                          monitor={monitor}
-                          showResponseTimes={data.showResponseTimes !== false}
-                          expanded={expandedMonitor === monitor.id}
-                          onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
-                        />
-                      </div>
-                    );
-                  })}
+            return sections.map((section) => {
+              const isCollapsed = section.name ? collapsedGroups.has(section.name) : false;
+              // Compute group-level status summary
+              const allUp = section.monitors.every((m) => m.currentStatus === "up");
+              const anyDown = section.monitors.some((m) => m.currentStatus === "down");
+              const groupDot = anyDown
+                ? "bg-red-500"
+                : allUp
+                  ? "bg-emerald-500"
+                  : "bg-yellow-500";
+
+              return (
+                <div key={section.name ?? "__ungrouped"}>
+                  {section.name ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(section.name!)}
+                      className="mb-2 flex w-full items-center gap-2 group"
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="size-3.5 text-muted-foreground transition-transform" />
+                      ) : (
+                        <ChevronDown className="size-3.5 text-muted-foreground transition-transform" />
+                      )}
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                        {section.name}
+                      </h3>
+                      <span className="text-[10px] text-muted-foreground/60">{section.monitors.length}</span>
+                      {isCollapsed && (
+                        <span className={`ml-auto size-2 rounded-full ${groupDot}`} />
+                      )}
+                    </button>
+                  ) : null}
+                  {!isCollapsed && (
+                    <div className="flex flex-col gap-3">
+                      {section.monitors.map((monitor) => {
+                        const i = idx++;
+                        return (
+                          <div key={monitor.id} className="animate-fade-in" style={{ animationDelay: `${100 + i * 40}ms` }}>
+                            <MonitorCard
+                              monitor={monitor}
+                              showResponseTimes={data.showResponseTimes !== false}
+                              expanded={expandedMonitor === monitor.id}
+                              onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ));
+              );
+            });
           })()}
         </div>
 

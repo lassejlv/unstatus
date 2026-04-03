@@ -6,6 +6,9 @@ import { SubscriptionVerifyEmail } from "@unstatus/email";
 import { ORPCError } from "@orpc/server";
 import z from "zod";
 
+const resendLimiter = new Map<string, number>();
+const RESEND_COOLDOWN_MS = 60_000; // 1 minute between resends per subscriber
+
 export const subscribersRouter = {
   list: orgProcedure(z.object({ organizationId: z.string() }))
     .handler(async ({ input }) => {
@@ -95,6 +98,16 @@ export const subscribersRouter = {
       if (subscriber.verified) {
         throw new ORPCError("BAD_REQUEST", { message: "Subscriber is already verified" });
       }
+
+      // Rate limit: 1 resend per subscriber per minute
+      const now = Date.now();
+      const lastResend = resendLimiter.get(input.id);
+      if (lastResend && now - lastResend < RESEND_COOLDOWN_MS) {
+        throw new ORPCError("TOO_MANY_REQUESTS", {
+          message: "Please wait before resending the verification email",
+        });
+      }
+      resendLimiter.set(input.id, now);
 
       const domain = env.APP_DOMAIN === "localhost" ? "http://localhost:3000" : `https://${env.APP_DOMAIN}`;
       const verifyUrl = `${domain}/status/${subscriber.statusPage.slug}/verify?token=${subscriber.token}`;

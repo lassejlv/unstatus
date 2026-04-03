@@ -15,6 +15,9 @@ import { NotificationEmail } from "@unstatus/email";
 import { ORPCError } from "@orpc/server";
 import z from "zod";
 
+const testNotifLimiter = new Map<string, number>();
+const TEST_NOTIF_COOLDOWN_MS = 30_000; // 30 seconds between test notifications per channel
+
 function parseEmails(value: string): string[] {
   return value.split(",").map((e) => e.trim()).filter(Boolean);
 }
@@ -91,6 +94,16 @@ export const notificationsRouter = {
     async ({ input, context }) => {
       const channel = await prisma.notificationChannel.findUniqueOrThrow({ where: { id: input.id } });
       await verifyOrgRole(context.session.user.id, channel.organizationId, ORG_MANAGER_ROLES);
+
+      // Rate limit: 1 test per channel per 30 seconds
+      const now = Date.now();
+      const lastTest = testNotifLimiter.get(input.id);
+      if (lastTest && now - lastTest < TEST_NOTIF_COOLDOWN_MS) {
+        throw new ORPCError("TOO_MANY_REQUESTS", {
+          message: "Please wait before sending another test notification",
+        });
+      }
+      testNotifLimiter.set(input.id, now);
 
       if (channel.type === "discord" && channel.webhookUrl) {
         if (!isAllowedDiscordWebhookUrl(channel.webhookUrl)) {

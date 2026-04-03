@@ -1,4 +1,4 @@
-import { orgProcedure } from "@/orpc/procedures";
+import { orgProcedure, orgAdminProcedure } from "@/orpc/procedures";
 import { autumn } from "@/lib/autumn";
 import { env } from "@/lib/env";
 import z from "zod";
@@ -18,7 +18,7 @@ export const billingRouter = {
       }
     }),
 
-  createCheckout: orgProcedure(z.object({ organizationId: z.string() }))
+  createCheckout: orgAdminProcedure(z.object({ organizationId: z.string() }))
     .handler(async ({ input }) => {
       const domain = env.APP_DOMAIN === "localhost"
         ? "http://localhost:3000"
@@ -32,7 +32,7 @@ export const billingRouter = {
       return { url: result.paymentUrl };
     }),
 
-  getPortalUrl: orgProcedure(z.object({ organizationId: z.string() }))
+  getPortalUrl: orgAdminProcedure(z.object({ organizationId: z.string() }))
     .handler(async ({ input }) => {
       const domain = env.APP_DOMAIN === "localhost"
         ? "http://localhost:3000"

@@ -156,6 +156,23 @@ export const statusPagesRouter = {
     .handler(async ({ input, context }) => {
       const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.statusPageId } });
       await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
+
+      // Verify ALL monitor IDs belong to this status page to prevent IDOR
+      const inputIds = input.monitors.map((m) => m.id);
+      if (inputIds.length > 0) {
+        const validCount = await prisma.statusPageMonitor.count({
+          where: {
+            id: { in: inputIds },
+            statusPageId: input.statusPageId,
+          },
+        });
+        if (validCount !== inputIds.length) {
+          throw new ORPCError("FORBIDDEN", {
+            message: "One or more monitor IDs do not belong to this status page",
+          });
+        }
+      }
+
       await Promise.all(
         input.monitors.map((m) =>
           prisma.statusPageMonitor.update({
