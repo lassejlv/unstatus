@@ -88,9 +88,9 @@ function IncidentsPage() {
   }
 
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-1 gap-4 min-h-0">
       {/* Main content */}
-      <div className="flex flex-1 flex-col gap-4 min-w-0">
+      <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-y-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-sm font-medium">Incidents</h1>
           {monitors?.length ? (

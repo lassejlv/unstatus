@@ -94,9 +94,9 @@ function MonitorsPage() {
   }
 
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-1 gap-4 min-h-0">
       {/* Main content */}
-      <div className="flex flex-1 flex-col gap-4 min-w-0">
+      <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-y-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-sm font-medium">Monitors</h1>
           {activeOrg && <CreateMonitorDialog organizationId={activeOrg.id} monitorCount={monitors?.length ?? 0} />}
@@ -261,6 +261,7 @@ function MonitorSidecar({
   });
 
   const isOpen = monitorId !== null;
+  const [tab, setTab] = useState<"overview" | "checks" | "settings">("overview");
 
   return (
     <div
@@ -340,92 +341,151 @@ function MonitorSidecar({
                   {monitor.active ? "Active" : "Paused"}
                 </Badge>
               </div>
+
+              {/* Tabs */}
+              <div className="flex gap-4 mt-4 border-b -mx-6 px-6">
+                {(["overview", "checks", "settings"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`pb-2.5 text-sm transition-colors border-b-2 -mb-px ${
+                      tab === t
+                        ? "border-foreground text-foreground font-medium"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "overview" ? "Overview" : t === "checks" ? "Checks" : "Settings"}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Content */}
-            <div className="flex flex-1 flex-col overflow-y-auto border-t">
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-2 px-6 py-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={runCheck.isPending}
-                  onClick={() => runCheck.mutate({ monitorId: monitor.id })}
-                >
-                  {runCheck.isPending ? "Checking..." : "Run check"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    toggle.mutate({ id: monitor.id, active: !monitor.active })
-                  }
-                >
-                  {monitor.active ? "Pause" : "Resume"}
-                </Button>
-              </div>
+            {/* Tab content */}
+            <div className="flex flex-1 flex-col overflow-y-auto">
+              {tab === "overview" && (
+                <div className="flex flex-col">
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-2 px-6 py-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={runCheck.isPending}
+                      onClick={() => runCheck.mutate({ monitorId: monitor.id })}
+                    >
+                      {runCheck.isPending ? "Checking..." : "Run check"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        toggle.mutate({ id: monitor.id, active: !monitor.active })
+                      }
+                    >
+                      {monitor.active ? "Pause" : "Resume"}
+                    </Button>
+                  </div>
 
-              {/* Recent checks */}
-              <div className="flex flex-col border-t">
-                <div className="flex items-center justify-between px-6 py-3">
-                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Recent checks</span>
+                  {/* Recent checks */}
+                  <div className="flex flex-col border-t">
+                    <div className="flex items-center justify-between px-6 py-3">
+                      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Recent checks</span>
+                      {checks?.length ? (
+                        <button type="button" onClick={() => setTab("checks")} className="text-[11px] text-muted-foreground hover:text-foreground">
+                          View all
+                        </button>
+                      ) : null}
+                    </div>
+                    {checks?.length ? (
+                      <div className="divide-y border-t">
+                        {checks.slice(0, 6).map((c) => (
+                          <button
+                            type="button"
+                            key={c.id}
+                            onClick={() => setSelectedCheck(c)}
+                            className="flex w-full items-center justify-between px-6 py-2.5 text-xs transition-colors hover:bg-accent/30"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className={`size-2 rounded-full ${c.status === "up" ? "bg-emerald-500" : c.status === "degraded" ? "bg-yellow-500" : "bg-red-500"}`} />
+                              <span className="font-mono">{c.latency}ms</span>
+                              {c.statusCode && <span className="text-muted-foreground">{c.statusCode}</span>}
+                            </div>
+                            <div className="flex items-center gap-3 text-muted-foreground">
+                              <span>{c.region?.toUpperCase() ?? "—"}</span>
+                              <span>{new Date(c.checkedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="px-6 pb-4 text-xs text-muted-foreground">No checks yet.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {tab === "checks" && (
+                <div className="flex flex-col">
+                  <div className="px-6 py-3 border-b">
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">All checks</span>
+                  </div>
                   {checks?.length ? (
+                    <div className="divide-y">
+                      {checks.map((c) => (
+                        <button
+                          type="button"
+                          key={c.id}
+                          onClick={() => setSelectedCheck(c)}
+                          className="flex w-full items-center justify-between px-6 py-2.5 text-xs transition-colors hover:bg-accent/30"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className={`size-2 rounded-full ${c.status === "up" ? "bg-emerald-500" : c.status === "degraded" ? "bg-yellow-500" : "bg-red-500"}`} />
+                            <span className="font-mono">{c.latency}ms</span>
+                            {c.statusCode && <span className="text-muted-foreground">{c.statusCode}</span>}
+                          </div>
+                          <div className="flex items-center gap-3 text-muted-foreground">
+                            <span>{c.region?.toUpperCase() ?? "—"}</span>
+                            <span>{new Date(c.checkedAt).toLocaleString()}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="px-6 py-8 text-center text-xs text-muted-foreground">No checks yet.</p>
+                  )}
+                  <div className="px-6 py-3 border-t">
                     <Link
                       to="/dashboard/monitors/$monitorId"
                       params={{ monitorId: monitor.id }}
-                      className="text-[11px] text-muted-foreground hover:text-foreground"
+                      className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      View all
+                      View full history with pagination →
                     </Link>
-                  ) : null}
-                </div>
-                {checks?.length ? (
-                  <div className="divide-y border-t">
-                    {checks.slice(0, 10).map((c) => (
-                      <button
-                        type="button"
-                        key={c.id}
-                        onClick={() => setSelectedCheck(c)}
-                        className="flex w-full items-center justify-between px-6 py-2.5 text-xs transition-colors hover:bg-accent/30"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span
-                            className={`size-2 rounded-full ${
-                              c.status === "up" ? "bg-emerald-500"
-                              : c.status === "degraded" ? "bg-yellow-500"
-                              : "bg-red-500"
-                            }`}
-                          />
-                          <span className="font-mono">{c.latency}ms</span>
-                          {c.statusCode && (
-                            <span className="text-muted-foreground">{c.statusCode}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-muted-foreground">
-                          <span>{c.region?.toUpperCase() ?? "—"}</span>
-                          <span>
-                            {new Date(c.checkedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
                   </div>
-                ) : (
-                  <p className="px-6 pb-4 text-xs text-muted-foreground">No checks yet.</p>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Danger zone */}
-              <div className="mt-auto border-t px-6 py-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setView("confirmDelete")}
-                >
-                  Delete monitor
-                </Button>
-              </div>
+              {tab === "settings" && (
+                <div className="flex flex-col p-6 gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setView("edit")}
+                  >
+                    Edit monitor
+                  </Button>
+                  <div className="border-t pt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setView("confirmDelete")}
+                    >
+                      Delete monitor
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
