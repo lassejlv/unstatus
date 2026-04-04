@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
@@ -36,6 +38,16 @@ import { Route as AuthedDashboardIncidentsIndexRouteImport } from './routes/_aut
 import { Route as AuthedDashboardStatusPagesPageIdRouteImport } from './routes/_authed/dashboard/status-pages/$pageId'
 import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes/_authed/dashboard/incidents/$incidentId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -180,6 +192,8 @@ export interface FileRoutesByFullPath {
   '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
@@ -207,6 +221,8 @@ export interface FileRoutesByTo {
   '/$incidentId': typeof IncidentIdRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
@@ -235,6 +251,8 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authed/account': typeof AuthedAccountRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
@@ -264,6 +282,8 @@ export interface FileRouteTypes {
     | '/$incidentId'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/account'
     | '/dashboard'
     | '/accept-invitation/$invitationId'
@@ -291,6 +311,8 @@ export interface FileRouteTypes {
     | '/$incidentId'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/account'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
@@ -318,6 +340,8 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/_authed/account'
     | '/_authed/dashboard'
     | '/accept-invitation/$invitationId'
@@ -347,6 +371,8 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   AcceptInvitationInvitationIdRoute: typeof AcceptInvitationInvitationIdRoute
   RegistrySlugRoute: typeof RegistrySlugRoute
   RegistryIndexRoute: typeof RegistryIndexRoute
@@ -359,6 +385,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -596,6 +636,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   AcceptInvitationInvitationIdRoute: AcceptInvitationInvitationIdRoute,
   RegistrySlugRoute: RegistrySlugRoute,
   RegistryIndexRoute: RegistryIndexRoute,
