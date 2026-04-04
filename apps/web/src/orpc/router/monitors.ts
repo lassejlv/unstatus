@@ -432,7 +432,7 @@ export const monitorsRouter = {
         throw new ORPCError("BAD_GATEWAY", { message: "Monitor check failed. Please try again later." });
       }
       // Track the check usage
-      trackUsage(monitor.organizationId, "checks").catch(() => {});
+      await trackUsage(monitor.organizationId, "checks");
 
       return res.json();
     }),

@@ -83,13 +83,14 @@ export async function checkAndTrackFeature(organizationId: string, featureId: st
 
 export async function trackUsage(organizationId: string, featureId: string, value = 1): Promise<void> {
   try {
-    await autumn.track({
+    const result = await autumn.track({
       customerId: organizationId,
       featureId,
       value,
     });
-  } catch (e) {
-    console.error(`[Autumn] track failed for ${featureId}:`, e);
+    console.log(`[Autumn] tracked ${featureId} for ${organizationId}: value=${value}`, JSON.stringify(result));
+  } catch (e: any) {
+    console.error(`[Autumn] track failed for ${featureId} (customer=${organizationId}):`, e?.statusCode, e?.message ?? e);
   }
 }
 
