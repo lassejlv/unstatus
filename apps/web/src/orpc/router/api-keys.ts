@@ -1,0 +1,119 @@
+import {
+  orgProcedure,
+  orgAdminProcedure,
+  orgOwnerProcedure,
+} from "@/orpc/procedures";
+import { ORPCError } from "@orpc/server";
+import { prisma } from "@/lib/prisma";
+import z from "zod";
+
+function generateApiKey(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  const hex = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `usk_${hex}`;
+}
+
+async function hashKey(key: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(key);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+const list = orgProcedure(
+  z.object({ organizationId: z.string() }),
+)
+  .handler(async ({ context }) => {
+    const keys = await prisma.apiKey.findMany({
+      where: { organizationId: context.organizationId },
+      select: {
+        id: true,
+        name: true,
+        keyPrefix: true,
+        createdAt: true,
+        lastUsedAt: true,
+        expiresAt: true,
+        revokedAt: true,
+        createdBy: { select: { name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return keys;
+  });
+
+const create = orgAdminProcedure(
+  z.object({
+    organizationId: z.string(),
+    name: z.string().min(1).max(100),
+    expiresAt: z.coerce.date().optional(),
+  }),
+)
+  .handler(async ({ context, input }) => {
+    const plainKey = generateApiKey();
+    const keyHash = await hashKey(plainKey);
+    const keyPrefix = plainKey.slice(0, 12);
+
+    await prisma.apiKey.create({
+      data: {
+        organizationId: context.organizationId,
+        createdById: context.session.user.id,
+        name: input.name,
+        keyHash,
+        keyPrefix,
+        expiresAt: input.expiresAt,
+      },
+    });
+
+    return { key: plainKey, keyPrefix };
+  });
+
+const revoke = orgAdminProcedure(
+  z.object({
+    organizationId: z.string(),
+    id: z.string(),
+  }),
+)
+  .handler(async ({ context, input }) => {
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { id: input.id },
+    });
+    if (!apiKey || apiKey.organizationId !== context.organizationId) {
+      throw new ORPCError("NOT_FOUND", { message: "API key not found" });
+    }
+    if (apiKey.revokedAt) {
+      throw new ORPCError("BAD_REQUEST", { message: "API key is already revoked" });
+    }
+    await prisma.apiKey.update({
+      where: { id: input.id },
+      data: { revokedAt: new Date() },
+    });
+    return { success: true };
+  });
+
+const deleteKey = orgOwnerProcedure(
+  z.object({
+    organizationId: z.string(),
+    id: z.string(),
+  }),
+)
+  .handler(async ({ context, input }) => {
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { id: input.id },
+    });
+    if (!apiKey || apiKey.organizationId !== context.organizationId) {
+      throw new ORPCError("NOT_FOUND", { message: "API key not found" });
+    }
+    await prisma.apiKey.delete({ where: { id: input.id } });
+    return { success: true };
+  });
+
+export const apiKeysRouter = {
+  list,
+  create,
+  revoke,
+  delete: deleteKey,
+};

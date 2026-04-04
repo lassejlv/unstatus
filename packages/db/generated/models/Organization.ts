@@ -236,6 +236,7 @@ export type OrganizationWhereInput = {
   statusPages?: Prisma.StatusPageListRelationFilter
   notificationChannels?: Prisma.NotificationChannelListRelationFilter
   maintenanceWindows?: Prisma.MaintenanceWindowListRelationFilter
+  apiKeys?: Prisma.ApiKeyListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -256,6 +257,7 @@ export type OrganizationOrderByWithRelationInput = {
   statusPages?: Prisma.StatusPageOrderByRelationAggregateInput
   notificationChannels?: Prisma.NotificationChannelOrderByRelationAggregateInput
   maintenanceWindows?: Prisma.MaintenanceWindowOrderByRelationAggregateInput
+  apiKeys?: Prisma.ApiKeyOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -279,6 +281,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   statusPages?: Prisma.StatusPageListRelationFilter
   notificationChannels?: Prisma.NotificationChannelListRelationFilter
   maintenanceWindows?: Prisma.MaintenanceWindowListRelationFilter
+  apiKeys?: Prisma.ApiKeyListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -333,6 +336,7 @@ export type OrganizationCreateInput = {
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -353,6 +357,7 @@ export type OrganizationUncheckedCreateInput = {
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -373,6 +378,7 @@ export type OrganizationUpdateInput = {
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -393,6 +399,7 @@ export type OrganizationUncheckedUpdateInput = {
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -568,6 +575,20 @@ export type OrganizationUpdateOneRequiredWithoutMaintenanceWindowsNestedInput = 
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutMaintenanceWindowsInput, Prisma.OrganizationUpdateWithoutMaintenanceWindowsInput>, Prisma.OrganizationUncheckedUpdateWithoutMaintenanceWindowsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutApiKeysInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutApiKeysInput, Prisma.OrganizationUncheckedCreateWithoutApiKeysInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutApiKeysInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutApiKeysNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutApiKeysInput, Prisma.OrganizationUncheckedCreateWithoutApiKeysInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutApiKeysInput
+  upsert?: Prisma.OrganizationUpsertWithoutApiKeysInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutApiKeysInput, Prisma.OrganizationUpdateWithoutApiKeysInput>, Prisma.OrganizationUncheckedUpdateWithoutApiKeysInput>
+}
+
 export type OrganizationCreateWithoutMonitorsInput = {
   id: string
   name: string
@@ -585,6 +606,7 @@ export type OrganizationCreateWithoutMonitorsInput = {
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMonitorsInput = {
@@ -604,6 +626,7 @@ export type OrganizationUncheckedCreateWithoutMonitorsInput = {
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMonitorsInput = {
@@ -639,6 +662,7 @@ export type OrganizationUpdateWithoutMonitorsInput = {
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMonitorsInput = {
@@ -658,6 +682,7 @@ export type OrganizationUncheckedUpdateWithoutMonitorsInput = {
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutMembersInput = {
@@ -677,6 +702,7 @@ export type OrganizationCreateWithoutMembersInput = {
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMembersInput = {
@@ -696,6 +722,7 @@ export type OrganizationUncheckedCreateWithoutMembersInput = {
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMembersInput = {
@@ -731,6 +758,7 @@ export type OrganizationUpdateWithoutMembersInput = {
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMembersInput = {
@@ -750,6 +778,7 @@ export type OrganizationUncheckedUpdateWithoutMembersInput = {
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutInvitationsInput = {
@@ -769,6 +798,7 @@ export type OrganizationCreateWithoutInvitationsInput = {
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutInvitationsInput = {
@@ -788,6 +818,7 @@ export type OrganizationUncheckedCreateWithoutInvitationsInput = {
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutInvitationsInput = {
@@ -823,6 +854,7 @@ export type OrganizationUpdateWithoutInvitationsInput = {
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutInvitationsInput = {
@@ -842,6 +874,7 @@ export type OrganizationUncheckedUpdateWithoutInvitationsInput = {
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutStatusPagesInput = {
@@ -861,6 +894,7 @@ export type OrganizationCreateWithoutStatusPagesInput = {
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutStatusPagesInput = {
@@ -880,6 +914,7 @@ export type OrganizationUncheckedCreateWithoutStatusPagesInput = {
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutStatusPagesInput = {
@@ -915,6 +950,7 @@ export type OrganizationUpdateWithoutStatusPagesInput = {
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutStatusPagesInput = {
@@ -934,6 +970,7 @@ export type OrganizationUncheckedUpdateWithoutStatusPagesInput = {
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutNotificationChannelsInput = {
@@ -953,6 +990,7 @@ export type OrganizationCreateWithoutNotificationChannelsInput = {
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutNotificationChannelsInput = {
@@ -972,6 +1010,7 @@ export type OrganizationUncheckedCreateWithoutNotificationChannelsInput = {
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutNotificationChannelsInput = {
@@ -1007,6 +1046,7 @@ export type OrganizationUpdateWithoutNotificationChannelsInput = {
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutNotificationChannelsInput = {
@@ -1026,6 +1066,7 @@ export type OrganizationUncheckedUpdateWithoutNotificationChannelsInput = {
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutMaintenanceWindowsInput = {
@@ -1045,6 +1086,7 @@ export type OrganizationCreateWithoutMaintenanceWindowsInput = {
   monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMaintenanceWindowsInput = {
@@ -1064,6 +1106,7 @@ export type OrganizationUncheckedCreateWithoutMaintenanceWindowsInput = {
   monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
   statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
   notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMaintenanceWindowsInput = {
@@ -1099,6 +1142,7 @@ export type OrganizationUpdateWithoutMaintenanceWindowsInput = {
   monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMaintenanceWindowsInput = {
@@ -1118,6 +1162,103 @@ export type OrganizationUncheckedUpdateWithoutMaintenanceWindowsInput = {
   monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
   statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
   notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutApiKeysInput = {
+  id: string
+  name: string
+  slug: string
+  logo?: string | null
+  createdAt: Date | string
+  metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
+  members?: Prisma.MemberCreateNestedManyWithoutOrganizationInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutOrganizationInput
+  monitors?: Prisma.MonitorCreateNestedManyWithoutOrganizationInput
+  statusPages?: Prisma.StatusPageCreateNestedManyWithoutOrganizationInput
+  notificationChannels?: Prisma.NotificationChannelCreateNestedManyWithoutOrganizationInput
+  maintenanceWindows?: Prisma.MaintenanceWindowCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutApiKeysInput = {
+  id: string
+  name: string
+  slug: string
+  logo?: string | null
+  createdAt: Date | string
+  metadata?: string | null
+  polarCustomerId?: string | null
+  subscriptionId?: string | null
+  subscriptionActive?: boolean
+  subscriptionPlanName?: string | null
+  cancelAtPeriodEnd?: boolean
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutOrganizationInput
+  monitors?: Prisma.MonitorUncheckedCreateNestedManyWithoutOrganizationInput
+  statusPages?: Prisma.StatusPageUncheckedCreateNestedManyWithoutOrganizationInput
+  notificationChannels?: Prisma.NotificationChannelUncheckedCreateNestedManyWithoutOrganizationInput
+  maintenanceWindows?: Prisma.MaintenanceWindowUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutApiKeysInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutApiKeysInput, Prisma.OrganizationUncheckedCreateWithoutApiKeysInput>
+}
+
+export type OrganizationUpsertWithoutApiKeysInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutApiKeysInput, Prisma.OrganizationUncheckedUpdateWithoutApiKeysInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutApiKeysInput, Prisma.OrganizationUncheckedCreateWithoutApiKeysInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutApiKeysInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutApiKeysInput, Prisma.OrganizationUncheckedUpdateWithoutApiKeysInput>
+}
+
+export type OrganizationUpdateWithoutApiKeysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  members?: Prisma.MemberUpdateManyWithoutOrganizationNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutOrganizationNestedInput
+  monitors?: Prisma.MonitorUpdateManyWithoutOrganizationNestedInput
+  statusPages?: Prisma.StatusPageUpdateManyWithoutOrganizationNestedInput
+  notificationChannels?: Prisma.NotificationChannelUpdateManyWithoutOrganizationNestedInput
+  maintenanceWindows?: Prisma.MaintenanceWindowUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metadata?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  polarCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionPlanName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  members?: Prisma.MemberUncheckedUpdateManyWithoutOrganizationNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutOrganizationNestedInput
+  monitors?: Prisma.MonitorUncheckedUpdateManyWithoutOrganizationNestedInput
+  statusPages?: Prisma.StatusPageUncheckedUpdateManyWithoutOrganizationNestedInput
+  notificationChannels?: Prisma.NotificationChannelUncheckedUpdateManyWithoutOrganizationNestedInput
+  maintenanceWindows?: Prisma.MaintenanceWindowUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -1132,6 +1273,7 @@ export type OrganizationCountOutputType = {
   statusPages: number
   notificationChannels: number
   maintenanceWindows: number
+  apiKeys: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1141,6 +1283,7 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   statusPages?: boolean | OrganizationCountOutputTypeCountStatusPagesArgs
   notificationChannels?: boolean | OrganizationCountOutputTypeCountNotificationChannelsArgs
   maintenanceWindows?: boolean | OrganizationCountOutputTypeCountMaintenanceWindowsArgs
+  apiKeys?: boolean | OrganizationCountOutputTypeCountApiKeysArgs
 }
 
 /**
@@ -1195,6 +1338,13 @@ export type OrganizationCountOutputTypeCountMaintenanceWindowsArgs<ExtArgs exten
   where?: Prisma.MaintenanceWindowWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountApiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ApiKeyWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1214,6 +1364,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   statusPages?: boolean | Prisma.Organization$statusPagesArgs<ExtArgs>
   notificationChannels?: boolean | Prisma.Organization$notificationChannelsArgs<ExtArgs>
   maintenanceWindows?: boolean | Prisma.Organization$maintenanceWindowsArgs<ExtArgs>
+  apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -1267,6 +1418,7 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   statusPages?: boolean | Prisma.Organization$statusPagesArgs<ExtArgs>
   notificationChannels?: boolean | Prisma.Organization$notificationChannelsArgs<ExtArgs>
   maintenanceWindows?: boolean | Prisma.Organization$maintenanceWindowsArgs<ExtArgs>
+  apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1281,6 +1433,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     statusPages: Prisma.$StatusPagePayload<ExtArgs>[]
     notificationChannels: Prisma.$NotificationChannelPayload<ExtArgs>[]
     maintenanceWindows: Prisma.$MaintenanceWindowPayload<ExtArgs>[]
+    apiKeys: Prisma.$ApiKeyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1694,6 +1847,7 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   statusPages<T extends Prisma.Organization$statusPagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$statusPagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusPagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notificationChannels<T extends Prisma.Organization$notificationChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$notificationChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   maintenanceWindows<T extends Prisma.Organization$maintenanceWindowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$maintenanceWindowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaintenanceWindowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  apiKeys<T extends Prisma.Organization$apiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2268,6 +2422,30 @@ export type Organization$maintenanceWindowsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.MaintenanceWindowScalarFieldEnum | Prisma.MaintenanceWindowScalarFieldEnum[]
+}
+
+/**
+ * Organization.apiKeys
+ */
+export type Organization$apiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ApiKey
+   */
+  select?: Prisma.ApiKeySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ApiKey
+   */
+  omit?: Prisma.ApiKeyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ApiKeyInclude<ExtArgs> | null
+  where?: Prisma.ApiKeyWhereInput
+  orderBy?: Prisma.ApiKeyOrderByWithRelationInput | Prisma.ApiKeyOrderByWithRelationInput[]
+  cursor?: Prisma.ApiKeyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ApiKeyScalarFieldEnum | Prisma.ApiKeyScalarFieldEnum[]
 }
 
 /**

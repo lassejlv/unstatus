@@ -66,6 +66,7 @@ export const ModelName = {
   StatusPageSubscriber: 'StatusPageSubscriber',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
+  IncidentMonitor: 'IncidentMonitor',
   IncidentUpdate: 'IncidentUpdate',
   NotificationChannel: 'NotificationChannel',
   MaintenanceWindow: 'MaintenanceWindow',
@@ -73,7 +74,8 @@ export const ModelName = {
   ExternalService: 'ExternalService',
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
-  MonitorDependency: 'MonitorDependency'
+  MonitorDependency: 'MonitorDependency',
+  ApiKey: 'ApiKey'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -329,6 +331,15 @@ export const IncidentScalarFieldEnum = {
 export type IncidentScalarFieldEnum = (typeof IncidentScalarFieldEnum)[keyof typeof IncidentScalarFieldEnum]
 
 
+export const IncidentMonitorScalarFieldEnum = {
+  id: 'id',
+  incidentId: 'incidentId',
+  monitorId: 'monitorId'
+} as const
+
+export type IncidentMonitorScalarFieldEnum = (typeof IncidentMonitorScalarFieldEnum)[keyof typeof IncidentMonitorScalarFieldEnum]
+
+
 export const IncidentUpdateScalarFieldEnum = {
   id: 'id',
   incidentId: 'incidentId',
@@ -451,6 +462,22 @@ export const MonitorDependencyScalarFieldEnum = {
 } as const
 
 export type MonitorDependencyScalarFieldEnum = (typeof MonitorDependencyScalarFieldEnum)[keyof typeof MonitorDependencyScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  createdById: 'createdById',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
+  lastUsedAt: 'lastUsedAt',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const SortOrder = {

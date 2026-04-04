@@ -117,6 +117,11 @@ export type StatusPageMonitor = Prisma.StatusPageMonitorModel
  */
 export type Incident = Prisma.IncidentModel
 /**
+ * Model IncidentMonitor
+ * 
+ */
+export type IncidentMonitor = Prisma.IncidentMonitorModel
+/**
  * Model IncidentUpdate
  * 
  */
@@ -156,3 +161,8 @@ export type ExternalServiceStatus = Prisma.ExternalServiceStatusModel
  * 
  */
 export type MonitorDependency = Prisma.MonitorDependencyModel
+/**
+ * Model ApiKey
+ * 
+ */
+export type ApiKey = Prisma.ApiKeyModel

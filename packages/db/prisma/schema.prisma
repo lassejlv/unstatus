@@ -21,6 +21,7 @@ model User {
 
   members     Member[]
   invitations Invitation[]
+  apiKeys     ApiKey[]
 
   @@unique([email])
   @@map("user")
@@ -97,6 +98,7 @@ model Organization {
   statusPages          StatusPage[]
   notificationChannels NotificationChannel[]
   maintenanceWindows   MaintenanceWindow[]
+  apiKeys              ApiKey[]
 
   @@unique([slug])
   @@map("organization")
@@ -498,4 +500,27 @@ model MonitorDependency {
   @@index([monitorId])
   @@index([externalServiceId])
   @@map("monitor_dependency")
+}
+
+// --- API Keys ---
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  name           String
+  keyHash        String       @unique
+  keyPrefix      String
+
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_key")
 }

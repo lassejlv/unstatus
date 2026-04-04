@@ -399,6 +399,7 @@ export const ModelName = {
   StatusPageSubscriber: 'StatusPageSubscriber',
   StatusPageMonitor: 'StatusPageMonitor',
   Incident: 'Incident',
+  IncidentMonitor: 'IncidentMonitor',
   IncidentUpdate: 'IncidentUpdate',
   NotificationChannel: 'NotificationChannel',
   MaintenanceWindow: 'MaintenanceWindow',
@@ -406,7 +407,8 @@ export const ModelName = {
   ExternalService: 'ExternalService',
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
-  MonitorDependency: 'MonitorDependency'
+  MonitorDependency: 'MonitorDependency',
+  ApiKey: 'ApiKey'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentMonitor" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency" | "apiKey"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1536,6 +1538,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IncidentMonitor: {
+      payload: Prisma.$IncidentMonitorPayload<ExtArgs>
+      fields: Prisma.IncidentMonitorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IncidentMonitorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IncidentMonitorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        findFirst: {
+          args: Prisma.IncidentMonitorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IncidentMonitorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        findMany: {
+          args: Prisma.IncidentMonitorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>[]
+        }
+        create: {
+          args: Prisma.IncidentMonitorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        createMany: {
+          args: Prisma.IncidentMonitorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IncidentMonitorCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>[]
+        }
+        delete: {
+          args: Prisma.IncidentMonitorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        update: {
+          args: Prisma.IncidentMonitorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        deleteMany: {
+          args: Prisma.IncidentMonitorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IncidentMonitorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IncidentMonitorUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>[]
+        }
+        upsert: {
+          args: Prisma.IncidentMonitorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentMonitorPayload>
+        }
+        aggregate: {
+          args: Prisma.IncidentMonitorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIncidentMonitor>
+        }
+        groupBy: {
+          args: Prisma.IncidentMonitorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncidentMonitorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IncidentMonitorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncidentMonitorCountAggregateOutputType> | number
+        }
+      }
+    }
     IncidentUpdate: {
       payload: Prisma.$IncidentUpdatePayload<ExtArgs>
       fields: Prisma.IncidentUpdateFieldRefs
@@ -2128,6 +2204,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ApiKey: {
+      payload: Prisma.$ApiKeyPayload<ExtArgs>
+      fields: Prisma.ApiKeyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ApiKeyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ApiKeyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        findFirst: {
+          args: Prisma.ApiKeyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ApiKeyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        findMany: {
+          args: Prisma.ApiKeyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        create: {
+          args: Prisma.ApiKeyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        createMany: {
+          args: Prisma.ApiKeyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ApiKeyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        delete: {
+          args: Prisma.ApiKeyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        update: {
+          args: Prisma.ApiKeyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        deleteMany: {
+          args: Prisma.ApiKeyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ApiKeyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ApiKeyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+        }
+        upsert: {
+          args: Prisma.ApiKeyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+        }
+        aggregate: {
+          args: Prisma.ApiKeyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApiKey>
+        }
+        groupBy: {
+          args: Prisma.ApiKeyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ApiKeyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2404,6 +2554,15 @@ export const IncidentScalarFieldEnum = {
 export type IncidentScalarFieldEnum = (typeof IncidentScalarFieldEnum)[keyof typeof IncidentScalarFieldEnum]
 
 
+export const IncidentMonitorScalarFieldEnum = {
+  id: 'id',
+  incidentId: 'incidentId',
+  monitorId: 'monitorId'
+} as const
+
+export type IncidentMonitorScalarFieldEnum = (typeof IncidentMonitorScalarFieldEnum)[keyof typeof IncidentMonitorScalarFieldEnum]
+
+
 export const IncidentUpdateScalarFieldEnum = {
   id: 'id',
   incidentId: 'incidentId',
@@ -2526,6 +2685,22 @@ export const MonitorDependencyScalarFieldEnum = {
 } as const
 
 export type MonitorDependencyScalarFieldEnum = (typeof MonitorDependencyScalarFieldEnum)[keyof typeof MonitorDependencyScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  createdById: 'createdById',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
+  lastUsedAt: 'lastUsedAt',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2768,6 +2943,7 @@ export type GlobalOmitConfig = {
   statusPageSubscriber?: Prisma.StatusPageSubscriberOmit
   statusPageMonitor?: Prisma.StatusPageMonitorOmit
   incident?: Prisma.IncidentOmit
+  incidentMonitor?: Prisma.IncidentMonitorOmit
   incidentUpdate?: Prisma.IncidentUpdateOmit
   notificationChannel?: Prisma.NotificationChannelOmit
   maintenanceWindow?: Prisma.MaintenanceWindowOmit
@@ -2776,6 +2952,7 @@ export type GlobalOmitConfig = {
   externalServiceComponent?: Prisma.ExternalServiceComponentOmit
   externalServiceStatus?: Prisma.ExternalServiceStatusOmit
   monitorDependency?: Prisma.MonitorDependencyOmit
+  apiKey?: Prisma.ApiKeyOmit
 }
 
 /* Types for Logging */

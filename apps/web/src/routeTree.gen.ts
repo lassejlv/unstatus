@@ -26,6 +26,7 @@ import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
+import { Route as ApiV1SplatRouteImport } from './routes/api.v1.$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
@@ -124,6 +125,11 @@ const StatusSlugIncidentIdRoute = StatusSlugIncidentIdRouteImport.update({
   path: '/status/$slug/$incidentId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
   path: '/api/rpc/$',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
     | '/dashboard/'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
     | '/dashboard'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/subscribers'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
     | '/_authed/dashboard/'
@@ -391,6 +403,7 @@ export interface RootRouteChildren {
   RegistryIndexRoute: typeof RegistryIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
   StatusSlugVerifyRoute: typeof StatusSlugVerifyRoute
   StatusSlugIndexRoute: typeof StatusSlugIndexRoute
@@ -515,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/status/$slug/$incidentId'
       fullPath: '/status/$slug/$incidentId'
       preLoaderRoute: typeof StatusSlugIncidentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
@@ -664,6 +684,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistryIndexRoute: RegistryIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,
   StatusSlugVerifyRoute: StatusSlugVerifyRoute,
   StatusSlugIndexRoute: StatusSlugIndexRoute,

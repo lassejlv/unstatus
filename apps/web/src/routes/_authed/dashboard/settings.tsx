@@ -48,7 +48,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Settings, Users, Building2 } from "lucide-react";
+import { Settings, Users, Building2, Key, Copy, Check } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { client } from "@/orpc/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authed/dashboard/settings")({
   component: SettingsPage,
@@ -81,6 +91,10 @@ function SettingsPage() {
               <Users className="size-3.5" />
               Members
             </TabsTrigger>
+            <TabsTrigger value="api" className="justify-start">
+              <Key className="size-3.5" />
+              API
+            </TabsTrigger>
             <Separator className="my-2" />
             <TabsTrigger value="organizations" className="justify-start">
               <Building2 className="size-3.5" />
@@ -95,6 +109,10 @@ function SettingsPage() {
 
             <TabsContent value="members" className="flex flex-col gap-6">
               <MembersSection orgId={activeOrg.id} />
+            </TabsContent>
+
+            <TabsContent value="api" className="flex flex-col gap-6">
+              <ApiKeysSection orgId={activeOrg.id} />
             </TabsContent>
 
             <TabsContent value="organizations" className="flex flex-col gap-6">
@@ -432,6 +450,265 @@ function OrgSection() {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function ApiKeysSection({ orgId }: { orgId: string }) {
+  const qc = useQueryClient();
+  const queryKey = ["apiKeys", orgId] as const;
+
+  const { data: keys, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => client.apiKeys.list({ organizationId: orgId }),
+  });
+
+  const revokeMut = useMutation({
+    mutationFn: (id: string) =>
+      client.apiKeys.revoke({ organizationId: orgId, id }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey });
+      toast.success("API key revoked");
+    },
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) =>
+      client.apiKeys.delete({ organizationId: orgId, id }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey });
+      toast.success("API key deleted");
+    },
+  });
+
+  const activeKeys = keys?.filter((k) => !k.revokedAt) ?? [];
+  const revokedKeys = keys?.filter((k) => k.revokedAt) ?? [];
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>API Keys</CardTitle>
+          <CardDescription>
+            Manage API keys for programmatic access to the REST API.
+          </CardDescription>
+          <CardAction>
+            <CreateApiKeyDialog orgId={orgId} />
+          </CardAction>
+        </CardHeader>
+        {isLoading ? (
+          <CardContent className="py-6">
+            <Spinner className="mx-auto size-5" />
+          </CardContent>
+        ) : activeKeys.length === 0 && revokedKeys.length === 0 ? (
+          <CardContent className="py-6 text-center">
+            <p className="text-xs text-muted-foreground">
+              No API keys yet. Create one to get started.
+            </p>
+          </CardContent>
+        ) : (
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Last used</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {activeKeys.map((k) => (
+                  <TableRow key={k.id}>
+                    <TableCell className="font-medium">{k.name}</TableCell>
+                    <TableCell>
+                      <code className="text-xs text-muted-foreground">
+                        {k.keyPrefix}...
+                      </code>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(k.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {k.lastUsedAt
+                        ? new Date(k.lastUsedAt).toLocaleDateString()
+                        : "Never"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground"
+                        disabled={revokeMut.isPending}
+                        onClick={() => revokeMut.mutate(k.id)}
+                      >
+                        Revoke
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {revokedKeys.map((k) => (
+                  <TableRow key={k.id} className="opacity-50">
+                    <TableCell className="font-medium">{k.name}</TableCell>
+                    <TableCell>
+                      <code className="text-xs text-muted-foreground">
+                        {k.keyPrefix}...
+                      </code>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(k.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        Revoked
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
+                            disabled={deleteMut.isPending}
+                          >
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete API key?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the API key "{k.name}".
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={() => deleteMut.mutate(k.id)}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        )}
+        <CardFooter className="border-t">
+          <p className="text-xs text-muted-foreground">
+            Free: 100 req/hr (read-only) · Pro: 1,000 req/hr (full access)
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+function CreateApiKeyDialog({ orgId }: { orgId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const createMut = useMutation({
+    mutationFn: () =>
+      client.apiKeys.create({ organizationId: orgId, name }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["apiKeys", orgId] });
+      setCreatedKey(data.key);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to create API key");
+    },
+  });
+
+  const handleClose = (isOpen: boolean) => {
+    if (!isOpen) {
+      setName("");
+      setCreatedKey(null);
+      setCopied(false);
+    }
+    setOpen(isOpen);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogTrigger asChild>
+        <Button size="sm">Create API key</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {createdKey ? "API key created" : "Create API key"}
+          </DialogTitle>
+        </DialogHeader>
+        {createdKey ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Copy this key now. You won't be able to see it again.
+            </p>
+            <div className="flex items-center gap-2">
+              <Input
+                readOnly
+                value={createdKey}
+                className="font-mono text-xs"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  navigator.clipboard.writeText(createdKey);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? (
+                  <Check className="size-3.5" />
+                ) : (
+                  <Copy className="size-3.5" />
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Name</Label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. CI/CD Pipeline"
+              />
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          {createdKey ? (
+            <Button onClick={() => handleClose(false)}>Done</Button>
+          ) : (
+            <>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                disabled={!name || createMut.isPending}
+                onClick={() => createMut.mutate()}
+              >
+                Create
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
