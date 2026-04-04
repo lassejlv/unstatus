@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PublicNav } from "@/components/-public-nav";
 import {
@@ -69,58 +69,6 @@ function CustomDomainStatusPage({ domain }: { domain: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Hooks & utilities
-// ---------------------------------------------------------------------------
-
-function useInView(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          obs.disconnect();
-        }
-      },
-      { threshold },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-
-  return { ref, inView };
-}
-
-
-function FadeIn({
-  children,
-  className = "",
-  delay = 0,
-}: {
-  children: ReactNode;
-  className?: string;
-  delay?: number;
-}) {
-  const { ref, inView } = useInView(0.1);
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(24px)",
-        transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Data
@@ -288,72 +236,42 @@ function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative mx-auto max-w-6xl px-6 pt-28 pb-24 overflow-hidden">
-          {/* Subtle grid background */}
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-20%,rgba(120,119,198,0.08),transparent_50%)]" />
-
-          <div className="flex items-center gap-20">
+        <section className="mx-auto max-w-6xl px-6 pt-24 pb-16">
+          <div className="flex items-center gap-16">
             <div className="min-w-0 flex-1">
-
-
-              <FadeIn delay={100}>
-                <h1 className="text-4xl font-semibold tracking-tight leading-[1.1] lg:text-5xl">
-                  Your site just went down.
-                  <br />
-                  <span className="bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
-                    Who knew first?
-                  </span>
-                </h1>
-              </FadeIn>
-
-              <FadeIn delay={200}>
-                <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-                  Uptime monitoring that actually tells you before Twitter does.
-                  Status pages your users will trust. Incident management that
-                  doesn't make you want to cry.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={300}>
-                <div className="mt-8 flex items-center gap-3">
-                  <Link to="/login">
-                    <Button size="lg" className="gap-2 h-12 px-6">
-                      Start for free <ArrowRight className="size-4" />
-                    </Button>
-                  </Link>
-                  <Link to="/registry">
-                    <Button variant="outline" size="lg" className="h-12 px-6">
-                      Browse service registry
-                    </Button>
-                  </Link>
-                </div>
-              </FadeIn>
-            </div>
-
-            {/* Live status mock */}
-            <FadeIn delay={400} className="hidden shrink-0 lg:block">
-              <div className="relative">
-                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10 blur-2xl" />
-                <div className="relative">
-                  <LiveStatusMock />
-                </div>
+              <h1 className="text-3xl font-semibold tracking-tight leading-tight lg:text-4xl">
+                Uptime monitoring,<br />status pages, and alerts.
+              </h1>
+              <p className="mt-4 max-w-md text-muted-foreground">
+                Know when your services go down. Tell your users what's happening. Get back up fast.
+              </p>
+              <div className="mt-6 flex items-center gap-3">
+                <Link to="/login">
+                  <Button size="lg" className="gap-2">
+                    Get started <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+                <Link to="/pricing">
+                  <Button variant="outline" size="lg">Pricing</Button>
+                </Link>
               </div>
-            </FadeIn>
+            </div>
+            <div className="hidden shrink-0 lg:block">
+              <LiveStatusMock />
+            </div>
           </div>
         </section>
 
         {/* Features */}
         <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {features.map((f, i) => (
-                <FadeIn key={f.title} delay={i * 80}>
-                  <div className="group rounded-lg border p-5 transition-colors hover:border-foreground/20">
-                    <f.icon className="size-4 text-muted-foreground" />
-                    <h3 className="mt-3 text-sm font-medium">{f.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
-                  </div>
-                </FadeIn>
+          <div className="mx-auto max-w-6xl px-6 py-16">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((f) => (
+                <div key={f.title} className="rounded-lg border p-4">
+                  <f.icon className="size-4 text-muted-foreground" />
+                  <h3 className="mt-2 text-sm font-medium">{f.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{f.desc}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -361,33 +279,19 @@ function HomePage() {
 
         {/* CTA */}
         <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-20 text-center">
-            <FadeIn>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Start monitoring in under a minute
-              </h2>
-              <p className="mt-3 text-muted-foreground">
-                No credit card required. Free forever for small projects.
-              </p>
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <Link to="/login">
-                  <Button size="lg" className="gap-2">
-                    Get started <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
-                <Link to="/pricing">
-                  <Button variant="outline" size="lg">
-                    See pricing
-                  </Button>
-                </Link>
-              </div>
-            </FadeIn>
+          <div className="mx-auto max-w-6xl px-6 py-16 text-center">
+            <p className="text-muted-foreground">Free to start. No credit card required.</p>
+            <Link to="/login" className="mt-4 inline-block">
+              <Button size="lg" className="gap-2">
+                Get started <ArrowRight className="size-4" />
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
 
       <footer className="border-t">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-6">
           <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} unstatus</span>
           <div className="flex items-center gap-4">
             <Link to="/registry" className="text-xs text-muted-foreground hover:text-foreground">Registry</Link>
