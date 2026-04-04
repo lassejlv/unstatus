@@ -1,0 +1,137 @@
+---
+title: Incidents
+description: Create, update, and resolve incidents.
+---
+
+Incidents track service disruptions and communicate status to users.
+
+## List Incidents
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/incidents</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns all incidents for your organization, including updates and affected monitors.
+
+```bash
+curl https://unstatus.app/api/v1/incidents \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+---
+
+## Get Incident
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/incidents/:id</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns an incident with its full update timeline and affected monitors.
+
+```json title="Response"
+{
+  "data": {
+    "id": "inc_...",
+    "title": "API degraded performance",
+    "status": "investigating",
+    "severity": "major",
+    "startedAt": "2025-01-15T10:00:00Z",
+    "resolvedAt": null,
+    "updates": [
+      {
+        "id": "upd_...",
+        "status": "investigating",
+        "message": "We are investigating elevated error rates.",
+        "createdAt": "2025-01-15T10:00:00Z"
+      }
+    ],
+    "monitors": [
+      { "monitor": { "id": "clx1abc...", "name": "API Server" } }
+    ]
+  }
+}
+```
+
+---
+
+## Create Incident
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/incidents</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Creates an incident affecting one or more monitors. Sends notifications automatically.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `monitorIds` | string[] | Yes | Monitor IDs affected |
+| `title` | string | Yes | Incident title |
+| `message` | string | Yes | Initial status update message |
+| `status` | string | No | `investigating`, `identified`, `monitoring`, `resolved` (default `investigating`) |
+| `severity` | string | No | `minor`, `major`, `critical` (default `minor`) |
+
+```bash
+curl -X POST https://unstatus.app/api/v1/incidents \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "monitorIds": ["clx1abc..."],
+    "title": "API degraded performance",
+    "message": "We are investigating elevated error rates.",
+    "severity": "major"
+  }'
+```
+
+---
+
+## Update Incident
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
+  <code className="text-sm">/api/v1/incidents/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Posts a status update to an incident. Setting status to `resolved` auto-sets `resolvedAt`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `status` | string | Yes | `investigating`, `identified`, `monitoring`, `resolved` |
+| `message` | string | Yes | Update message |
+
+```bash
+curl -X PATCH https://unstatus.app/api/v1/incidents/inc_... \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "resolved",
+    "message": "The root cause was identified and fixed. All systems are back to normal."
+  }'
+```
+
+---
+
+## Delete Incident
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
+  <code className="text-sm">/api/v1/incidents/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Permanently deletes an incident and all its updates.
+
+```bash
+curl -X DELETE https://unstatus.app/api/v1/incidents/inc_... \
+  -H "Authorization: Bearer usk_your_key"
+```

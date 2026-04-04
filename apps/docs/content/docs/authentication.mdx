@@ -1,0 +1,51 @@
+---
+title: Authentication
+description: How to authenticate with the Unstatus API using API keys.
+---
+
+All API requests require a valid API key passed as a Bearer token in the `Authorization` header.
+
+## Creating an API Key
+
+1. Go to **Settings > API** in the [Unstatus dashboard](https://unstatus.app/dashboard?tab=settings).
+2. Click **Create API key** and give it a name.
+3. Copy the key immediately — it is only shown once.
+
+API keys use the `usk_` prefix (e.g., `usk_a3f2b1c8d4e5f6a7...`).
+
+## Using Your Key
+
+Include the key in every request:
+
+```bash
+curl https://unstatus.app/api/v1/monitors \
+  -H "Authorization: Bearer usk_your_api_key"
+```
+
+Or in code:
+
+```typescript title="fetch example"
+const res = await fetch("https://unstatus.app/api/v1/monitors", {
+  headers: {
+    Authorization: "Bearer usk_your_api_key",
+  },
+});
+const { data } = await res.json();
+```
+
+## Key Scoping
+
+Each API key is scoped to a single organization. The key inherits the tier of the organization:
+
+- **Free** organizations: read-only access (GET endpoints only)
+- **Pro** organizations: full CRUD access
+
+## Revoking Keys
+
+Revoke a compromised key from **Settings > API** in the dashboard. Revocation is immediate — any request using the key will return `401`.
+
+## Error Responses
+
+| Status | Code | Meaning |
+|---|---|---|
+| `401` | `UNAUTHORIZED` | Missing, invalid, revoked, or expired API key |

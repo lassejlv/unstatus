@@ -1,0 +1,122 @@
+---
+title: Maintenance Windows
+description: Schedule and manage maintenance windows.
+---
+
+Maintenance windows notify users about planned downtime and exclude affected monitors from alerting.
+
+## List Maintenance Windows
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/maintenance</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+```bash
+curl https://unstatus.app/api/v1/maintenance \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+---
+
+## Get Maintenance Window
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/maintenance/:id</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+---
+
+## Create Maintenance Window
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/maintenance</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Sends notifications to configured channels when created.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `title` | string | Yes | Maintenance title |
+| `description` | string | No | Description |
+| `scheduledStart` | string | Yes | ISO 8601 start time |
+| `scheduledEnd` | string | Yes | ISO 8601 end time |
+| `monitorIds` | string[] | Yes | Affected monitor IDs |
+
+```bash
+curl -X POST https://unstatus.app/api/v1/maintenance \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Database migration",
+    "description": "Upgrading to PostgreSQL 17",
+    "scheduledStart": "2025-02-01T02:00:00Z",
+    "scheduledEnd": "2025-02-01T04:00:00Z",
+    "monitorIds": ["clx1abc..."]
+  }'
+```
+
+---
+
+## Update Maintenance Window
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
+  <code className="text-sm">/api/v1/maintenance/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Only scheduled windows can be edited.
+
+---
+
+## Delete Maintenance Window
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
+  <code className="text-sm">/api/v1/maintenance/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Only scheduled windows can be deleted.
+
+---
+
+## Start Maintenance
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/maintenance/:id/start</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Moves a scheduled window to `in_progress`. Sends notifications.
+
+---
+
+## Complete Maintenance
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/maintenance/:id/complete</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Marks an in-progress window as `completed`. Sends notifications.
+
+---
+
+## Cancel Maintenance
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/maintenance/:id/cancel</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Cancels a scheduled window. Only scheduled windows can be cancelled.

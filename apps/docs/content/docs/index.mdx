@@ -1,0 +1,66 @@
+---
+title: Introduction
+description: Get started with the Unstatus REST API.
+---
+
+The Unstatus API lets you programmatically manage monitors, incidents, status pages, and maintenance windows.
+
+## Base URL
+
+All API requests use the following base URL:
+
+```
+https://unstatus.app/api/v1
+```
+
+## Quick Start
+
+1. **Create an API key** in [Settings > API](https://unstatus.app/dashboard?tab=settings) in the dashboard.
+2. **Make a request** using the key as a Bearer token:
+
+```bash title="List your monitors"
+curl https://unstatus.app/api/v1/monitors \
+  -H "Authorization: Bearer usk_your_api_key"
+```
+
+3. **Parse the response** — every endpoint returns a consistent JSON envelope:
+
+```json title="Response"
+{
+  "data": [
+    {
+      "id": "clx1abc...",
+      "name": "API Server",
+      "type": "http",
+      "active": true,
+      "currentStatus": "up"
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 20,
+    "offset": 0,
+    "hasMore": false
+  }
+}
+```
+
+## Free vs Pro
+
+| Capability | Free | Pro |
+|---|---|---|
+| Read endpoints (GET) | Yes | Yes |
+| Write endpoints (POST, PATCH, DELETE) | No | Yes |
+| Rate limit | 100 req/hr | 1,000 req/hr |
+
+Free-tier API keys have read-only access. Upgrade to Pro for full CRUD operations.
+
+## Resources
+
+- [Authentication](/docs/authentication) — API key setup and usage
+- [Rate Limiting](/docs/rate-limiting) — Limits and headers
+- [Errors](/docs/errors) — Error codes and handling
+- [Monitors](/docs/api-reference/monitors) — Create and manage monitors
+- [Incidents](/docs/api-reference/incidents) — Track and resolve incidents
+- [Status Pages](/docs/api-reference/status-pages) — Public status pages
+- [Maintenance](/docs/api-reference/maintenance) — Scheduled maintenance windows

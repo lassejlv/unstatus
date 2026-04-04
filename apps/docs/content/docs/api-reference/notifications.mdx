@@ -1,0 +1,98 @@
+---
+title: Notification Channels
+description: Manage notification channels for alerts.
+---
+
+Notification channels send alerts via Discord webhooks or email when events occur. All notification endpoints require Pro.
+
+## List Channels
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/notifications</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+```bash
+curl https://unstatus.app/api/v1/notifications \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "id": "nc_...",
+      "name": "Engineering Discord",
+      "type": "discord",
+      "webhookUrl": "https://discord.com/api/webhooks/...",
+      "enabled": true,
+      "onMonitorDown": true,
+      "onMonitorRecovered": true,
+      "onIncidentCreated": true,
+      "onIncidentResolved": true,
+      "onIncidentUpdated": true,
+      "onMaintenanceScheduled": true,
+      "onMaintenanceStarted": true,
+      "onMaintenanceCompleted": true
+    }
+  ],
+  "pagination": { "total": 1, "limit": 20, "offset": 0, "hasMore": false }
+}
+```
+
+---
+
+## Create Channel
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/notifications</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Channel name |
+| `type` | string | Yes | `discord` or `email` |
+| `webhookUrl` | string | Discord | Discord webhook URL |
+| `recipientEmail` | string | Email | Comma-separated emails |
+| `onMonitorDown` | boolean | No | Alert on monitor down (default true) |
+| `onMonitorRecovered` | boolean | No | Alert on recovery (default true) |
+| `onIncidentCreated` | boolean | No | Alert on new incident (default true) |
+| `onIncidentResolved` | boolean | No | Alert on resolution (default true) |
+| `onIncidentUpdated` | boolean | No | Alert on updates (default true) |
+| `onMaintenanceScheduled` | boolean | No | Alert on scheduled maintenance (default true) |
+| `onMaintenanceStarted` | boolean | No | Alert on maintenance start (default true) |
+| `onMaintenanceCompleted` | boolean | No | Alert on completion (default true) |
+
+```bash
+curl -X POST https://unstatus.app/api/v1/notifications \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Engineering Discord",
+    "type": "discord",
+    "webhookUrl": "https://discord.com/api/webhooks/..."
+  }'
+```
+
+---
+
+## Update Channel
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
+  <code className="text-sm">/api/v1/notifications/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+---
+
+## Delete Channel
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
+  <code className="text-sm">/api/v1/notifications/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>

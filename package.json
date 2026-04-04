@@ -10,6 +10,7 @@
     "dev": "bun run --parallel dev:web dev:worker",
     "dev:web": "bun run --filter web dev",
     "dev:worker": "bun run --filter worker dev",
+    "dev:docs": "bun run --filter docs dev",
     "build": "bun run build:web",
     "build:web": "bun run db:migrate:deploy && bun run db:generate && bun run --filter web build",
     "build:worker": "bun run db:generate && bun run --filter worker build",

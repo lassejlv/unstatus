@@ -1,0 +1,58 @@
+---
+title: Errors
+description: API error codes and how to handle them.
+---
+
+All errors return a consistent JSON envelope:
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Monitor not found"
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Status | Code | Description |
+|---|---|---|
+| `400` | `BAD_REQUEST` | Invalid request body or parameters |
+| `401` | `UNAUTHORIZED` | Missing, invalid, or expired API key |
+| `403` | `FORBIDDEN` | Endpoint requires Pro subscription |
+| `404` | `NOT_FOUND` | Resource not found or does not belong to your organization |
+| `429` | `RATE_LIMITED` | Rate limit exceeded |
+| `502` | `BAD_GATEWAY` | Upstream service (e.g., worker) failed |
+| `503` | `SERVICE_UNAVAILABLE` | Service temporarily unavailable |
+| `500` | `INTERNAL_ERROR` | Unexpected server error |
+
+## Pro-Only Endpoints
+
+Write endpoints (POST, PATCH, DELETE) require a Pro subscription. Free-tier keys receive:
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "This endpoint requires a Pro subscription. Upgrade at /pricing."
+  }
+}
+```
+
+## Handling Errors
+
+```typescript title="Error handling"
+const res = await fetch("https://unstatus.app/api/v1/monitors", {
+  headers: { Authorization: `Bearer ${apiKey}` },
+});
+
+if (!res.ok) {
+  const { error } = await res.json();
+  console.error(`API error: ${error.code} - ${error.message}`);
+  // Handle specific codes
+  if (error.code === "UNAUTHORIZED") {
+    // Re-authenticate
+  }
+}
+```

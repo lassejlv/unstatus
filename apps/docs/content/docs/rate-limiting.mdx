@@ -1,0 +1,60 @@
+---
+title: Rate Limiting
+description: API rate limits and how to handle them.
+---
+
+The API enforces per-key rate limits using a sliding window.
+
+## Limits
+
+| Tier | Limit | Window |
+|---|---|---|
+| Free | 100 requests | 1 hour |
+| Pro | 1,000 requests | 1 hour |
+
+## Response Headers
+
+Every response includes rate limit headers:
+
+| Header | Description |
+|---|---|
+| `X-RateLimit-Limit` | Maximum requests allowed in the window |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+```http title="Example response headers"
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 847
+X-RateLimit-Reset: 1714636800
+```
+
+## Handling 429 Responses
+
+When the limit is exceeded, the API returns `429 Too Many Requests`:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Try again in 342 seconds."
+  }
+}
+```
+
+The response includes a `Retry-After` header with the number of seconds to wait.
+
+```typescript title="Retry logic"
+async function apiCall(url: string, apiKey: string) {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+
+  if (res.status === 429) {
+    const retryAfter = Number(res.headers.get("Retry-After") ?? 60);
+    await new Promise((r) => setTimeout(r, retryAfter * 1000));
+    return apiCall(url, apiKey);
+  }
+
+  return res.json();
+}
+```

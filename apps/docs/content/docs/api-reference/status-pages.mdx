@@ -1,0 +1,113 @@
+---
+title: Status Pages
+description: Manage public status pages.
+---
+
+Status pages display monitor health publicly on a custom domain or slug-based URL.
+
+## List Status Pages
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/status-pages</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns all status pages with their linked monitors.
+
+```bash
+curl https://unstatus.app/api/v1/status-pages \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "id": "sp_...",
+      "name": "Acme Status",
+      "slug": "acme",
+      "isPublic": true,
+      "brandColor": "#000000",
+      "monitors": [
+        {
+          "id": "spm_...",
+          "monitorId": "clx1abc...",
+          "displayName": "API",
+          "sortOrder": 0,
+          "monitor": { "id": "clx1abc...", "name": "API Server" }
+        }
+      ]
+    }
+  ],
+  "pagination": { "total": 1, "limit": 20, "offset": 0, "hasMore": false }
+}
+```
+
+---
+
+## Get Status Page
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/status-pages/:id</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+---
+
+## Create Status Page
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/status-pages</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Page name |
+| `slug` | string | Yes | URL slug (unique) |
+| `isPublic` | boolean | No | Publicly visible (default true) |
+| `customDomain` | string | No | Custom domain (Pro) |
+| `brandColor` | string | No | Hex color (default `#000000`) |
+| `logoUrl` | string | No | Logo URL |
+| `headerText` | string | No | Header text/HTML |
+| `footerText` | string | No | Footer text/HTML |
+| `customCss` | string | No | Custom CSS (Pro) |
+| `showResponseTimes` | boolean | No | Show response times (default true) |
+
+```bash
+curl -X POST https://unstatus.app/api/v1/status-pages \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Acme Status",
+    "slug": "acme",
+    "brandColor": "#4f46e5"
+  }'
+```
+
+---
+
+## Update Status Page
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
+  <code className="text-sm">/api/v1/status-pages/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Only include the fields you want to change.
+
+---
+
+## Delete Status Page
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
+  <code className="text-sm">/api/v1/status-pages/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Permanently deletes a status page, its monitor links, and all subscribers.

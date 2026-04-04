@@ -1,0 +1,207 @@
+---
+title: Monitors
+description: Create, read, update, and delete monitors.
+---
+
+Monitors check the health of your services via HTTP, TCP, or ping.
+
+## List Monitors
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/monitors</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns a paginated list of all monitors in your organization.
+
+**Query parameters:** `limit` (default 20, max 100), `offset` (default 0)
+
+```bash
+curl https://unstatus.app/api/v1/monitors?limit=10 \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "id": "clx1abc...",
+      "name": "API Server",
+      "type": "http",
+      "active": true,
+      "interval": 60,
+      "timeout": 10,
+      "url": "https://api.example.com/health",
+      "method": "GET",
+      "regions": ["eu"],
+      "autoIncidents": false,
+      "lastStatus": "up",
+      "lastLatency": 142,
+      "lastCheckedAt": "2025-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": { "total": 1, "limit": 10, "offset": 0, "hasMore": false }
+}
+```
+
+---
+
+## Get Monitor
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/monitors/:id</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns a single monitor by ID.
+
+```bash
+curl https://unstatus.app/api/v1/monitors/clx1abc... \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+---
+
+## Create Monitor
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/monitors</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Creates a new monitor. Maximum 50 monitors per organization.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Display name |
+| `type` | string | Yes | `http`, `tcp`, or `ping` |
+| `url` | string | For HTTP | URL to check |
+| `host` | string | For TCP | Hostname |
+| `port` | number | For TCP | Port number |
+| `interval` | number | No | Check interval in seconds (min 10, default 60) |
+| `timeout` | number | No | Timeout in seconds (default 10) |
+| `method` | string | No | HTTP method (default `GET`) |
+| `headers` | object | No | HTTP headers as key-value pairs |
+| `body` | string | No | HTTP request body |
+| `regions` | string[] | No | Regions to check from: `eu`, `us`, `asia` (default `["eu"]`) |
+| `autoIncidents` | boolean | No | Auto-create incidents on failure (default false) |
+| `rules` | array | No | Assertion rules for HTTP checks |
+
+```bash
+curl -X POST https://unstatus.app/api/v1/monitors \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "API Server",
+    "type": "http",
+    "url": "https://api.example.com/health",
+    "interval": 30,
+    "regions": ["eu", "us"]
+  }'
+```
+
+```json title="Response (201)"
+{
+  "data": {
+    "id": "clx1abc...",
+    "name": "API Server",
+    "type": "http",
+    "active": true,
+    "interval": 30,
+    "url": "https://api.example.com/health",
+    "regions": ["eu", "us"]
+  }
+}
+```
+
+---
+
+## Update Monitor
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
+  <code className="text-sm">/api/v1/monitors/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Updates a monitor. Only include the fields you want to change.
+
+```bash
+curl -X PATCH https://unstatus.app/api/v1/monitors/clx1abc... \
+  -H "Authorization: Bearer usk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "interval": 120, "active": false }'
+```
+
+---
+
+## Delete Monitor
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
+  <code className="text-sm">/api/v1/monitors/:id</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Permanently deletes a monitor and all its check history.
+
+```bash
+curl -X DELETE https://unstatus.app/api/v1/monitors/clx1abc... \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+---
+
+## List Checks
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/monitors/:id/checks</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns paginated check history for a monitor (max 200 per page).
+
+```bash
+curl https://unstatus.app/api/v1/monitors/clx1abc.../checks?limit=5 \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "id": "chk_...",
+      "monitorId": "clx1abc...",
+      "status": "up",
+      "latency": 142,
+      "statusCode": 200,
+      "region": "eu",
+      "checkedAt": "2025-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": { "total": 1440, "limit": 5, "offset": 0, "hasMore": true }
+}
+```
+
+---
+
+## Trigger Check
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
+  <code className="text-sm">/api/v1/monitors/:id/run</code>
+  <span className="text-xs text-muted-foreground">Pro</span>
+</div>
+
+Triggers an on-demand check for a monitor.
+
+```bash
+curl -X POST https://unstatus.app/api/v1/monitors/clx1abc.../run \
+  -H "Authorization: Bearer usk_your_key"
+```

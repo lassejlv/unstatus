@@ -1,0 +1,37 @@
+---
+title: Organization
+description: Get information about your organization.
+---
+
+## Get Organization
+
+<div className="flex items-center gap-2 mb-4">
+  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
+  <code className="text-sm">/api/v1/organization</code>
+  <span className="text-xs text-muted-foreground">Free</span>
+</div>
+
+Returns information about the organization associated with your API key, including subscription status.
+
+```bash
+curl https://unstatus.app/api/v1/organization \
+  -H "Authorization: Bearer usk_your_key"
+```
+
+```json title="Response"
+{
+  "data": {
+    "id": "org_...",
+    "name": "Acme Inc",
+    "slug": "acme",
+    "logo": null,
+    "createdAt": "2025-01-01T00:00:00Z",
+    "subscriptionActive": true,
+    "subscriptionPlanName": "Pro",
+    "cancelAtPeriodEnd": false,
+    "plan": "pro"
+  }
+}
+```
+
+The `plan` field is a convenience field that returns `"pro"` or `"free"` based on the subscription status. Use it to check which tier your API key has access to.
