@@ -602,9 +602,17 @@ function ApiKeysSection({ orgId }: { orgId: string }) {
           </CardContent>
         )}
         <CardFooter className="border-t">
-          <p className="text-xs text-muted-foreground">
-            Free: 100 req/hr (read-only) · Pro: 1,000 req/hr (full access)
-          </p>
+          <div className="flex w-full items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              Free: 100 req/hr (read-only) · Pro: 1,000 req/hr (full access)
+            </p>
+            <a
+              href="/docs"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              API docs
+            </a>
+          </div>
         </CardFooter>
       </Card>
     </div>

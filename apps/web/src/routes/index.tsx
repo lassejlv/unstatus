@@ -122,6 +122,7 @@ function HomePage() {
         <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-6">
           <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} unstatus</span>
           <div className="flex items-center gap-4">
+            <a href="/docs" className="text-xs text-muted-foreground hover:text-foreground">Docs</a>
             <Link to="/registry" className="text-xs text-muted-foreground hover:text-foreground">Registry</Link>
             <Link to="/pricing" className="text-xs text-muted-foreground hover:text-foreground">Pricing</Link>
             <Link to="/legal" className="text-xs text-muted-foreground hover:text-foreground">Legal</Link>
