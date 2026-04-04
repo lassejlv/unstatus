@@ -42,9 +42,9 @@ function PricingPage() {
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!session) { navigate({ to: "/login" }); return; }
-    await authClient.checkoutEmbed({ slug: "pro" });
+    navigate({ to: "/dashboard/billing" });
   };
 
   return (

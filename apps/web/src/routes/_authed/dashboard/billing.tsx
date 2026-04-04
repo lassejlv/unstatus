@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useTheme } from "@/hooks/use-theme";
 
 export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
@@ -32,6 +33,7 @@ function BillingPage() {
 
 function CurrentPlanCard({ orgId }: { orgId: string }) {
   const { isPro, planName, cancelAtPeriodEnd } = useSubscription();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -65,7 +67,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
               onClick={async () => {
                 setLoading(true);
                 try {
-                  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId });
+                  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
                 } finally {
                   setLoading(false);
                 }
