@@ -23,6 +23,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Activity, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
@@ -74,8 +75,30 @@ function DashboardIndex() {
 
   if (overviewLoading || pagesLoading || incidentsLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center py-12">
-        <Spinner className="size-5" />
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
+        {/* Status banner skeleton */}
+        <Skeleton className="h-12 w-full rounded-lg" />
+        
+        {/* Onboarding skeleton */}
+        <Skeleton className="h-32 w-full rounded-lg" />
+        
+        {/* Stats row skeleton */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-20 rounded-lg" />
+          <Skeleton className="h-20 rounded-lg" />
+        </div>
+        
+        {/* Chart skeleton */}
+        <Skeleton className="h-64 w-full rounded-lg" />
+        
+        {/* Monitors list skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
       </div>
     );
   }

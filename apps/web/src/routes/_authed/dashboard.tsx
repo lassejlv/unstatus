@@ -17,6 +17,7 @@ import { OrgSwitcher } from "@/components/org-switcher";
 import { UserDropdown } from "@/components/user-dropdown";
 import { OrgProvider } from "@/components/org-context";
 import { authClient } from "@/lib/auth-client";
+import { motion } from "motion/react";
 import {
   LayoutDashboard,
   Activity,
@@ -78,7 +79,19 @@ function DashboardLayout() {
                           isActive={!!matchRoute({ to: item.to, fuzzy: item.to !== "/dashboard" })}
                         >
                           <Link to={item.to} search={item.search} className="group/nav">
-                            <Icon className="size-4 transition-transform duration-200 ease-out group-hover/nav:translate-x-0.5" />
+                            <motion.div
+                              whileHover={{ 
+                                scale: 1.15,
+                                rotate: [0, -10, 10, -5, 5, 0],
+                              }}
+                              transition={{ 
+                                scale: { duration: 0.2 },
+                                rotate: { duration: 0.4, ease: "easeInOut" }
+                              }}
+                              className="flex items-center justify-center"
+                            >
+                              <Icon className="size-4" />
+                            </motion.div>
                             <span className="transition-transform duration-200 ease-out group-hover/nav:translate-x-0.5">{item.label}</span>
                           </Link>
                         </SidebarMenuButton>

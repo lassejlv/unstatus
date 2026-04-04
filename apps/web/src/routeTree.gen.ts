@@ -24,7 +24,6 @@ import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashb
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
-import { Route as ApiAutumnSplatRouteImport } from './routes/api/autumn/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
 import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
@@ -112,11 +111,6 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   path: '/api/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAutumnSplatRoute = ApiAutumnSplatRouteImport.update({
-  id: '/api/autumn/$',
-  path: '/api/autumn/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -196,7 +190,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -223,7 +216,6 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -253,7 +245,6 @@ export interface FileRoutesById {
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
@@ -283,7 +274,6 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
-    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -310,7 +300,6 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/subscribers'
     | '/api/auth/$'
-    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -339,7 +328,6 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/settings'
     | '/_authed/dashboard/subscribers'
     | '/api/auth/$'
-    | '/api/autumn/$'
     | '/api/rpc/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
@@ -363,7 +351,6 @@ export interface RootRouteChildren {
   RegistrySlugRoute: typeof RegistrySlugRoute
   RegistryIndexRoute: typeof RegistryIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiAutumnSplatRoute: typeof ApiAutumnSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
   StatusSlugVerifyRoute: typeof StatusSlugVerifyRoute
@@ -475,13 +462,6 @@ declare module '@tanstack/react-router' {
       path: '/api/rpc/$'
       fullPath: '/api/rpc/$'
       preLoaderRoute: typeof ApiRpcSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/autumn/$': {
-      id: '/api/autumn/$'
-      path: '/api/autumn/$'
-      fullPath: '/api/autumn/$'
-      preLoaderRoute: typeof ApiAutumnSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -620,7 +600,6 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrySlugRoute: RegistrySlugRoute,
   RegistryIndexRoute: RegistryIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiAutumnSplatRoute: ApiAutumnSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,
   StatusSlugVerifyRoute: StatusSlugVerifyRoute,

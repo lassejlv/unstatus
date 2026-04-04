@@ -38,6 +38,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { X, Play, Square, Ban } from "lucide-react";
 
 export const Route = createFileRoute(
@@ -142,7 +143,23 @@ function MaintenancePage() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12"><Spinner /></div>
+        <div className="space-y-4">
+          {/* Table header skeleton */}
+          <div className="flex gap-1.5">
+            <Skeleton className="h-7 w-14" />
+            <Skeleton className="h-7 w-20" />
+            <Skeleton className="h-7 w-16" />
+            <Skeleton className="h-7 w-16" />
+          </div>
+          
+          {/* Table rows skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </div>
       ) : filtered.length === 0 ? (
         <Empty>
           <EmptyHeader>

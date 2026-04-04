@@ -67,7 +67,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
               onClick={async () => {
                 setLoading(true);
                 try {
-                  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId, theme: theme === "dark" ? "dark" : "light",  });
                 } finally {
                   setLoading(false);
                 }

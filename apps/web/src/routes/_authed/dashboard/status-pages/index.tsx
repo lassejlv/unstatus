@@ -37,6 +37,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { X, ChevronLeft, ExternalLink, Trash2, Globe, GripVertical, Plus, Pencil } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
@@ -84,8 +85,19 @@ function StatusPagesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center py-12">
-        <Spinner className="size-5" />
+      <div className="flex flex-1 flex-col gap-4">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-9 w-36" />
+        </div>
+        
+        {/* Pages list skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       </div>
     );
   }
