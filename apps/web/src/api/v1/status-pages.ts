@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
-import { getApiContext, requirePro } from "../middleware/auth";
+import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination } from "../helpers";
 
 const app = new Hono();
@@ -52,10 +52,9 @@ app.get("/:id", async (c) => {
   return success(c, statusPage);
 });
 
-// POST /status-pages - Create status page (Pro)
+// POST /status-pages - Create status page
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const body = await c.req.json();
   const { name, slug } = body;
@@ -86,10 +85,9 @@ app.post("/", async (c) => {
   return success(c, statusPage, 201);
 });
 
-// PATCH /status-pages/:id - Update status page (Pro)
+// PATCH /status-pages/:id - Update status page
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const statusPage = await prisma.statusPage.findUnique({ where: { id } });
@@ -118,10 +116,9 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /status-pages/:id - Delete status page (Pro)
+// DELETE /status-pages/:id - Delete status page
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const statusPage = await prisma.statusPage.findUnique({ where: { id } });

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
-import { getApiContext, requirePro } from "../middleware/auth";
+import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination } from "../helpers";
 
 const app = new Hono();
@@ -37,10 +37,9 @@ app.get("/:id", async (c) => {
   return success(c, monitor);
 });
 
-// POST /monitors - Create monitor (Pro)
+// POST /monitors - Create monitor
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const body = await c.req.json();
   const { name, type, interval, timeout, url, method, headers, body: reqBody, host, port, rules, regions, autoIncidents } = body;
@@ -76,10 +75,9 @@ app.post("/", async (c) => {
   return success(c, monitor, 201);
 });
 
-// PATCH /monitors/:id - Update monitor (Pro)
+// PATCH /monitors/:id - Update monitor
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const monitor = await prisma.monitor.findUnique({ where: { id } });
@@ -109,10 +107,9 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /monitors/:id - Delete monitor (Pro)
+// DELETE /monitors/:id - Delete monitor
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const monitor = await prisma.monitor.findUnique({ where: { id } });
@@ -149,10 +146,9 @@ app.get("/:id/checks", async (c) => {
   return paginated(c, items, total, take, offset);
 });
 
-// POST /monitors/:id/run - Trigger manual check (Pro)
+// POST /monitors/:id/run - Trigger manual check
 app.post("/:id/run", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const monitor = await prisma.monitor.findUnique({ where: { id } });

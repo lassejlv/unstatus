@@ -3,14 +3,14 @@ title: Notification Channels
 description: Manage notification channels for alerts.
 ---
 
-Notification channels send alerts via Discord webhooks or email when events occur. All notification endpoints require Pro.
+Notification channels send alerts via Discord webhooks or email when events occur.
 
 ## List Channels
 
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-emerald-500">GET</span>
   <code className="text-sm">/api/v1/notifications</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 ```bash
@@ -48,7 +48,7 @@ curl https://unstatus.app/api/v1/notifications \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
   <code className="text-sm">/api/v1/notifications</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 | Field | Type | Required | Description |
@@ -84,7 +84,7 @@ curl -X POST https://unstatus.app/api/v1/notifications \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
   <code className="text-sm">/api/v1/notifications/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 ---
@@ -94,5 +94,5 @@ curl -X POST https://unstatus.app/api/v1/notifications \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
   <code className="text-sm">/api/v1/notifications/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>

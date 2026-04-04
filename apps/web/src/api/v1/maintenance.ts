@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
-import { getApiContext, requirePro } from "../middleware/auth";
+import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination } from "../helpers";
 
 const app = new Hono();
@@ -49,10 +49,9 @@ app.get("/:id", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance - Create maintenance window (Pro)
+// POST /maintenance - Create maintenance window
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const body = await c.req.json();
   const { title, description, scheduledStart, scheduledEnd, monitorIds } = body;
@@ -100,10 +99,9 @@ app.post("/", async (c) => {
   return success(c, mw, 201);
 });
 
-// PATCH /maintenance/:id - Update maintenance window (Pro)
+// PATCH /maintenance/:id - Update maintenance window
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const existing = await prisma.maintenanceWindow.findUnique({ where: { id } });
@@ -155,10 +153,9 @@ app.patch("/:id", async (c) => {
   return success(c, mw);
 });
 
-// DELETE /maintenance/:id - Delete maintenance window (Pro)
+// DELETE /maintenance/:id - Delete maintenance window
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const existing = await prisma.maintenanceWindow.findUnique({ where: { id } });
@@ -174,10 +171,9 @@ app.delete("/:id", async (c) => {
   return success(c, { deleted: true });
 });
 
-// POST /maintenance/:id/start - Begin maintenance (Pro)
+// POST /maintenance/:id/start - Begin maintenance
 app.post("/:id/start", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const existing = await prisma.maintenanceWindow.findUnique({
@@ -207,10 +203,9 @@ app.post("/:id/start", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance/:id/complete - Complete maintenance (Pro)
+// POST /maintenance/:id/complete - Complete maintenance
 app.post("/:id/complete", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const existing = await prisma.maintenanceWindow.findUnique({
@@ -240,10 +235,9 @@ app.post("/:id/complete", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance/:id/cancel - Cancel maintenance (Pro)
+// POST /maintenance/:id/cancel - Cancel maintenance
 app.post("/:id/cancel", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const existing = await prisma.maintenanceWindow.findUnique({ where: { id } });

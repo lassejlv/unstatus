@@ -1,6 +1,5 @@
 import type { Context, Next } from "hono";
 import { prisma } from "@/lib/prisma";
-import { ApiError } from "../helpers";
 
 type ApiContext = {
   organizationId: string;
@@ -62,11 +61,4 @@ export function getApiContext(c: Context): ApiContext {
     isPro: c.get("isPro") as boolean,
     apiKeyId: c.get("apiKeyId") as string,
   };
-}
-
-export function requirePro(c: Context): void {
-  const { isPro } = getApiContext(c);
-  if (!isPro) {
-    throw new ApiError("FORBIDDEN", "This endpoint requires a Pro subscription. Upgrade at /pricing.", 403);
-  }
 }

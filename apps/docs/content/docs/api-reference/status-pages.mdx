@@ -61,7 +61,7 @@ curl https://unstatus.app/api/v1/status-pages \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
   <code className="text-sm">/api/v1/status-pages</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 | Field | Type | Required | Description |
@@ -69,12 +69,12 @@ curl https://unstatus.app/api/v1/status-pages \
 | `name` | string | Yes | Page name |
 | `slug` | string | Yes | URL slug (unique) |
 | `isPublic` | boolean | No | Publicly visible (default true) |
-| `customDomain` | string | No | Custom domain (Pro) |
+| `customDomain` | string | No | Custom domain |
 | `brandColor` | string | No | Hex color (default `#000000`) |
 | `logoUrl` | string | No | Logo URL |
 | `headerText` | string | No | Header text/HTML |
 | `footerText` | string | No | Footer text/HTML |
-| `customCss` | string | No | Custom CSS (Pro) |
+| `customCss` | string | No | Custom CSS |
 | `showResponseTimes` | boolean | No | Show response times (default true) |
 
 ```bash
@@ -95,7 +95,7 @@ curl -X POST https://unstatus.app/api/v1/status-pages \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
   <code className="text-sm">/api/v1/status-pages/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Only include the fields you want to change.
@@ -107,7 +107,7 @@ Only include the fields you want to change.
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
   <code className="text-sm">/api/v1/status-pages/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Permanently deletes a status page, its monitor links, and all subscribers.

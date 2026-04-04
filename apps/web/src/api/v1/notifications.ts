@@ -1,14 +1,13 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
-import { getApiContext, requirePro } from "../middleware/auth";
+import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination } from "../helpers";
 
 const app = new Hono();
 
-// GET /notifications - List notification channels (Pro)
+// GET /notifications - List notification channels
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
   const { limit, offset } = parsePagination(c);
 
   const where = { organizationId };
@@ -25,10 +24,9 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// POST /notifications - Create notification channel (Pro)
+// POST /notifications - Create notification channel
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const body = await c.req.json();
   const { name, type } = body;
@@ -65,10 +63,9 @@ app.post("/", async (c) => {
   return success(c, channel, 201);
 });
 
-// PATCH /notifications/:id - Update notification channel (Pro)
+// PATCH /notifications/:id - Update notification channel
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const channel = await prisma.notificationChannel.findUnique({ where: { id } });
@@ -96,10 +93,9 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /notifications/:id - Delete notification channel (Pro)
+// DELETE /notifications/:id - Delete notification channel
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const channel = await prisma.notificationChannel.findUnique({ where: { id } });

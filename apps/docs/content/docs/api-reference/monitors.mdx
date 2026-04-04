@@ -69,7 +69,7 @@ curl https://unstatus.app/api/v1/monitors/clx1abc... \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
   <code className="text-sm">/api/v1/monitors</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Creates a new monitor. Maximum 50 monitors per organization.
@@ -126,7 +126,7 @@ curl -X POST https://unstatus.app/api/v1/monitors \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-amber-500">PATCH</span>
   <code className="text-sm">/api/v1/monitors/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Updates a monitor. Only include the fields you want to change.
@@ -145,7 +145,7 @@ curl -X PATCH https://unstatus.app/api/v1/monitors/clx1abc... \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-red-500">DELETE</span>
   <code className="text-sm">/api/v1/monitors/:id</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Permanently deletes a monitor and all its check history.
@@ -196,7 +196,7 @@ curl https://unstatus.app/api/v1/monitors/clx1abc.../checks?limit=5 \
 <div className="flex items-center gap-2 mb-4">
   <span className="rounded bg-blue-500/10 px-2 py-0.5 text-xs font-mono font-semibold text-blue-500">POST</span>
   <code className="text-sm">/api/v1/monitors/:id/run</code>
-  <span className="text-xs text-muted-foreground">Pro</span>
+  <span className="text-xs text-muted-foreground">Authenticated</span>
 </div>
 
 Triggers an on-demand check for a monitor.

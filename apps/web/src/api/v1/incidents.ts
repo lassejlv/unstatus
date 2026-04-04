@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
-import { getApiContext, requirePro } from "../middleware/auth";
+import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination } from "../helpers";
 
 const app = new Hono();
@@ -52,10 +52,9 @@ app.get("/:id", async (c) => {
   return success(c, rest);
 });
 
-// POST /incidents - Create incident (Pro)
+// POST /incidents - Create incident
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const body = await c.req.json();
   const { monitorIds, title, status, severity, message } = body;
@@ -100,10 +99,9 @@ app.post("/", async (c) => {
   return success(c, incident, 201);
 });
 
-// PATCH /incidents/:id - Update incident (Pro)
+// PATCH /incidents/:id - Update incident
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const body = await c.req.json();
@@ -150,10 +148,9 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /incidents/:id - Delete incident (Pro)
+// DELETE /incidents/:id - Delete incident
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
-  requirePro(c);
 
   const id = c.req.param("id");
   const incident = await prisma.incident.findUnique({
