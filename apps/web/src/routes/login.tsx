@@ -57,13 +57,13 @@ function LoginPage() {
               Continue with Google
             </Button>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <Checkbox
                 id="terms"
                 checked={accepted}
                 onCheckedChange={(checked) => setAccepted(checked === true)}
               />
-              <label htmlFor="terms" className="text-sm text-muted-foreground">
+              <label htmlFor="terms" className="text-sm leading-none text-muted-foreground">
                 I agree to the{" "}
                 <Link to="/legal" className="underline hover:text-foreground">
                   Terms of Service and Privacy Policy
