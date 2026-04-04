@@ -357,6 +357,54 @@ export const monitorsRouter = {
         }
       } catch {}
 
+      // Per-monitor daily uptime bars (last 45 days)
+      const dailyByMonitor = new Map<string, { date: string; status: string }[]>();
+      try {
+        const fortyFiveDaysAgo = new Date(Date.now() - 45 * 86_400_000);
+        const dailyRollups = await prisma.monitorCheckDailyRollup.findMany({
+          where: {
+            monitorId: { in: monitorIds },
+            bucketDate: { gte: fortyFiveDaysAgo },
+          },
+          select: {
+            monitorId: true,
+            bucketDate: true,
+            totalChecks: true,
+            upChecks: true,
+            downChecks: true,
+            degradedChecks: true,
+          },
+        });
+
+        const byMonitor = new Map<string, typeof dailyRollups>();
+        for (const r of dailyRollups) {
+          const arr = byMonitor.get(r.monitorId) ?? [];
+          arr.push(r);
+          byMonitor.set(r.monitorId, arr);
+        }
+
+        for (const mid of monitorIds) {
+          const rollups = byMonitor.get(mid) ?? [];
+          const dateMap = new Map(
+            rollups.map((d) => [d.bucketDate.toISOString().split("T")[0], d]),
+          );
+          const days: { date: string; status: string }[] = [];
+          for (let i = 44; i >= 0; i--) {
+            const date = new Date(Date.now() - i * 86_400_000);
+            const key = date.toISOString().split("T")[0];
+            const entry = dateMap.get(key);
+            let status = "empty";
+            if (entry && entry.totalChecks > 0) {
+              if (entry.downChecks > 0) status = "down";
+              else if (entry.degradedChecks > 0) status = "degraded";
+              else status = "up";
+            }
+            days.push({ date: key, status });
+          }
+          dailyByMonitor.set(mid, days);
+        }
+      } catch {}
+
       const latestMap = new Map(latestChecks.map((c) => [c.monitorId, c]));
       const avgMap = new Map(avgLatencies.map((a) => [a.monitorId, a]));
 
@@ -373,6 +421,7 @@ export const monitorsRouter = {
           lastCheckedAt: latest?.checkedAt ?? null,
           avgLatency24h: avg?.avg_latency ?? null,
           checkCount24h: avg ? Number(avg.check_count) : 0,
+          dailyStats: dailyByMonitor.get(m.id) ?? [],
         };
       });
 
