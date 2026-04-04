@@ -1,10 +1,95 @@
 import { Hono } from "hono";
+import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { getApiContext } from "../middleware/auth";
-import { ApiError, success, paginated, parsePagination } from "../helpers";
+import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
+const monitorTypeSchema = z.enum(["http", "tcp", "ping"]);
+const regionSchema = z.enum(["eu", "us", "asia"]);
+const ruleSchema = z.object({
+  type: z.string().trim().min(1),
+  operator: z.string().trim().min(1),
+  value: z.string(),
+});
+
+function validateMonitorFields(
+  value: {
+    type?: z.infer<typeof monitorTypeSchema>;
+    url?: string | null;
+    host?: string | null;
+    port?: number | null;
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (value.type === "http" && !value.url) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["url"],
+      message: "url is required for HTTP monitors",
+    });
+  }
+
+  if (value.type === "tcp") {
+    if (!value.host) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["host"],
+        message: "host is required for TCP monitors",
+      });
+    }
+
+    if (value.port == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["port"],
+        message: "port is required for TCP monitors",
+      });
+    }
+  }
+
+  if (value.type === "ping" && !value.host && !value.url) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["host"],
+      message: "host or url is required for ping monitors",
+    });
+  }
+}
+
+const createMonitorBodySchema = z.object({
+  name: z.string().trim().min(1),
+  type: monitorTypeSchema,
+  interval: z.number().int().min(10).default(60),
+  timeout: z.number().int().min(1).default(10),
+  url: z.string().trim().min(1).optional().nullable(),
+  method: z.string().trim().min(1).default("GET"),
+  headers: z.record(z.string(), z.string()).optional(),
+  body: z.string().optional().nullable(),
+  host: z.string().trim().min(1).optional().nullable(),
+  port: z.number().int().positive().optional().nullable(),
+  rules: z.array(ruleSchema).optional(),
+  regions: z.array(regionSchema).nonempty().default(["eu"]),
+  autoIncidents: z.boolean().default(false),
+}).superRefine(validateMonitorFields);
+
+const updateMonitorBodySchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  type: monitorTypeSchema.optional(),
+  interval: z.number().int().min(10).optional(),
+  timeout: z.number().int().min(1).optional(),
+  url: z.string().trim().min(1).nullable().optional(),
+  method: z.string().trim().min(1).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
+  body: z.string().nullable().optional(),
+  host: z.string().trim().min(1).nullable().optional(),
+  port: z.number().int().positive().nullable().optional(),
+  rules: z.array(ruleSchema).optional(),
+  regions: z.array(regionSchema).nonempty().optional(),
+  autoIncidents: z.boolean().optional(),
+  active: z.boolean().optional(),
+}).superRefine(validateMonitorFields);
 
 // GET /monitors - List monitors
 app.get("/", async (c) => {
@@ -40,13 +125,8 @@ app.get("/:id", async (c) => {
 // POST /monitors - Create monitor
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, createMonitorBodySchema);
   const { name, type, interval, timeout, url, method, headers, body: reqBody, host, port, rules, regions, autoIncidents } = body;
-
-  if (!name || !type) {
-    throw new ApiError("BAD_REQUEST", "name and type are required", 400);
-  }
 
   const count = await prisma.monitor.count({ where: { organizationId } });
   if (count >= 50) {
@@ -85,7 +165,7 @@ app.patch("/:id", async (c) => {
     throw new ApiError("NOT_FOUND", "Monitor not found", 404);
   }
 
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, updateMonitorBodySchema);
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;

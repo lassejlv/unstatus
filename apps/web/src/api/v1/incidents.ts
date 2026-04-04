@@ -1,10 +1,26 @@
 import { Hono } from "hono";
+import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
 import { getApiContext } from "../middleware/auth";
-import { ApiError, success, paginated, parsePagination } from "../helpers";
+import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
+const incidentStatusSchema = z.enum(["investigating", "identified", "monitoring", "resolved"]);
+const incidentSeveritySchema = z.enum(["minor", "major", "critical"]);
+
+const createIncidentBodySchema = z.object({
+  monitorIds: z.array(z.string()).min(1),
+  title: z.string().trim().min(1),
+  status: incidentStatusSchema.optional(),
+  severity: incidentSeveritySchema.optional(),
+  message: z.string().trim().min(1),
+});
+
+const updateIncidentBodySchema = z.object({
+  status: incidentStatusSchema,
+  message: z.string().trim().min(1),
+});
 
 // GET /incidents - List incidents
 app.get("/", async (c) => {
@@ -55,13 +71,8 @@ app.get("/:id", async (c) => {
 // POST /incidents - Create incident
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, createIncidentBodySchema);
   const { monitorIds, title, status, severity, message } = body;
-
-  if (!monitorIds?.length || !title || !message) {
-    throw new ApiError("BAD_REQUEST", "monitorIds, title, and message are required", 400);
-  }
 
   // Verify all monitors belong to this org
   const monitors = await prisma.monitor.findMany({
@@ -104,12 +115,8 @@ app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
   const id = c.req.param("id");
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, updateIncidentBodySchema);
   const { status, message } = body;
-
-  if (!status || !message) {
-    throw new ApiError("BAD_REQUEST", "status and message are required", 400);
-  }
 
   const incident = await prisma.incident.findUnique({
     where: { id },

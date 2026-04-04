@@ -1,9 +1,33 @@
 import { Hono } from "hono";
+import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { getApiContext } from "../middleware/auth";
-import { ApiError, success, paginated, parsePagination } from "../helpers";
+import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
+const statusPageFields = {
+  name: z.string().trim().min(1),
+  slug: z.string().trim().min(1),
+  customDomain: z.string().trim().min(1).nullable().optional(),
+  isPublic: z.boolean().optional(),
+  logoUrl: z.string().trim().min(1).nullable().optional(),
+  faviconUrl: z.string().trim().min(1).nullable().optional(),
+  brandColor: z.string().trim().min(1).optional(),
+  headerText: z.string().nullable().optional(),
+  footerText: z.string().nullable().optional(),
+  customCss: z.string().nullable().optional(),
+  customJs: z.string().nullable().optional(),
+  showResponseTimes: z.boolean().optional(),
+  showDependencies: z.boolean().optional(),
+};
+
+const createStatusPageBodySchema = z.object({
+  ...statusPageFields,
+  name: z.string().trim().min(1),
+  slug: z.string().trim().min(1),
+});
+
+const updateStatusPageBodySchema = z.object(statusPageFields).partial();
 
 // GET /status-pages - List status pages
 app.get("/", async (c) => {
@@ -55,13 +79,8 @@ app.get("/:id", async (c) => {
 // POST /status-pages - Create status page
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, createStatusPageBodySchema);
   const { name, slug } = body;
-
-  if (!name || !slug) {
-    throw new ApiError("BAD_REQUEST", "name and slug are required", 400);
-  }
 
   const statusPage = await prisma.statusPage.create({
     data: {
@@ -95,7 +114,7 @@ app.patch("/:id", async (c) => {
     throw new ApiError("NOT_FOUND", "Status page not found", 404);
   }
 
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, updateStatusPageBodySchema);
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;

@@ -1,10 +1,26 @@
 import { Hono } from "hono";
+import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
 import { getApiContext } from "../middleware/auth";
-import { ApiError, success, paginated, parsePagination } from "../helpers";
+import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
+const dateTimeSchema = z.string().refine(
+  (value) => !Number.isNaN(new Date(value).getTime()),
+  { message: "Invalid date/time" },
+);
+
+const maintenanceBodyFields = {
+  title: z.string().trim().min(1),
+  description: z.string().nullable().optional(),
+  scheduledStart: dateTimeSchema,
+  scheduledEnd: dateTimeSchema,
+  monitorIds: z.array(z.string()).min(1),
+};
+
+const createMaintenanceBodySchema = z.object(maintenanceBodyFields);
+const updateMaintenanceBodySchema = z.object(maintenanceBodyFields).partial();
 
 const includeMonitors = {
   monitors: {
@@ -52,13 +68,8 @@ app.get("/:id", async (c) => {
 // POST /maintenance - Create maintenance window
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, createMaintenanceBodySchema);
   const { title, description, scheduledStart, scheduledEnd, monitorIds } = body;
-
-  if (!title || !scheduledStart || !scheduledEnd || !monitorIds?.length) {
-    throw new ApiError("BAD_REQUEST", "title, scheduledStart, scheduledEnd, and monitorIds are required", 400);
-  }
 
   const start = new Date(scheduledStart);
   const end = new Date(scheduledEnd);
@@ -113,7 +124,7 @@ app.patch("/:id", async (c) => {
     throw new ApiError("BAD_REQUEST", "Can only edit scheduled maintenance windows", 400);
   }
 
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, updateMaintenanceBodySchema);
   const start = body.scheduledStart ? new Date(body.scheduledStart) : existing.scheduledStart;
   const end = body.scheduledEnd ? new Date(body.scheduledEnd) : existing.scheduledEnd;
   if (end <= start) {

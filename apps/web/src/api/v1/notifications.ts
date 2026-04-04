@@ -1,9 +1,45 @@
 import { Hono } from "hono";
+import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { getApiContext } from "../middleware/auth";
-import { ApiError, success, paginated, parsePagination } from "../helpers";
+import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
+const notificationSettingsSchema = {
+  onIncidentCreated: z.boolean().optional(),
+  onIncidentResolved: z.boolean().optional(),
+  onIncidentUpdated: z.boolean().optional(),
+  onMonitorDown: z.boolean().optional(),
+  onMonitorRecovered: z.boolean().optional(),
+  onMaintenanceScheduled: z.boolean().optional(),
+  onMaintenanceStarted: z.boolean().optional(),
+  onMaintenanceCompleted: z.boolean().optional(),
+};
+
+const createNotificationBodySchema = z.discriminatedUnion("type", [
+  z.object({
+    name: z.string().trim().min(1),
+    type: z.literal("discord"),
+    webhookUrl: z.string().trim().min(1),
+    recipientEmail: z.string().trim().min(1).optional(),
+    ...notificationSettingsSchema,
+  }),
+  z.object({
+    name: z.string().trim().min(1),
+    type: z.literal("email"),
+    recipientEmail: z.string().trim().min(1),
+    webhookUrl: z.string().trim().min(1).optional(),
+    ...notificationSettingsSchema,
+  }),
+]);
+
+const updateNotificationBodySchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  webhookUrl: z.string().trim().min(1).nullable().optional(),
+  recipientEmail: z.string().trim().min(1).nullable().optional(),
+  enabled: z.boolean().optional(),
+  ...notificationSettingsSchema,
+});
 
 // GET /notifications - List notification channels
 app.get("/", async (c) => {
@@ -27,20 +63,8 @@ app.get("/", async (c) => {
 // POST /notifications - Create notification channel
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
-
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, createNotificationBodySchema);
   const { name, type } = body;
-
-  if (!name || !type) {
-    throw new ApiError("BAD_REQUEST", "name and type are required", 400);
-  }
-
-  if (type === "discord" && !body.webhookUrl) {
-    throw new ApiError("BAD_REQUEST", "webhookUrl is required for Discord channels", 400);
-  }
-  if (type === "email" && !body.recipientEmail) {
-    throw new ApiError("BAD_REQUEST", "recipientEmail is required for email channels", 400);
-  }
 
   const channel = await prisma.notificationChannel.create({
     data: {
@@ -73,7 +97,7 @@ app.patch("/:id", async (c) => {
     throw new ApiError("NOT_FOUND", "Notification channel not found", 404);
   }
 
-  const body = await c.req.json();
+  const body = await parseJsonBody(c, updateNotificationBodySchema);
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;
