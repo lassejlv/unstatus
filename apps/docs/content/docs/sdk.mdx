@@ -1,11 +1,11 @@
 ---
-title: Node SDK
-description: Use the official Node SDK for the Unstatus REST API.
+title: SDKs
+description: Use the official Node and Rust SDKs for the Unstatus REST API.
 ---
 
-The official Node SDK wraps the REST API with typed resource clients for monitors, incidents, status pages, maintenance windows, notifications, and organization metadata.
+Unstatus ships official SDKs for Node.js and Rust. Both wrap the REST API with typed resource clients for monitors, incidents, status pages, maintenance windows, notifications, and organization metadata.
 
-## Install
+## Node SDK
 
 ```bash title="bun"
 bun add @unstatus/node-sdk
@@ -15,7 +15,7 @@ bun add @unstatus/node-sdk
 npm install @unstatus/node-sdk
 ```
 
-## Create a Client
+### Create a Client
 
 ```ts title="Basic client"
 import { createClient } from "@unstatus/node-sdk";
@@ -27,7 +27,7 @@ const client = createClient({
 
 By default, the SDK uses `https://unstatus.app/api/v1`.
 
-## Examples
+### Examples
 
 ```ts title="List monitors"
 const { items, pagination } = await client.monitors.list({ limit: 10 });
@@ -55,7 +55,7 @@ const incident = await client.incidents.create({
 });
 ```
 
-## Error Handling
+### Error Handling
 
 The SDK throws `UnstatusApiError` for API and transport failures.
 
@@ -71,7 +71,7 @@ try {
 }
 ```
 
-## Custom Base URL
+### Custom Base URL
 
 Override the API base URL when targeting a local or self-hosted deployment.
 
@@ -82,9 +82,86 @@ const client = createClient({
 });
 ```
 
+## Rust SDK
+
+```bash title="Cargo.toml"
+[dependencies]
+unstatus-rust-sdk = "0.1.0"
+```
+
+The crate exposes an async `Client` built on `reqwest`.
+
+```rust title="Basic client"
+use unstatus_rust_sdk::Client;
+
+let client = Client::new("usk_your_api_key")?;
+```
+
+### Examples
+
+```rust title="List monitors"
+use unstatus_rust_sdk::{Client, PaginationParams};
+
+let client = Client::new("usk_your_api_key")?;
+
+let monitors = client
+    .monitors()
+    .list(Some(&PaginationParams {
+        limit: Some(10),
+        offset: None,
+    }))
+    .await?;
+
+println!("{}", monitors.items.len());
+```
+
+```rust title="Create a monitor"
+use unstatus_rust_sdk::{Client, CreateMonitorInput, MonitorType};
+
+let client = Client::new("usk_your_api_key")?;
+
+let monitor = client
+    .monitors()
+    .create(&CreateMonitorInput {
+        name: "API Server".into(),
+        r#type: MonitorType::Http,
+        url: Some("https://api.example.com/health".into()),
+        ..Default::default()
+    })
+    .await?;
+```
+
+### Error Handling
+
+The Rust SDK returns `UnstatusError` for API and transport failures.
+
+```rust title="Handle API errors"
+use unstatus_rust_sdk::{Client, UnstatusError};
+
+let client = Client::new("usk_your_api_key")?;
+
+match client.organization().get().await {
+    Ok(org) => println!("{}", org.slug),
+    Err(UnstatusError::Api { status, code, message, .. }) => {
+        eprintln!("{} {} {}", status, code, message);
+    }
+    Err(err) => eprintln!("{}", err),
+}
+```
+
+### Custom Base URL
+
+```rust title="Custom base URL"
+use unstatus_rust_sdk::Client;
+
+let client = Client::builder("usk_your_api_key")
+    .base_url("http://localhost:3000/api/v1")
+    .build()?;
+```
+
 ## Resources
 
-The SDK exposes these namespaces:
+Both SDKs expose the same resource groups:
 
 - `client.monitors`
 - `client.incidents`

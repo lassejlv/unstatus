@@ -5,7 +5,7 @@ description: Get started with the Unstatus REST API.
 
 The Unstatus API lets you programmatically manage monitors, incidents, status pages, and maintenance windows.
 
-If you are building in Node.js, prefer the official [`@unstatus/node-sdk`](/docs/sdk) over hand-writing fetch calls.
+If you are building in Node.js or Rust, prefer the official [SDKs](/docs/sdk) over hand-writing fetch calls.
 
 ## Base URL
 
@@ -47,7 +47,7 @@ curl https://unstatus.app/api/v1/monitors \
 }
 ```
 
-Or use the SDK:
+Or use an SDK:
 
 ```ts title="Node SDK"
 import { createClient } from "@unstatus/node-sdk";
@@ -60,6 +60,14 @@ const { items } = await client.monitors.list();
 console.log(items);
 ```
 
+```rust title="Rust SDK"
+use unstatus_rust_sdk::Client;
+
+let client = Client::new("usk_your_api_key")?;
+let monitors = client.monitors().list(None).await?;
+println!("{}", monitors.items.len());
+```
+
 ## Access
 
 Any valid API key can call both read and write endpoints. Rate limits still vary by plan.
@@ -67,7 +75,7 @@ Any valid API key can call both read and write endpoints. Rate limits still vary
 ## Resources
 
 - [Authentication](/docs/authentication) — API key setup and usage
-- [Node SDK](/docs/sdk) — Typed Node client for the API
+- [SDKs](/docs/sdk) — Official Node and Rust clients
 - [Rate Limiting](/docs/rate-limiting) — Limits and headers
 - [Errors](/docs/errors) — Error codes and handling
 - [Monitors](/docs/api-reference/monitors) — Create and manage monitors

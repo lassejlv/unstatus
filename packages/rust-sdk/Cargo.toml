@@ -1,0 +1,21 @@
+[package]
+name = "unstatus-rust-sdk"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/lassejlv/unstatus"
+description = "Rust SDK for the Unstatus REST API"
+
+[lib]
+name = "unstatus_rust_sdk"
+path = "src/lib.rs"
+
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[dev-dependencies]
+httpmock = "0.7"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
