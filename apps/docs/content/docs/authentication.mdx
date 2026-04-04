@@ -33,6 +33,19 @@ const res = await fetch("https://unstatus.app/api/v1/monitors", {
 const { data } = await res.json();
 ```
 
+Or with the SDK:
+
+```ts title="SDK example"
+import { createClient } from "@unstatus/node-sdk";
+
+const client = createClient({
+  apiKey: "usk_your_api_key",
+});
+
+const org = await client.organization.get();
+console.log(org.plan);
+```
+
 ## Key Scoping
 
 Each API key is scoped to a single organization. The key inherits the tier of the organization:

@@ -1,0 +1,94 @@
+---
+title: Node SDK
+description: Use the official Node SDK for the Unstatus REST API.
+---
+
+The official Node SDK wraps the REST API with typed resource clients for monitors, incidents, status pages, maintenance windows, notifications, and organization metadata.
+
+## Install
+
+```bash title="bun"
+bun add @unstatus/node-sdk
+```
+
+```bash title="npm"
+npm install @unstatus/node-sdk
+```
+
+## Create a Client
+
+```ts title="Basic client"
+import { createClient } from "@unstatus/node-sdk";
+
+const client = createClient({
+  apiKey: "usk_your_api_key",
+});
+```
+
+By default, the SDK uses `https://unstatus.app/api/v1`.
+
+## Examples
+
+```ts title="List monitors"
+const { items, pagination } = await client.monitors.list({ limit: 10 });
+
+console.log(items);
+console.log(pagination.hasMore);
+```
+
+```ts title="Create a monitor"
+const monitor = await client.monitors.create({
+  name: "API Server",
+  type: "http",
+  url: "https://api.example.com/health",
+  interval: 30,
+  regions: ["eu", "us"],
+});
+```
+
+```ts title="Create an incident"
+const incident = await client.incidents.create({
+  monitorIds: [monitor.id],
+  title: "API degraded performance",
+  message: "We are investigating elevated error rates.",
+  severity: "major",
+});
+```
+
+## Error Handling
+
+The SDK throws `UnstatusApiError` for API and transport failures.
+
+```ts title="Handle API errors"
+import { UnstatusApiError } from "@unstatus/node-sdk";
+
+try {
+  await client.maintenance.start("mw_123");
+} catch (error) {
+  if (error instanceof UnstatusApiError) {
+    console.error(error.status, error.code, error.message);
+  }
+}
+```
+
+## Custom Base URL
+
+Override the API base URL when targeting a local or self-hosted deployment.
+
+```ts title="Custom base URL"
+const client = createClient({
+  apiKey: "usk_your_api_key",
+  baseUrl: "http://localhost:3000/api/v1",
+});
+```
+
+## Resources
+
+The SDK exposes these namespaces:
+
+- `client.monitors`
+- `client.incidents`
+- `client.statusPages`
+- `client.maintenance`
+- `client.notifications`
+- `client.organization`

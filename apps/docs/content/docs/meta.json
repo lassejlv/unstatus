@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "authentication",
+    "sdk",
     "rate-limiting",
     "errors",
     "---API Reference---",
