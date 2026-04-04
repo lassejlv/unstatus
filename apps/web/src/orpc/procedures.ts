@@ -1,7 +1,6 @@
 import { os, ORPCError } from "@orpc/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { autumn } from "@/lib/autumn";
 import z from "zod";
 
 export const publicProcedure = os.$context<{ headers: Headers }>();
@@ -53,63 +52,20 @@ export async function verifyOrgRole(
   return memberRole;
 }
 
-export async function checkFeature(organizationId: string, featureId: string): Promise<boolean> {
-  try {
-    const result = await autumn.check({
-      customerId: organizationId,
-      featureId,
-    });
-    return result.allowed ?? false;
-  } catch (e) {
-    console.error(`[Autumn] check failed for ${featureId}:`, e);
-    return false;
-  }
-}
-
-export async function checkAndTrackFeature(organizationId: string, featureId: string, value = 1): Promise<boolean> {
-  try {
-    const result = await autumn.check({
-      customerId: organizationId,
-      featureId,
-      sendEvent: true,
-      requiredBalance: value,
-    });
-    return result.allowed ?? false;
-  } catch (e) {
-    console.error(`[Autumn] check+track failed for ${featureId}:`, e);
-    return false;
-  }
-}
-
-export async function trackUsage(organizationId: string, featureId: string, value = 1): Promise<void> {
-  try {
-    const result = await autumn.track({
-      customerId: organizationId,
-      featureId,
-      value,
-    });
-    console.log(`[Autumn] tracked ${featureId} for ${organizationId}: value=${value}`, JSON.stringify(result));
-  } catch (e: any) {
-    console.error(`[Autumn] track failed for ${featureId} (customer=${organizationId}):`, e?.statusCode, e?.message ?? e);
-  }
-}
-
 export async function getOrgSubscription(organizationId: string) {
-  // Check any paid feature to determine if org has a paid plan
-  const isPro = await checkFeature(organizationId, "auto_incidents");
-  return { isPro };
-}
-
-export function requireFeature(allowed: boolean, featureName: string) {
-  if (!allowed) {
-    throw new ORPCError("FORBIDDEN", {
-      message: `${featureName} is available on a paid plan. Upgrade to unlock this feature.`,
-    });
-  }
+  const org = await prisma.organization.findUniqueOrThrow({
+    where: { id: organizationId },
+    select: { subscriptionActive: true },
+  });
+  return { isPro: org.subscriptionActive };
 }
 
 export function requirePro(isPro: boolean, feature: string) {
-  requireFeature(isPro, feature);
+  if (!isPro) {
+    throw new ORPCError("FORBIDDEN", {
+      message: `${feature} is available on the Pro plan. Upgrade to unlock this feature.`,
+    });
+  }
 }
 
 type OrgScopedInput = { organizationId: string };

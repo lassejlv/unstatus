@@ -4,8 +4,8 @@ import {
   orgProcedure,
   ORG_MANAGER_ROLES,
   verifyOrgRole,
-  checkFeature,
-  requireFeature,
+  getOrgSubscription,
+  requirePro,
 } from "@/orpc/procedures";
 import { isAllowedDiscordWebhookUrl } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
@@ -67,7 +67,8 @@ export const notificationsRouter = {
       if (!input.webhookUrl || !isAllowedDiscordWebhookUrl(input.webhookUrl)) {
         throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
       }
-      requireFeature(await checkFeature(input.organizationId, "discord_notifications"), "Discord notifications");
+      const { isPro } = await getOrgSubscription(input.organizationId);
+      requirePro(isPro, "Discord notifications");
     }
     return prisma.notificationChannel.create({ data: input });
   }),

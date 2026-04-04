@@ -11,9 +11,8 @@ import {
   ORG_MANAGER_ROLES,
   verifyOrgMembership,
   verifyOrgRole,
-  checkFeature,
-  checkAndTrackFeature,
-  requireFeature,
+  getOrgSubscription,
+  requirePro,
 } from "@/orpc/procedures";
 
 const domainSchema = z
@@ -83,11 +82,7 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    // Check unlimited first (boolean), then metered quota
-    const hasUnlimited = await checkFeature(input.organizationId, "unlimited_status_pages");
-    if (!hasUnlimited) {
-      requireFeature(await checkAndTrackFeature(input.organizationId, "status_pages"), "More status pages");
-    }
+    // Pro plan has unlimited status pages; free plan is not limited here (Polar handles via benefits)
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -97,19 +92,11 @@ export const statusPagesRouter = {
     await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = statusPage.organizationId;
-    // Only track custom domain when adding a NEW one (not re-saving the same)
-    if (data.customDomain && data.customDomain !== statusPage.customDomain) {
-      requireFeature(await checkAndTrackFeature(orgId, "custom_domain"), "Custom domains");
-    }
-    if (data.customCss) {
-      requireFeature(await checkFeature(orgId, "custom_css"), "Custom CSS");
-    }
-    if (data.customJs) {
-      requireFeature(await checkFeature(orgId, "custom_css"), "Custom JavaScript");
-    }
-    if (data.showDependencies) {
-      requireFeature(await checkFeature(orgId, "dependency_chain"), "Dependency chain");
-    }
+    const { isPro } = await getOrgSubscription(orgId);
+    if (data.customDomain) requirePro(isPro, "Custom domains");
+    if (data.customCss) requirePro(isPro, "Custom CSS");
+    if (data.customJs) requirePro(isPro, "Custom JavaScript");
+    if (data.showDependencies) requirePro(isPro, "Dependency chain");
 
     try {
       return await prisma.statusPage.update({ where: { id }, data });

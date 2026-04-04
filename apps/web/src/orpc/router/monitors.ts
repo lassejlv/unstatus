@@ -5,10 +5,8 @@ import {
   ORG_MANAGER_ROLES,
   verifyOrgMembership,
   verifyOrgRole,
-  checkFeature,
-  checkAndTrackFeature,
-  trackUsage,
-  requireFeature,
+  getOrgSubscription,
+  requirePro,
 } from "@/orpc/procedures";
 import { ORPCError } from "@orpc/server";
 import { Prisma } from "@unstatus/db";
@@ -243,16 +241,10 @@ export const monitorsRouter = {
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     const orgId = input.organizationId;
+    const { isPro } = await getOrgSubscription(orgId);
 
-    // Check + track monitors quota (allocated metered feature)
-    requireFeature(await checkAndTrackFeature(orgId, "monitors"), "More monitors");
-
-    if (input.autoIncidents) {
-      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
-    }
-    if (input.regions.length > 1) {
-      requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");
-    }
+    if (input.autoIncidents) requirePro(isPro, "Auto-create incidents");
+    if (input.regions.length > 1) requirePro(isPro, "Multiple regions");
 
     return prisma.monitor.create({ data: toMonitorCreateData(input) });
   }),
@@ -263,13 +255,10 @@ export const monitorsRouter = {
     await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = monitor.organizationId;
+    const { isPro } = await getOrgSubscription(orgId);
 
-    if (data.autoIncidents) {
-      requireFeature(await checkFeature(orgId, "auto_incidents"), "Auto-create incidents");
-    }
-    if (data.regions && data.regions.length > 1) {
-      requireFeature(await checkFeature(orgId, "multi_regions"), "Multiple regions");
-    }
+    if (data.autoIncidents) requirePro(isPro, "Auto-create incidents");
+    if (data.regions && data.regions.length > 1) requirePro(isPro, "Multiple regions");
 
     return prisma.monitor.update({ where: { id }, data: toMonitorUpdateData(data) });
   }),
@@ -431,9 +420,6 @@ export const monitorsRouter = {
         console.error(`Worker check failed: ${res.status} ${body}`);
         throw new ORPCError("BAD_GATEWAY", { message: "Monitor check failed. Please try again later." });
       }
-      // Track the check usage
-      await trackUsage(monitor.organizationId, "checks");
-
       return res.json();
     }),
 };

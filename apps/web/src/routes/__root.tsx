@@ -9,7 +9,6 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import TanStackQueryProvider from "../integrations/tanstack-query/root-provider";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { Toaster } from "@/components/ui/sonner";
-import { AutumnProvider } from "autumn-js/react";
 
 import appCss from "../styles.css?url";
 
@@ -54,9 +53,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased wrap-anywhere">
         <TanStackQueryProvider>
-          <AutumnProvider pathPrefix="/api/autumn">
           {children}
-          </AutumnProvider>
           <TanStackDevtools
             config={{
               hideUntilHover: true,

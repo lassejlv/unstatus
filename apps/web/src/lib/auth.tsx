@@ -3,10 +3,16 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { organization } from "better-auth/plugins";
+import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
+import { Polar } from "@polar-sh/sdk";
 import { env } from "./env";
 import { email } from "./email";
-import { autumn } from "./autumn";
 import { InvitationEmail } from "@unstatus/email";
+
+const polarClient = new Polar({
+  accessToken: env.POLAR_ACCESS_TOKEN,
+  server: env.POLAR_MODE === "production" ? "production" : "sandbox",
+});
 
 function isPersonalOrganizationSlug(slug: string, userId: string) {
   return slug.endsWith(`-personal-${userId.slice(0, 8)}`);
@@ -57,15 +63,6 @@ export const auth = betterAuth({
           });
 
           for (const m of ownedMembers) {
-            // Cancel subscription in Autumn/Stripe
-            try {
-              await autumn.customers.delete({
-                customerId: m.organizationId,
-                deleteInStripe: true,
-              });
-            } catch {}
-
-            // Delete the org (cascades to monitors, status pages, incidents, etc.)
             await prisma.organization.delete({
               where: { id: m.organizationId },
             }).catch(() => {});
@@ -103,9 +100,7 @@ export const auth = betterAuth({
               organizationId: organization.id,
               userId: user.id,
             },
-            select: {
-              role: true,
-            },
+            select: { role: true },
           });
 
           if (member?.role !== "owner") {
@@ -122,19 +117,104 @@ export const auth = betterAuth({
               message: "Your personal organization cannot be deleted.",
             });
           }
-
-          // Cancel subscription and delete customer in Autumn/Stripe
-          try {
-            await autumn.customers.delete({
-              customerId: organization.id,
-              deleteInStripe: true,
-            });
-          } catch (e) {
-            // Ignore if customer doesn't exist in Autumn
-            console.error("[Autumn] Failed to delete customer on org deletion:", e);
-          }
         },
       },
+    }),
+    polar({
+      client: polarClient,
+      createCustomerOnSignUp: true,
+      use: [
+        checkout({
+          products: [
+            {
+              productId: env.POLAR_PRO_ID,
+              slug: "pro",
+            },
+          ],
+          successUrl: "/dashboard?tab=overview",
+          authenticatedUsersOnly: true,
+        }),
+        portal(),
+        webhooks({
+          secret: env.POLAR_WEBHOOK_SECRET,
+          onSubscriptionActive: async (payload) => {
+            const sub = payload.data;
+            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+
+            if (!orgId && sub.customerId) {
+              try {
+                const customer = await polarClient.customers.get({ id: sub.customerId });
+                const userId = customer.externalId;
+                if (userId) {
+                  const member = await prisma.member.findFirst({
+                    where: { userId, role: "owner", organization: { subscriptionActive: false } },
+                    select: { organizationId: true },
+                  });
+                  orgId = member?.organizationId;
+                }
+              } catch (e) {
+                console.error("[Polar] Failed to resolve org from customer:", e);
+              }
+            }
+
+            if (!orgId) return;
+            await prisma.organization.update({
+              where: { id: orgId },
+              data: {
+                subscriptionId: sub.id,
+                subscriptionActive: true,
+                subscriptionPlanName: (sub as any).product?.name ?? "Pro",
+                cancelAtPeriodEnd: false,
+                polarCustomerId: sub.customerId,
+              },
+            }).catch((e) => console.error("[Polar] Failed to activate subscription:", e));
+          },
+          onSubscriptionUpdated: async (payload) => {
+            const sub = payload.data;
+            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+
+            if (!orgId) {
+              const org = await prisma.organization.findFirst({
+                where: { subscriptionId: sub.id },
+              });
+              orgId = org?.id;
+            }
+
+            if (!orgId) return;
+            await prisma.organization.update({
+              where: { id: orgId },
+              data: {
+                cancelAtPeriodEnd: (sub as any).cancelAtPeriodEnd ?? false,
+              },
+            }).catch((e) => console.error("[Polar] Failed to update subscription:", e));
+          },
+          onSubscriptionCanceled: async (payload) => {
+            const sub = payload.data;
+            const org = await prisma.organization.findFirst({
+              where: { subscriptionId: sub.id },
+            });
+            if (!org) return;
+            await prisma.organization.update({
+              where: { id: org.id },
+              data: { cancelAtPeriodEnd: true },
+            }).catch((e) => console.error("[Polar] Failed to mark cancellation:", e));
+          },
+          onSubscriptionRevoked: async (payload) => {
+            const sub = payload.data;
+            const org = await prisma.organization.findFirst({
+              where: { subscriptionId: sub.id },
+            });
+            if (!org) return;
+            await prisma.organization.update({
+              where: { id: org.id },
+              data: {
+                subscriptionActive: false,
+                cancelAtPeriodEnd: false,
+              },
+            }).catch((e) => console.error("[Polar] Failed to revoke subscription:", e));
+          },
+        }),
+      ],
     }),
   ],
 });

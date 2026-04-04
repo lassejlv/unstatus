@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { ArrowRight, Check } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { useCustomer, useListPlans } from "autumn-js/react";
 import { PublicNav } from "@/components/-public-nav";
 
 export const Route = createFileRoute("/pricing")({
@@ -43,14 +41,10 @@ function FadeIn({ children, className = "", delay = 0 }: { children: ReactNode; 
 function PricingPage() {
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
-  const { attach } = useCustomer();
-  const { data: plans, isLoading: plansLoading } = useListPlans();
 
-  const paidPlans = plans?.filter((p) => !p.addOn && !p.autoEnable) ?? [];
-
-  const handleCheckout = async (planId: string) => {
+  const handleCheckout = async () => {
     if (!session) { navigate({ to: "/login" }); return; }
-    await attach({ planId });
+    await authClient.checkoutEmbed({ slug: "pro" });
   };
 
   return (
@@ -72,10 +66,7 @@ function PricingPage() {
 
         {/* Plan cards */}
         <section className="mx-auto max-w-4xl px-6 py-12">
-          {plansLoading ? (
-            <div className="flex justify-center py-20"><Spinner className="size-6" /></div>
-          ) : (
-            <div className={`grid gap-6 ${paidPlans.length >= 2 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            <div className="grid gap-6 sm:grid-cols-2">
               {/* Free */}
               <FadeIn>
                 <PlanCard
@@ -88,45 +79,34 @@ function PricingPage() {
                 />
               </FadeIn>
 
-              {/* Paid plans from Autumn */}
-              {paidPlans.map((plan, i) => (
-                <FadeIn key={plan.id} delay={100 * (i + 1)}>
-                  <PlanCard
-                    name={plan.name}
-                    price={plan.price?.display?.primaryText ?? `$${plan.price?.amount ?? 0}`}
-                    period={plan.price?.display?.secondaryText ?? `/${plan.price?.interval ?? "month"}`}
-                    description={plan.description ?? ""}
-                    highlight={i === 0}
-                    features={plan.items.map((item) => {
-                      if (item.display?.primaryText) return item.display.primaryText;
-                      if (item.unlimited) return `Unlimited ${item.feature?.display?.plural ?? item.feature?.name ?? item.featureId}`;
-                      if (item.included > 0) {
-                        const name = item.included === 1
-                          ? (item.feature?.display?.singular ?? item.feature?.name ?? item.featureId)
-                          : (item.feature?.display?.plural ?? item.feature?.name ?? item.featureId);
-                        return `${item.included.toLocaleString()} ${name}`;
-                      }
-                      return item.feature?.name ?? item.featureId;
-                    })}
-                    usagePricing={plan.items
-                      .filter((item) => item.price && !item.unlimited)
-                      .map((item) => {
-                        const price = item.price!;
-                        const name = item.feature?.display?.plural ?? item.feature?.name ?? item.featureId;
-                        const amount = price.amount ?? 0;
-                        const units = price.billingUnits ?? 1;
-                        return `$${amount} per ${units > 1 ? `${units.toLocaleString()} ` : ""}${name}`;
-                      })}
-                    cta={
-                      <Button className="w-full gap-2" onClick={() => handleCheckout(plan.id)}>
-                        Get started <ArrowRight className="size-4" />
+              {/* Pro */}
+              <FadeIn delay={100}>
+                <PlanCard
+                  name="Pro"
+                  price="$10"
+                  period="/month"
+                  description="50,000 checks/month, 5 status pages, custom domains, and all features."
+                  highlight
+                  features={[
+                    "50,000 checks/month",
+                    "Unlimited status pages",
+                    "Custom domains",
+                    "Custom CSS",
+                    "Auto incidents",
+                    "Multi-regions (EU, US, Asia)",
+                    "Discord notifications",
+                    "Dependency chain",
+                    "API access",
+                    "Remove branding",
+                  ]}
+                  cta={
+                    <Button className="w-full gap-2" onClick={handleCheckout}>
+                      Get started <ArrowRight className="size-4" />
                       </Button>
                     }
                   />
                 </FadeIn>
-              ))}
             </div>
-          )}
         </section>
 
         {/* FAQ */}
