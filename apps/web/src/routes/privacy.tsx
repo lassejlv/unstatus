@@ -21,19 +21,26 @@ function PrivacyPage() {
             Back
           </Link>
 
-          <article className="mt-8 prose prose-zinc dark:prose-invert max-w-none">
+          <article className="mt-8 max-w-none">
             <Markdown 
               components={{
                 h1: ({ children }) => <h1 className="text-2xl font-medium tracking-tight mb-2">{children}</h1>,
                 h2: ({ children }) => <h2 className="text-lg font-medium mt-8 mb-3">{children}</h2>,
                 h3: ({ children }) => <h3 className="text-base font-medium mt-6 mb-2">{children}</h3>,
                 p: ({ children }) => <p className="text-sm leading-relaxed text-muted-foreground mb-4">{children}</p>,
-                li: ({ children }) => <li className="text-sm text-muted-foreground mb-1">{children}</li>,
+                ul: ({ children }) => <ul className="mb-4 space-y-1">{children}</ul>,
+                li: ({ children }) => <li className="text-sm text-muted-foreground">{children}</li>,
                 strong: ({ children }) => <strong className="font-medium text-foreground">{children}</strong>,
                 a: ({ href, children }) => <a href={href} className="text-foreground underline underline-offset-2 hover:no-underline">{children}</a>,
-                table: ({ children }) => <table className="w-full text-sm my-4 border-collapse">{children}</table>,
-                th: ({ children }) => <th className="text-left text-foreground font-medium py-2 border-b">{children}</th>,
-                td: ({ children }) => <td className="py-2 text-muted-foreground border-b">{children}</td>,
+                table: ({ children }) => (
+                  <div className="my-6 overflow-hidden rounded-lg border">
+                    <table className="w-full text-sm">{children}</table>
+                  </div>
+                ),
+                thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
+                th: ({ children }) => <th className="px-4 py-2 text-left text-xs font-medium text-foreground">{children}</th>,
+                td: ({ children }) => <td className="px-4 py-2 border-t text-muted-foreground">{children}</td>,
+                tr: ({ children }) => <tr>{children}</tr>,
               }}
             >
               {privacyContent}
