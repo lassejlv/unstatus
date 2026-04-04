@@ -342,149 +342,42 @@ function HomePage() {
           </div>
         </section>
 
-        {/* Social proof / trust strip */}
-        <section className="border-t border-b bg-muted/30">
-          <div className="mx-auto max-w-6xl px-6 py-6">
-            <div className="flex items-center justify-center gap-12 text-muted-foreground">
-              <FadeIn delay={0}>
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-emerald-500" />
-                  <span className="font-mono text-sm">99.99% uptime</span>
-                </div>
-              </FadeIn>
-              <FadeIn delay={100}>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm">10s check intervals</span>
-                </div>
-              </FadeIn>
-              <FadeIn delay={200}>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm">4 global regions</span>
-                </div>
-              </FadeIn>
-            </div>
-          </div>
-        </section>
-
         {/* Features */}
-        <section>
-          <div className="mx-auto max-w-6xl px-6 py-24">
-            <FadeIn>
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold tracking-tight lg:text-3xl">
-                  Everything you need to sleep at night
-                </h2>
-                <p className="mt-3 text-muted-foreground">
-                  No bloat. No dashboards-within-dashboards. Just the stuff that matters.
-                </p>
-              </div>
-            </FadeIn>
-            <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="border-t">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((f, i) => (
                 <FadeIn key={f.title} delay={i * 80}>
-                  <div className="group rounded-xl border p-6 transition-all duration-300 hover:border-foreground/20 hover:-translate-y-1 hover:shadow-md">
-                    <div className="flex size-10 items-center justify-center rounded-lg border bg-muted/50 transition-colors group-hover:bg-foreground group-hover:text-background">
-                      <f.icon className="size-4" />
-                    </div>
-                    <h3 className="mt-4 font-medium">{f.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {f.desc}
-                    </p>
+                  <div className="group rounded-lg border p-5 transition-colors hover:border-foreground/20">
+                    <f.icon className="size-4 text-muted-foreground" />
+                    <h3 className="mt-3 text-sm font-medium">{f.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
                   </div>
                 </FadeIn>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section className="border-t bg-muted/20">
-          <div className="mx-auto max-w-6xl px-6 py-24">
-            <FadeIn>
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold tracking-tight lg:text-3xl">
-                  Three steps. Under a minute.
-                </h2>
-                <p className="mt-3 text-muted-foreground">
-                  Seriously, it's embarrassingly easy.
-                </p>
-              </div>
-            </FadeIn>
-            <div className="mt-14 grid gap-8 lg:grid-cols-3">
-              {[
-                {
-                  step: "01",
-                  title: "Paste a URL",
-                  desc: "Enter what you want monitored. Pick your check interval. Pick your regions. Done.",
-                },
-                {
-                  step: "02",
-                  title: "Get yelled at (nicely)",
-                  desc: "When something breaks, you'll know in seconds. Email, Discord, webhook — your call.",
-                },
-                {
-                  step: "03",
-                  title: "Look professional",
-                  desc: "Ship a status page on your own domain. Your users see transparency. You see fewer support tickets.",
-                },
-              ].map((s, i) => (
-                <FadeIn key={s.step} delay={i * 120}>
-                  <div className="flex gap-5">
-                    <span className="font-mono text-4xl font-bold text-foreground/10">
-                      {s.step}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold">{s.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {s.desc}
-                      </p>
-                    </div>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Registry callout */}
-        <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-24">
-            <FadeIn>
-              <div className="rounded-2xl border bg-card p-10 text-center">
-                <h2 className="text-2xl font-semibold tracking-tight">
-                  Is it you, or is it Vercel?
-                </h2>
-                <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-                  Our service registry tracks the real-time status of 25+ popular services.
-                  Map your dependency chain and know exactly what's broken — and whose fault it is.
-                </p>
-                <Link to="/registry" className="mt-6 inline-block">
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Globe className="size-4" />
-                    Browse service registry
-                  </Button>
-                </Link>
-              </div>
-            </FadeIn>
           </div>
         </section>
 
         {/* CTA */}
         <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-28 text-center">
+          <div className="mx-auto max-w-6xl px-6 py-20 text-center">
             <FadeIn>
-              <h2 className="text-3xl font-semibold tracking-tight lg:text-4xl">
-                Stop refreshing your logs.
-                <br />
-                <span className="text-muted-foreground">Let us do it for you.</span>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Start monitoring in under a minute
               </h2>
-              <p className="mx-auto mt-5 max-w-md text-lg text-muted-foreground">
-                Join teams who'd rather ship features than babysit servers.
+              <p className="mt-3 text-muted-foreground">
+                No credit card required. Free forever for small projects.
               </p>
-              <div className="mt-8 flex items-center justify-center gap-3">
+              <div className="mt-6 flex items-center justify-center gap-3">
                 <Link to="/login">
-                  <Button size="lg" className="gap-2 h-12 px-8">
-                    Start for free <ArrowRight className="size-4" />
+                  <Button size="lg" className="gap-2">
+                    Get started <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+                <Link to="/pricing">
+                  <Button variant="outline" size="lg">
+                    See pricing
                   </Button>
                 </Link>
               </div>
@@ -493,31 +386,12 @@ function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="border-t">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="/Logo.png" alt="unstatus" className="size-5" />
-              <span className="text-xs font-semibold">unstatus</span>
-            </Link>
-            <span className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()}
-            </span>
-          </div>
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+          <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} unstatus</span>
           <div className="flex items-center gap-4">
-            <Link
-              to="/registry"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Registry
-            </Link>
-            <Link
-              to="/pricing"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Pricing
-            </Link>
+            <Link to="/registry" className="text-xs text-muted-foreground hover:text-foreground">Registry</Link>
+            <Link to="/pricing" className="text-xs text-muted-foreground hover:text-foreground">Pricing</Link>
           </div>
         </div>
       </footer>
