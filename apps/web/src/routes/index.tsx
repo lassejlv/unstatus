@@ -124,6 +124,7 @@ function HomePage() {
           <div className="flex items-center gap-4">
             <Link to="/registry" className="text-xs text-muted-foreground hover:text-foreground">Registry</Link>
             <Link to="/pricing" className="text-xs text-muted-foreground hover:text-foreground">Pricing</Link>
+            <Link to="/legal" className="text-xs text-muted-foreground hover:text-foreground">Legal</Link>
           </div>
         </div>
       </footer>

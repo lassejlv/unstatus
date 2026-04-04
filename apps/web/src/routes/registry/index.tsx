@@ -110,12 +110,15 @@ function RegistryPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-8 text-center text-xs text-muted-foreground">
-        <div className="mx-auto max-w-6xl px-6">
-          Powered by{" "}
-          <Link to="/" className="font-medium text-foreground hover:underline">
-            unstatus
-          </Link>
+      <footer className="border-t py-8 text-xs text-muted-foreground">
+        <div className="mx-auto max-w-6xl px-6 flex items-center justify-between">
+          <span>
+            Powered by{" "}
+            <Link to="/" className="font-medium text-foreground hover:underline">
+              unstatus
+            </Link>
+          </span>
+          <Link to="/legal" className="hover:text-foreground">Legal</Link>
         </div>
       </footer>
     </div>

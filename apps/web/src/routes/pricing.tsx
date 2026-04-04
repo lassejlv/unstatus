@@ -97,7 +97,10 @@ function PricingPage() {
       <footer className="mt-auto">
         <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-6">
           <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} unstatus</span>
-          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">Home</Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">Home</Link>
+            <Link to="/legal" className="text-xs text-muted-foreground hover:text-foreground">Legal</Link>
+          </div>
         </div>
       </footer>
     </div>

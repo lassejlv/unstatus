@@ -47,6 +47,7 @@ function LegalPage() {
       <footer className="mt-auto border-t">
         <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-6">
           <span className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} unstatus</span>
+          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">Home</Link>
         </div>
       </footer>
     </div>

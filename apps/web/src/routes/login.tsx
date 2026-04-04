@@ -1,7 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useRef, useState } from "react";
 import { getSession } from "@/lib/session";
 
 export const Route = createFileRoute("/login")({
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const [accepted, setAccepted] = useState(false);
+
   const handleGoogleLogin = async () => {
     await authClient.signIn.social({
       provider: "google",
@@ -42,15 +45,32 @@ function LoginPage() {
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full"
-            onClick={handleGoogleLogin}
-          >
-            <GoogleIcon />
-            Continue with Google
-          </Button>
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={handleGoogleLogin}
+              disabled={!accepted}
+            >
+              <GoogleIcon />
+              Continue with Google
+            </Button>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="terms"
+                checked={accepted}
+                onCheckedChange={(checked) => setAccepted(checked === true)}
+              />
+              <label htmlFor="terms" className="text-sm text-muted-foreground">
+                I agree to the{" "}
+                <Link to="/legal" className="underline hover:text-foreground">
+                  Terms of Service and Privacy Policy
+                </Link>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
