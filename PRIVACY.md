@@ -83,7 +83,7 @@ We use the following third-party services to operate Unstatus:
 | Service | Purpose | Data shared |
 |---------|---------|-------------|
 | **Google** | Authentication (OAuth) | Name, email, avatar |
-| **Stripe** (via Autumn) | Payment processing | Email, billing info |
+| **Polar** (polar.sh) | Payment processing | Email, billing info |
 | **Inbound Email** | Transactional email delivery | Recipient email, email content |
 | **Railway** | Infrastructure hosting | All data (stored on their servers) |
 | **PostgreSQL** | Database | All stored data |

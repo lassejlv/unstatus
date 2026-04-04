@@ -38,7 +38,7 @@ We may suspend or terminate accounts that violate these terms.
 
 ## 5. Free and Paid Plans
 
-Unstatus offers a free tier and paid plans. Paid plans are billed through our billing provider (Stripe via Autumn). By subscribing to a paid plan, you agree to pay the applicable fees. Subscriptions renew automatically unless cancelled before the end of the billing period.
+Unstatus offers a free tier and paid plans. Paid plans are billed through Polar (polar.sh). By subscribing to a paid plan, you agree to pay the applicable fees. Subscriptions renew automatically unless cancelled before the end of the billing period.
 
 - **Downgrades:** You may cancel your paid plan at any time. Access continues until the end of the current billing period.
 - **Refunds:** We do not offer refunds for partial billing periods.
