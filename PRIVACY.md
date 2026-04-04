@@ -84,9 +84,8 @@ We use the following third-party services to operate Unstatus:
 |---------|---------|-------------|
 | **Google** | Authentication (OAuth) | Name, email, avatar |
 | **Polar** (polar.sh) | Payment processing | Email, billing info |
-| **Inbound Email** | Transactional email delivery | Recipient email, email content |
+| **Resend** | Transactional email delivery | Recipient email, email content |
 | **Railway** | Infrastructure hosting | All data (stored on their servers) |
-| **PostgreSQL** | Database | All stored data |
 
 When you configure **Discord** notification channels, webhook URLs and notification content are sent to Discord's API on your behalf.
 
@@ -101,14 +100,24 @@ The only cookies we use are:
 - **Session cookie** -- required to keep you logged in
 - **UI preference cookies** -- for things like sidebar state
 
-## 5. Data Retention
+## 5. Legal Basis for Processing (GDPR)
+
+If you are in the EU/EEA, we process your data under the following legal bases:
+
+- **Contractual necessity** -- account data, monitoring data, and status page data are required to provide the Service.
+- **Legitimate interest** -- session and technical data for security and fraud prevention.
+- **Consent** -- subscriber email notifications. Subscribers may withdraw consent at any time by unsubscribing.
+
+We only use essential cookies (session, UI preferences) that do not require consent under ePrivacy rules.
+
+## 6. Data Retention
 
 - **Account data** is retained for as long as your account exists.
-- **Monitoring check data** is retained based on your plan (30 days for free plans, longer for paid plans) and then aggregated or deleted.
+- **Monitoring check data** is retained based on your plan (30 days for free plans, 365 days for paid plans) and then aggregated or deleted.
 - **Subscriber data** is retained until the subscriber unsubscribes or you delete your status page.
 - **Deleted accounts** -- when you delete your account, we delete your personal data and organization data (where you are the sole owner) within 30 days. Aggregated, anonymized data may be retained.
 
-## 6. Data Security
+## 7. Data Security
 
 We take reasonable measures to protect your data:
 
@@ -119,7 +128,7 @@ We take reasonable measures to protect your data:
 
 No system is perfectly secure. If you discover a security vulnerability, please report it to **support@unstatus.app**.
 
-## 7. Your Rights
+## 8. Your Rights
 
 You have the right to:
 
@@ -133,23 +142,27 @@ If you are in the EU/EEA, you may also have rights under the GDPR including the 
 
 To exercise any of these rights, contact **support@unstatus.app**.
 
-## 8. Children's Privacy
+## 9. Data Breach Notification
+
+In the event of a personal data breach that poses a risk to your rights and freedoms, we will notify affected users within 72 hours of becoming aware of the breach, as required by GDPR. We will also notify the relevant supervisory authority where applicable.
+
+## 10. Children's Privacy
 
 Unstatus is not intended for users under the age of 16. We do not knowingly collect personal information from children. If we learn that we have collected data from a child under 16, we will delete it promptly.
 
-## 9. International Data Transfers
+## 11. International Data Transfers
 
 Your data may be processed and stored in regions outside your country of residence, including the European Union and the United States, depending on our infrastructure provider's data center locations.
 
-## 10. Status Page Subscribers
+## 12. Status Page Subscribers
 
 If you subscribe to a status page operated by an Unstatus user, that user's organization controls the status page and decides what notifications to send. Your email address is stored by Unstatus on behalf of that organization. You can unsubscribe at any time via the link in any notification email.
 
-## 11. Changes to This Policy
+## 13. Changes to This Policy
 
 We may update this Privacy Policy from time to time. Material changes will be communicated via email or a notice in the Service. The "Effective date" at the top will be updated accordingly.
 
-## 12. Contact
+## 14. Contact
 
 For privacy-related questions or requests:
 

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicNav } from "@/components/-public-nav";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ArrowLeft } from "lucide-react";
 // @ts-ignore - Import markdown from repo root
 import privacyContent from "../../../../PRIVACY.md?raw";
@@ -23,6 +24,7 @@ function PrivacyPage() {
 
           <article className="mt-8 max-w-none">
             <Markdown 
+              remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children }) => <h1 className="text-2xl font-medium tracking-tight mb-2">{children}</h1>,
                 h2: ({ children }) => <h2 className="text-lg font-medium mt-8 mb-3">{children}</h2>,

@@ -31,6 +31,7 @@ You agree not to:
 - Send notifications or subscriber emails that constitute spam or unsolicited messages.
 - Interfere with or disrupt the Service or its infrastructure.
 - Attempt to gain unauthorized access to other users' data or accounts.
+- Abuse the API through excessive requests, scraping, or circumventing rate limits.
 - Use the Service for any illegal purpose.
 - Resell the Service without written permission.
 
@@ -50,23 +51,29 @@ You may publish public status pages under your organization. If you use a custom
 
 You must not use status pages to host content unrelated to service status, or to publish misleading or harmful content.
 
+If you use custom CSS or JavaScript on your status pages, you are solely responsible for the content and behavior of that code. We are not liable for any issues caused by custom code.
+
 ## 7. Subscriber Notifications
 
 End-users may subscribe to your status pages via email. You are responsible for ensuring that your use of subscriber notifications complies with applicable laws, including anti-spam regulations. Subscribers can unsubscribe at any time.
 
-## 8. Data and Content
+## 8. Intellectual Property
+
+The Unstatus name, logo, and product interface are owned by us. Nothing in these Terms grants you rights to our branding or trademarks. You may not use the Unstatus name or logo without written permission, except as part of the "Powered by Unstatus" attribution on free-tier status pages.
+
+## 9. Data and Content
 
 - **Your data:** You retain ownership of all data you submit to the Service (monitors, incidents, status page content, etc.).
 - **License to us:** You grant us a limited license to store, process, and display your data as necessary to operate the Service.
 - **Monitoring data:** Check results, response times, and status history are stored as part of the Service and subject to retention limits based on your plan.
 
-## 9. Availability and Support
+## 10. Availability and Support
 
 We aim to keep Unstatus available and reliable, but we do not guarantee 100% uptime. The Service is provided on an "as-is" basis. We may perform maintenance that temporarily affects availability.
 
 Support is provided via email at **support@unstatus.app** on a reasonable-effort basis.
 
-## 10. Limitation of Liability
+## 11. Limitation of Liability
 
 To the maximum extent permitted by law:
 
@@ -75,21 +82,21 @@ To the maximum extent permitted by law:
 - Our total liability for any claim arising from the Service is limited to the amount you paid us in the 12 months preceding the claim, or $50, whichever is greater.
 - We are not responsible for damages resulting from missed alerts, false positives/negatives, or monitoring failures.
 
-## 11. Termination
+## 12. Termination
 
 - You may delete your account at any time.
 - We may suspend or terminate your account for violations of these Terms, with or without notice.
-- Upon termination, your data will be deleted in accordance with our Privacy Policy.
+- Upon termination, your data will be deleted in accordance with our [Privacy Policy](/privacy).
 
-## 12. Changes to These Terms
+## 13. Changes to These Terms
 
 We may update these Terms from time to time. Material changes will be communicated via email or a notice in the Service. Continued use after changes take effect constitutes acceptance.
 
-## 13. Governing Law
+## 14. Governing Law
 
-These Terms are governed by the laws of Denmark, without regard to conflict of law provisions.
+These Terms are governed by the laws of Denmark, without regard to conflict of law provisions. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the courts of Denmark.
 
-## 14. Contact
+## 15. Contact
 
 For questions about these Terms:
 
