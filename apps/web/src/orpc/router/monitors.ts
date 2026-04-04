@@ -243,6 +243,16 @@ export const monitorsRouter = {
     const orgId = input.organizationId;
     const { isPro } = await getOrgSubscription(orgId);
 
+    if (!isPro) {
+      const count = await prisma.monitor.count({ where: { organizationId: orgId } });
+      if (count >= 1) requirePro(false, "More than 1 monitor");
+    } else {
+      const count = await prisma.monitor.count({ where: { organizationId: orgId } });
+      if (count >= 50) {
+        throw new ORPCError("FORBIDDEN", { message: "You've reached the maximum of 50 monitors." });
+      }
+    }
+
     if (input.autoIncidents) requirePro(isPro, "Auto-create incidents");
     if (input.regions.length > 1) requirePro(isPro, "Multiple regions");
 

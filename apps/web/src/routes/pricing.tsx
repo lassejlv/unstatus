@@ -83,12 +83,12 @@ function PricingPage() {
               <FadeIn delay={100}>
                 <PlanCard
                   name="Pro"
-                  price="$10"
+                  price="$15"
                   period="/month"
-                  description="50,000 checks/month, 5 status pages, custom domains, and all features."
+                  description="50 monitors, unlimited status pages, custom domains, and all features."
                   highlight
                   features={[
-                    "50,000 checks/month",
+                    "50 monitors",
                     "Unlimited status pages",
                     "Custom domains",
                     "Custom CSS",

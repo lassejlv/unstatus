@@ -3,31 +3,7 @@ import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
 import { sendNotifications } from "./notify";
-import { Polar } from "@polar-sh/sdk";
 import type { Monitor } from "@unstatus/db";
-
-const polarClient = process.env.POLAR_ACCESS_TOKEN
-  ? new Polar({ accessToken: process.env.POLAR_ACCESS_TOKEN })
-  : null;
-
-async function trackCheck(organizationId: string) {
-  if (!polarClient) return;
-  // Look up the Polar customer ID for this org
-  const org = await prisma.organization.findUnique({
-    where: { id: organizationId },
-    select: { polarCustomerId: true },
-  });
-  if (!org?.polarCustomerId) return;
-  try {
-    await polarClient.customerMeterEvents.create({
-      slug: "checks",
-      customerId: org.polarCustomerId,
-      value: 1,
-    });
-  } catch (e) {
-    console.error("[Polar] track check failed:", e);
-  }
-}
 import {
   claimLegacyMonitor,
   claimDueMonitor,
@@ -122,7 +98,6 @@ async function runLegacyChecks(now: Date) {
 
       await recordMonitorCheck(monitor, result, region, new Date());
       await handleAutoIncident(monitor, result.status);
-      trackCheck(monitor.organizationId).catch(() => {});
     }),
   );
 
@@ -150,8 +125,7 @@ export async function runChecks() {
 
         await recordMonitorCheck(monitor, result, region, new Date());
         await handleAutoIncident(monitor, result.status);
-        trackCheck(monitor.organizationId).catch(() => {});
-      }),
+        }),
     );
 
     const failed = results.filter((r) => r.status === "rejected").length;

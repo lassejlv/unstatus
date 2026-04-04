@@ -50,7 +50,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
               )}
             </div>
             {isPro ? (
-              <span className="text-sm text-muted-foreground">$10/month</span>
+              <span className="text-sm text-muted-foreground">$15/month</span>
             ) : (
               <span className="text-sm text-muted-foreground">
                 Upgrade to unlock all features
