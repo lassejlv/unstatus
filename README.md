@@ -2,6 +2,8 @@
 
 Open-source status page and uptime monitoring platform.
 
+<img width="1917" height="978" alt="Screenshot 2026-04-04 at 20 21 32" src="https://github.com/user-attachments/assets/aadbabc6-6b05-41eb-8c27-0cf3629509ad" />
+
 - Monitor services from multiple global regions
 - Custom public status pages on your domain
 - Incident management with real-time updates
