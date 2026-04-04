@@ -83,8 +83,11 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    // Check + track status pages quota (allocated metered feature)
-    requireFeature(await checkAndTrackFeature(input.organizationId, "status_pages"), "More status pages");
+    // Check unlimited first (boolean), then metered quota
+    const hasUnlimited = await checkFeature(input.organizationId, "unlimited_status_pages");
+    if (!hasUnlimited) {
+      requireFeature(await checkAndTrackFeature(input.organizationId, "status_pages"), "More status pages");
+    }
     return prisma.statusPage.create({ data: input });
   }),
 
