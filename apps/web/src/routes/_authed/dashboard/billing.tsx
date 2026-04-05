@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useOrg } from "@/components/org-context";
 import { authClient } from "@/lib/auth-client";
-import { client } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,13 +45,7 @@ function BillingPage() {
 }
 
 async function openScaleCheckout(orgId: string, theme: "light" | "dark") {
-  const { url } = await client.billing.createScaleCheckout({
-    organizationId: orgId,
-    theme,
-  });
-  // Dynamic import to avoid SSR bundling issues with browser-only @polar-sh/checkout
-  const { PolarEmbedCheckout } = await (new Function('return import("@polar-sh/checkout")')() as Promise<{ PolarEmbedCheckout: any }>);
-  await PolarEmbedCheckout.create(url, { theme });
+  await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme });
 }
 
 function CurrentPlanCard({ orgId }: { orgId: string }) {
