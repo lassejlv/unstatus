@@ -8,7 +8,7 @@ import {
 import { Hero } from "@/components/ui/animated-hero";
 import { Features } from "@/components/ui/features-2";
 
-import { getCurrentCustomDomainStatusPageServerFn } from "@/lib/public-status";
+import { getCurrentCustomDomainStatusPageServerFn } from "@/lib/public-status-server-fns";
 import { client } from "@/orpc/client";
 
 export const Route = createFileRoute("/")({
