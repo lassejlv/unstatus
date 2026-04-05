@@ -108,7 +108,9 @@ function isMissingMonitorPerfSchema(error: unknown) {
 function getHostnameFromHeaders(headers: Headers) {
   const forwardedHost = headers.get("x-forwarded-host");
   const host = forwardedHost ?? headers.get("host") ?? "";
-  return host.split(":")[0] ?? "";
+  const firstHost = host.split(",")[0]?.trim() ?? "";
+  const hostname = firstHost.split(":")[0]?.trim().toLowerCase() ?? "";
+  return hostname.endsWith(".") ? hostname.slice(0, -1) : hostname;
 }
 
 function isCustomDomain(hostname: string) {
