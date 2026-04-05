@@ -108,9 +108,10 @@ export type PublicIncidentData = {
 };
 
 export function CenteredMessage({ message }: { message: string }) {
+  const isLoading = message.toLowerCase().includes("loading");
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <Spinner className="size-5" />
+      {isLoading ? <Spinner className="size-5" /> : <p className="text-sm text-muted-foreground">{message}</p>}
     </div>
   );
 }
