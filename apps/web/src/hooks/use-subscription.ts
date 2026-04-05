@@ -1,6 +1,7 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { orpc } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
+import type { PlanTier } from "@/lib/plans";
 
 export function useSubscription() {
   const { activeOrg } = useOrg();
@@ -9,8 +10,10 @@ export function useSubscription() {
       input: activeOrg ? { organizationId: activeOrg.id } : skipToken,
     }),
   );
+  const tier: PlanTier = data?.tier ?? "free";
   return {
-    isPro: data?.subscriptionActive ?? false,
+    tier,
+    isPro: tier !== "free",
     isLoading,
     planName: data?.subscriptionPlanName ?? null,
     cancelAtPeriodEnd: data?.cancelAtPeriodEnd ?? false,

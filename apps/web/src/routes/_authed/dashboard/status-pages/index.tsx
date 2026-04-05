@@ -41,6 +41,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { X, ChevronLeft, ExternalLink, Trash2, Globe, GripVertical, Plus, Pencil } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
+import { PLAN_LIMITS } from "@/lib/plans";
 import {
   DndContext,
   closestCenter,
@@ -71,7 +72,8 @@ function StatusPagesPage() {
     input: orgId ? { organizationId: orgId } : skipToken,
   });
   const { data: pages, isLoading } = useQuery(pagesQuery);
-  const { isPro } = useSubscription();
+  const { tier } = useSubscription();
+  const maxPages = PLAN_LIMITS[tier].statusPages;
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -81,7 +83,7 @@ function StatusPagesPage() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [selectedId]);
-  const canCreateMore = isPro || !pages?.length;
+  const canCreateMore = !pages || pages.length < maxPages;
 
   if (isLoading) {
     return (
@@ -1002,7 +1004,8 @@ function EditPageInline({
   };
   onSuccess: () => void;
 }) {
-  const { isPro } = useSubscription();
+  const { tier: editTier } = useSubscription();
+  const editLimits = PLAN_LIMITS[editTier];
   const [name, setName] = useState(page.name);
   const [slug, setSlug] = useState(page.slug);
   const [isPublic, setIsPublic] = useState(page.isPublic);
@@ -1073,23 +1076,23 @@ function EditPageInline({
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label className="text-xs flex items-center gap-1.5">Custom CSS {!isPro && <ProBadge />}</Label>
+        <Label className="text-xs flex items-center gap-1.5">Custom CSS {!editLimits.customCss && <ProBadge label="Scale" />}</Label>
         <textarea
           value={customCss}
           onChange={(e) => setCustomCss(e.target.value)}
           className="h-20 w-full rounded-md border bg-transparent px-3 py-2 text-xs font-mono resize-y focus:outline-none focus:ring-1 focus:ring-ring"
           placeholder=".status-page { }"
-          disabled={!isPro}
+          disabled={!editLimits.customCss}
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label className="text-xs flex items-center gap-1.5">Custom JavaScript {!isPro && <ProBadge />}</Label>
+        <Label className="text-xs flex items-center gap-1.5">Custom JavaScript {!editLimits.customJs && <ProBadge label="Scale" />}</Label>
         <textarea
           value={customJs}
           onChange={(e) => setCustomJs(e.target.value)}
           className="h-20 w-full rounded-md border bg-transparent px-3 py-2 text-xs font-mono resize-y focus:outline-none focus:ring-1 focus:ring-ring"
           placeholder="console.log('hello')"
-          disabled={!isPro}
+          disabled={!editLimits.customJs}
         />
       </div>
       <Button
@@ -1124,7 +1127,8 @@ function CustomDomainInline({
   currentDomain: string | null;
   onSuccess: () => void;
 }) {
-  const { isPro } = useSubscription();
+  const { tier: domainTier } = useSubscription();
+  const hasCustomDomain = PLAN_LIMITS[domainTier].customDomain;
   const [domain, setDomain] = useState(currentDomain ?? "");
   const [editing, setEditing] = useState(false);
 
@@ -1152,9 +1156,9 @@ function CustomDomainInline({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium">Custom domain</span>
-          {!isPro && <ProBadge />}
+          {!hasCustomDomain && <ProBadge label="Hobby" />}
         </div>
-        {isPro && !currentDomain && !editing && (
+        {hasCustomDomain && !currentDomain && !editing && (
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -1165,7 +1169,7 @@ function CustomDomainInline({
         )}
       </div>
 
-      {!isPro ? (
+      {!hasCustomDomain ? (
         <UpgradePrompt feature="Custom domains" />
       ) : !currentDomain && !editing ? (
         <div className="rounded-lg border border-dashed px-3 py-3 flex items-center gap-2">

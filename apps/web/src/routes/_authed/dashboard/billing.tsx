@@ -12,6 +12,18 @@ export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
 });
 
+const PLAN_PRICES: Record<string, string> = {
+  free: "$0/month",
+  hobby: "$15/month",
+  scale: "$49/month",
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  free: "Free",
+  hobby: "Hobby",
+  scale: "Scale",
+};
+
 function BillingPage() {
   const { activeOrg } = useOrg();
 
@@ -32,9 +44,12 @@ function BillingPage() {
 }
 
 function CurrentPlanCard({ orgId }: { orgId: string }) {
-  const { isPro, planName, cancelAtPeriodEnd } = useSubscription();
+  const { tier, planName, cancelAtPeriodEnd } = useSubscription();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
+
+  const displayName = planName ?? PLAN_LABELS[tier];
+  const price = PLAN_PRICES[tier];
 
   return (
     <Card>
@@ -42,43 +57,77 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
         <div className="flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
-              <span className="text-xl font-semibold">{isPro ? (planName ?? "Pro") : "Free"}</span>
+              <span className="text-xl font-semibold">{displayName}</span>
               {cancelAtPeriodEnd ? (
                 <Badge variant="secondary">Canceling</Badge>
               ) : (
-                <Badge variant={isPro ? "default" : "secondary"}>
-                  {isPro ? "Active" : "Free plan"}
+                <Badge variant={tier !== "free" ? "default" : "secondary"}>
+                  {tier !== "free" ? "Active" : "Free plan"}
                 </Badge>
               )}
             </div>
-            {isPro ? (
-              <span className="text-sm text-muted-foreground">$15/month</span>
+            {tier !== "free" ? (
+              <span className="text-sm text-muted-foreground">{price}</span>
             ) : (
               <span className="text-sm text-muted-foreground">
-                Upgrade to unlock all features
+                Upgrade to unlock more features
               </span>
             )}
           </div>
 
-          {!isPro && (
+          {tier === "free" && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    await authClient.checkoutEmbed({ slug: "hobby", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Upgrade to Hobby
+              </Button>
+              <Button
+                size="sm"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Upgrade to Scale
+              </Button>
+            </div>
+          )}
+
+          {tier === "hobby" && (
             <Button
               size="sm"
               disabled={loading}
               onClick={async () => {
                 setLoading(true);
                 try {
-                  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId, theme: theme === "dark" ? "dark" : "light",  });
+                  await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
                 } finally {
                   setLoading(false);
                 }
               }}
             >
-              Upgrade to Pro
+              Upgrade to Scale
             </Button>
           )}
         </div>
 
-        {isPro && (
+        {tier !== "free" && (
           <div className="mt-5 flex items-center justify-between">
             {cancelAtPeriodEnd ? (
               <span className="text-xs text-muted-foreground">

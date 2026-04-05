@@ -1,9 +1,10 @@
 import type { Context, Next } from "hono";
 import { prisma } from "@/lib/prisma";
+import { type PlanTier, resolvePlanTier } from "@/lib/plans";
 
 type ApiContext = {
   organizationId: string;
-  isPro: boolean;
+  tier: PlanTier;
   apiKeyId: string;
 };
 
@@ -31,7 +32,7 @@ export async function apiKeyAuth(c: Context, next: Next) {
     where: { keyHash },
     include: {
       organization: {
-        select: { id: true, subscriptionActive: true },
+        select: { id: true, subscriptionActive: true, subscriptionPlanName: true },
       },
     },
   });
@@ -49,7 +50,7 @@ export async function apiKeyAuth(c: Context, next: Next) {
     .catch(() => {});
 
   c.set("organizationId", apiKey.organization.id);
-  c.set("isPro", apiKey.organization.subscriptionActive);
+  c.set("tier", resolvePlanTier(apiKey.organization.subscriptionActive, apiKey.organization.subscriptionPlanName));
   c.set("apiKeyId", apiKey.id);
 
   await next();
@@ -58,7 +59,7 @@ export async function apiKeyAuth(c: Context, next: Next) {
 export function getApiContext(c: Context): ApiContext {
   return {
     organizationId: c.get("organizationId") as string,
-    isPro: c.get("isPro") as boolean,
+    tier: c.get("tier") as PlanTier,
     apiKeyId: c.get("apiKeyId") as string,
   };
 }

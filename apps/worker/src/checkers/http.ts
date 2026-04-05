@@ -30,8 +30,6 @@ async function performHttpCheck(monitor: Monitor) {
     clearTimeout(timeoutId);
 
     const latency = Math.round(performance.now() - start);
-    const rules = (monitor.rules as Rule[]) ?? [];
-    const passed = evaluateRules(rules, res);
 
     const responseHeaders: Record<string, string> = {};
     res.headers.forEach((v, k) => { responseHeaders[k] = v; });
@@ -41,6 +39,9 @@ async function performHttpCheck(monitor: Monitor) {
       responseBody = await res.text();
       if (responseBody.length > 64_000) responseBody = responseBody.slice(0, 64_000);
     } catch {}
+
+    const rules = (monitor.rules as Rule[]) ?? [];
+    const passed = evaluateRules(rules, res, responseBody);
 
     return {
       status: passed ? "up" : "degraded",
@@ -93,19 +94,43 @@ function formatError(e: unknown): string {
   return msg;
 }
 
-function evaluateRules(rules: Rule[], res: Response): boolean {
+function evaluateRules(rules: Rule[], res: Response, body: string | null): boolean {
   if (rules.length === 0) return res.ok;
   return rules.every((rule) => {
     if (rule.type === "status") {
       return compare(res.status.toString(), rule.operator, rule.value);
     }
     if (rule.type === "header") {
-      const [headerName, expected] = rule.value.split(":");
+      const [headerName, ...rest] = rule.value.split(":");
+      const expected = rest.join(":");
       const actual = res.headers.get(headerName?.trim() ?? "");
       return compare(actual ?? "", rule.operator, expected?.trim() ?? "");
     }
+    if (rule.type === "json_body") {
+      if (!body) return false;
+      try {
+        const json = JSON.parse(body);
+        const [path, ...rest] = rule.value.split(":");
+        const expected = rest.join(":");
+        const actual = getJsonPath(json, path?.trim() ?? "");
+        return compare(String(actual ?? ""), rule.operator, expected?.trim() ?? "");
+      } catch {
+        return false;
+      }
+    }
     return true;
   });
+}
+
+function getJsonPath(obj: unknown, path: string): unknown {
+  return path.split(".").reduce((current: any, key) => {
+    if (current == null) return undefined;
+    const match = key.match(/^(\w+)\[(\d+)\]$/);
+    if (match) {
+      return current[match[1]]?.[Number(match[2])];
+    }
+    return current[key];
+  }, obj);
 }
 
 function compare(actual: string, operator: string, expected: string): boolean {

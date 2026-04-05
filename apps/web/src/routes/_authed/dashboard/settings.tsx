@@ -334,7 +334,7 @@ function MembersSection({ orgId }: { orgId: string }) {
 }
 
 function InviteMemberDialog({ orgId }: { orgId: string }) {
-  const { isPro } = useSubscription();
+  const { isPro } = useSubscription(); // any paid plan can invite
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -604,7 +604,7 @@ function ApiKeysSection({ orgId }: { orgId: string }) {
         <CardFooter className="border-t">
           <div className="flex w-full items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              Free: 100 req/hr (read-only) · Pro: 1,000 req/hr (full access)
+              Free: 100 req/hr · Hobby: 1,000 req/hr · Scale: 5,000 req/hr
             </p>
             <a
               href="/docs"

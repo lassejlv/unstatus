@@ -22,29 +22,21 @@ export function PricingCard({
 }: PricingCardProps) {
   return (
     <div
-      className={`flex flex-col justify-between p-6 space-y-4 ${
-        highlight ? "bg-secondary rounded-xl w-full md:w-1/2 space-y-8" : "flex-1"
+      className={`flex flex-1 flex-col justify-between p-6 space-y-4 ${
+        highlight ? "bg-secondary rounded-xl" : ""
       }`}
     >
-      <div className={highlight ? "grid gap-6 sm:grid-cols-2" : ""}>
-        <div className="space-y-4">
-          <div>
-            <h2 className="font-medium">{title}</h2>
-            <span className="my-3 block text-2xl font-semibold">{price}</span>
-            <p className="text-muted-foreground text-sm">{description}</p>
-          </div>
-
-          <Button className="w-full" variant={buttonVariant} onClick={onAction}>
-            Get started
-          </Button>
-        </div>
-      </div>
-
-      {highlight && (
+      <div className="space-y-4">
         <div>
-          <div className="text-sm font-medium">Everything in Free, plus:</div>
+          <h2 className="font-medium">{title}</h2>
+          <span className="my-3 block text-2xl font-semibold">{price}</span>
+          <p className="text-muted-foreground text-sm">{description}</p>
         </div>
-      )}
+
+        <Button className="w-full" variant={buttonVariant} onClick={onAction}>
+          Get started
+        </Button>
+      </div>
 
       <ul className={`${highlight ? "mt-4" : "border-t pt-4"} list-outside space-y-3 text-sm`}>
         {features.map((item, index) => (

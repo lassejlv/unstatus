@@ -10,6 +10,7 @@ export const env = z
     POLAR_ACCESS_TOKEN: z.string(),
     POLAR_WEBHOOK_SECRET: z.string(),
     POLAR_PRO_ID: z.string(),
+    POLAR_SCALE_ID: z.string(),
     WORKER_URL: z.url().optional(),
     WORKER_SECRET: z.string().optional(),
     WORKER_EU_URL: z.url().optional(),

@@ -1,6 +1,7 @@
 import { os, ORPCError } from "@orpc/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { type PlanTier, resolvePlanTier, requireFeature, requireLimit } from "@/lib/plans";
 import z from "zod";
 
 export const publicProcedure = os.$context<{ headers: Headers }>();
@@ -55,18 +56,12 @@ export async function verifyOrgRole(
 export async function getOrgSubscription(organizationId: string) {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: organizationId },
-    select: { subscriptionActive: true },
+    select: { subscriptionActive: true, subscriptionPlanName: true },
   });
-  return { isPro: org.subscriptionActive };
+  return { tier: resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName) };
 }
 
-export function requirePro(isPro: boolean, feature: string) {
-  if (!isPro) {
-    throw new ORPCError("FORBIDDEN", {
-      message: `${feature} is available on the Pro plan. Upgrade to unlock this feature.`,
-    });
-  }
-}
+export { requireFeature, requireLimit, type PlanTier };
 
 type OrgScopedInput = { organizationId: string };
 

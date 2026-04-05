@@ -6,8 +6,10 @@ import {
   verifyOrgMembership,
   verifyOrgRole,
   getOrgSubscription,
-  requirePro,
+  requireFeature,
+  requireLimit,
 } from "@/orpc/procedures";
+import { PLAN_LIMITS } from "@/lib/plans";
 import { ORPCError } from "@orpc/server";
 import { Prisma } from "@unstatus/db";
 import { prisma } from "@/lib/prisma";
@@ -241,20 +243,19 @@ export const monitorsRouter = {
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
     const orgId = input.organizationId;
-    const { isPro } = await getOrgSubscription(orgId);
+    const { tier } = await getOrgSubscription(orgId);
 
-    if (!isPro) {
-      const count = await prisma.monitor.count({ where: { organizationId: orgId } });
-      if (count >= 1) requirePro(false, "More than 1 monitor");
-    } else {
-      const count = await prisma.monitor.count({ where: { organizationId: orgId } });
-      if (count >= 50) {
-        throw new ORPCError("FORBIDDEN", { message: "You've reached the maximum of 50 monitors." });
-      }
+    const count = await prisma.monitor.count({ where: { organizationId: orgId } });
+    requireLimit(tier, "monitors", count);
+
+    if (input.autoIncidents) requireFeature(tier, "autoIncidents", "Auto-create incidents");
+    if (input.regions.length > 1) requireFeature(tier, "multiRegion", "Multiple regions");
+    if (input.type === "ping") requireFeature(tier, "pingMonitor", "Ping monitors");
+    if (input.interval < PLAN_LIMITS[tier].minInterval) {
+      throw new ORPCError("FORBIDDEN", {
+        message: `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds. Upgrade to unlock faster checks.`,
+      });
     }
-
-    if (input.autoIncidents) requirePro(isPro, "Auto-create incidents");
-    if (input.regions.length > 1) requirePro(isPro, "Multiple regions");
 
     return prisma.monitor.create({ data: toMonitorCreateData(input) });
   }),
@@ -265,10 +266,16 @@ export const monitorsRouter = {
     await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = monitor.organizationId;
-    const { isPro } = await getOrgSubscription(orgId);
+    const { tier } = await getOrgSubscription(orgId);
 
-    if (data.autoIncidents) requirePro(isPro, "Auto-create incidents");
-    if (data.regions && data.regions.length > 1) requirePro(isPro, "Multiple regions");
+    if (data.autoIncidents) requireFeature(tier, "autoIncidents", "Auto-create incidents");
+    if (data.regions && data.regions.length > 1) requireFeature(tier, "multiRegion", "Multiple regions");
+    if (data.type === "ping") requireFeature(tier, "pingMonitor", "Ping monitors");
+    if (data.interval !== undefined && data.interval < PLAN_LIMITS[tier].minInterval) {
+      throw new ORPCError("FORBIDDEN", {
+        message: `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds. Upgrade to unlock faster checks.`,
+      });
+    }
 
     return prisma.monitor.update({ where: { id }, data: toMonitorUpdateData(data) });
   }),

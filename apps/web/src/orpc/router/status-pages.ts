@@ -12,7 +12,8 @@ import {
   verifyOrgMembership,
   verifyOrgRole,
   getOrgSubscription,
-  requirePro,
+  requireFeature,
+  requireLimit,
 } from "@/orpc/procedures";
 
 const domainSchema = z
@@ -82,7 +83,9 @@ export const statusPagesRouter = {
   ),
 
   create: orgAdminProcedure(createInput).handler(async ({ input }) => {
-    // Pro plan has unlimited status pages; free plan is not limited here (Polar handles via benefits)
+    const { tier } = await getOrgSubscription(input.organizationId);
+    const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
+    requireLimit(tier, "statusPages", count);
     return prisma.statusPage.create({ data: input });
   }),
 
@@ -92,11 +95,11 @@ export const statusPagesRouter = {
     await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
 
     const orgId = statusPage.organizationId;
-    const { isPro } = await getOrgSubscription(orgId);
-    if (data.customDomain) requirePro(isPro, "Custom domains");
-    if (data.customCss) requirePro(isPro, "Custom CSS");
-    if (data.customJs) requirePro(isPro, "Custom JavaScript");
-    if (data.showDependencies) requirePro(isPro, "Dependency chain");
+    const { tier } = await getOrgSubscription(orgId);
+    if (data.customDomain) requireFeature(tier, "customDomain", "Custom domains");
+    if (data.customCss) requireFeature(tier, "customCss", "Custom CSS");
+    if (data.customJs) requireFeature(tier, "customJs", "Custom JavaScript");
+    if (data.showDependencies) requireFeature(tier, "dependencies", "Dependency chain");
 
     try {
       return await prisma.statusPage.update({ where: { id }, data });

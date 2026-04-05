@@ -9,7 +9,7 @@ export const Route = createFileRoute("/pricing")({
 });
 
 const faqs = [
-  { q: "What happens if I exceed 50 monitors?", a: "Contact us for Enterprise pricing." },
+  { q: "What happens if I hit my plan's monitor limit?", a: "Upgrade to a higher plan to add more monitors." },
   { q: "Can I cancel anytime?", a: "Yes. Access continues until your billing period ends." },
   { q: "Do you offer annual billing?", a: "Coming soon." },
   { q: "Is there a free trial?", a: "The Free plan is free forever. No trial needed." },
@@ -19,8 +19,8 @@ function PricingPage() {
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
 
-  const handleAction = (highlight: boolean) => {
-    if (!highlight) { navigate({ to: "/login" }); return; }
+  const handleAction = (plan: "free" | "hobby" | "scale") => {
+    if (plan === "free") { navigate({ to: "/login" }); return; }
     if (!session) { navigate({ to: "/login" }); return; }
     navigate({ to: "/dashboard/billing" });
   };
@@ -31,7 +31,7 @@ function PricingPage() {
 
       <main className="flex-1">
         {/* Header */}
-        <section className="mx-auto max-w-3xl px-6 pt-28 pb-12 text-center">
+        <section className="mx-auto max-w-4xl px-6 pt-28 pb-12 text-center">
           <h1 className="text-3xl font-medium tracking-tight lg:text-4xl">
             Pricing
           </h1>
@@ -41,7 +41,7 @@ function PricingPage() {
         </section>
 
         {/* Plans */}
-        <section className="mx-auto max-w-3xl px-6 pb-16">
+        <section className="mx-auto max-w-4xl px-6 pb-16">
           <div className="rounded-xl flex flex-col justify-between border p-1">
             <div className="flex flex-col gap-4 md:flex-row">
               <PricingCard
@@ -49,7 +49,7 @@ function PricingPage() {
                 price="$0 / mo"
                 description="For side projects and personal use."
                 buttonVariant="outline"
-                onAction={() => handleAction(false)}
+                onAction={() => handleAction("free")}
                 features={[
                   "1 monitor",
                   "1 status page",
@@ -59,12 +59,28 @@ function PricingPage() {
               />
 
               <PricingCard
-                title="Pro"
+                title="Hobby"
                 price="$15 / mo"
+                description="For growing projects."
+                buttonVariant="outline"
+                onAction={() => handleAction("hobby")}
+                features={[
+                  "10 monitors",
+                  "3 status pages",
+                  "Custom domains",
+                  "1 min check interval",
+                  "Discord alerts",
+                  "API access",
+                ]}
+              />
+
+              <PricingCard
+                title="Scale"
+                price="$49 / mo"
                 description="For teams that need reliability."
                 buttonVariant="default"
                 highlight
-                onAction={() => handleAction(true)}
+                onAction={() => handleAction("scale")}
                 features={[
                   "50 monitors",
                   "Unlimited status pages",
@@ -72,6 +88,7 @@ function PricingPage() {
                   "Custom CSS",
                   "Auto incidents",
                   "Multi-region checks",
+                  "10s check interval",
                   "Discord alerts",
                   "API access",
                   "Remove branding",
@@ -83,7 +100,7 @@ function PricingPage() {
 
         {/* FAQ */}
         <section className="border-t">
-          <div className="mx-auto max-w-3xl px-6 py-16">
+          <div className="mx-auto max-w-4xl px-6 py-16">
             <h2 className="text-lg font-medium tracking-tight">Questions</h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {faqs.map((faq) => (
@@ -98,7 +115,7 @@ function PricingPage() {
 
         {/* CTA */}
         <section className="border-t">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+          <div className="mx-auto max-w-4xl px-6 py-16 text-center">
             <p className="text-muted-foreground">Ready to start monitoring?</p>
             <Link to="/login" className="mt-4 inline-block">
               <Button>Get started</Button>

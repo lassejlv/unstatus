@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { PLAN_LIMITS } from "@/lib/plans";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
@@ -124,13 +125,14 @@ app.get("/:id", async (c) => {
 
 // POST /monitors - Create monitor
 app.post("/", async (c) => {
-  const { organizationId } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
   const body = await parseJsonBody(c, createMonitorBodySchema);
   const { name, type, interval, timeout, url, method, headers, body: reqBody, host, port, rules, regions, autoIncidents } = body;
 
+  const maxMonitors = PLAN_LIMITS[tier].monitors;
   const count = await prisma.monitor.count({ where: { organizationId } });
-  if (count >= 50) {
-    throw new ApiError("FORBIDDEN", "Maximum of 50 monitors reached", 403);
+  if (count >= maxMonitors) {
+    throw new ApiError("FORBIDDEN", `Maximum of ${maxMonitors} monitors reached on your plan`, 403);
   }
 
   const monitor = await prisma.monitor.create({

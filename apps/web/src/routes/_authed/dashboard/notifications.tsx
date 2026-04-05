@@ -221,7 +221,8 @@ function NotificationsList({ orgId }: { orgId: string }) {
 }
 
 function AddNotificationDialog({ orgId }: { orgId: string }) {
-  const { isPro } = useSubscription();
+  const { tier } = useSubscription();
+  const hasDiscord = tier !== "free";
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -261,9 +262,9 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="discord" disabled={!isPro}>
-                  Discord {!isPro && " "}
-                  {!isPro && <ProBadge />}
+                <SelectItem value="discord" disabled={!hasDiscord}>
+                  Discord {!hasDiscord && " "}
+                  {!hasDiscord && <ProBadge label="Hobby" />}
                 </SelectItem>
                 <SelectItem value="email">Email</SelectItem>
               </SelectContent>

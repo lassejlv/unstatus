@@ -128,7 +128,11 @@ export const auth = betterAuth({
           products: [
             {
               productId: env.POLAR_PRO_ID,
-              slug: "pro",
+              slug: "hobby",
+            },
+            {
+              productId: env.POLAR_SCALE_ID,
+              slug: "scale",
             },
           ],
           successUrl: "/dashboard?tab=overview",

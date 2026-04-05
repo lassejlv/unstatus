@@ -2,14 +2,13 @@ import type { Context, Next } from "hono";
 import { getApiContext } from "./auth";
 
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const FREE_LIMIT = 100;
-const PRO_LIMIT = 1000;
+const RATE_LIMITS = { free: 100, hobby: 1000, scale: 5000 } as const;
 
 const windows = new Map<string, { count: number; start: number }>();
 
 export async function rateLimit(c: Context, next: Next) {
-  const { apiKeyId, isPro } = getApiContext(c);
-  const limit = isPro ? PRO_LIMIT : FREE_LIMIT;
+  const { apiKeyId, tier } = getApiContext(c);
+  const limit = RATE_LIMITS[tier];
   const now = Date.now();
 
   let window = windows.get(apiKeyId);

@@ -7,7 +7,7 @@ const app = new Hono();
 
 // GET /organization - Get current organization info
 app.get("/", async (c) => {
-  const { organizationId, isPro } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
 
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: organizationId },
@@ -25,7 +25,7 @@ app.get("/", async (c) => {
 
   return success(c, {
     ...org,
-    plan: isPro ? "pro" : "free",
+    plan: tier,
   });
 });
 

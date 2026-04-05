@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge, UpgradePrompt } from "@/components/upgrade-badge";
+import { PLAN_LIMITS } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authed/dashboard/status-pages/$pageId")(
   {
@@ -335,7 +336,8 @@ function CustomDomainSection({
   currentDomain: string | null;
   onSuccess: () => void;
 }) {
-  const { isPro } = useSubscription();
+  const { tier } = useSubscription();
+  const hasCustomDomain = PLAN_LIMITS[tier].customDomain;
   const [domain, setDomain] = useState(currentDomain ?? "");
   const [editing, setEditing] = useState(false);
 
@@ -362,10 +364,10 @@ function CustomDomainSection({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-1.5">
         <h2 className="text-xs font-medium">Custom domain</h2>
-        {!isPro && <ProBadge />}
+        {!hasCustomDomain && <ProBadge label="Hobby" />}
       </div>
 
-      {!isPro ? (
+      {!hasCustomDomain ? (
         <UpgradePrompt feature="Custom domains" />
       ) : !currentDomain && !editing ? (
         <div className="rounded-md border border-dashed p-4 flex items-center justify-between">

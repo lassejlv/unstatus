@@ -1,5 +1,6 @@
 import { orgProcedure } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
+import { resolvePlanTier } from "@/lib/plans";
 import z from "zod";
 
 export const billingRouter = {
@@ -13,6 +14,9 @@ export const billingRouter = {
           cancelAtPeriodEnd: true,
         },
       });
-      return org;
+      return {
+        ...org,
+        tier: resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName),
+      };
     }),
 };

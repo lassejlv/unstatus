@@ -34,10 +34,11 @@ import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/da
 import { Route as AuthedDashboardNotificationsRouteImport } from './routes/_authed/dashboard/notifications'
 import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
 import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
-import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors.index'
+import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors/index'
 import { Route as AuthedDashboardMaintenanceIndexRouteImport } from './routes/_authed/dashboard/maintenance/index'
 import { Route as AuthedDashboardIncidentsIndexRouteImport } from './routes/_authed/dashboard/incidents/index'
 import { Route as AuthedDashboardStatusPagesPageIdRouteImport } from './routes/_authed/dashboard/status-pages/$pageId'
+import { Route as AuthedDashboardMonitorsNewRouteImport } from './routes/_authed/dashboard/monitors/new'
 import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes/_authed/dashboard/incidents/$incidentId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -192,6 +193,12 @@ const AuthedDashboardStatusPagesPageIdRoute =
     path: '/status-pages/$pageId',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardMonitorsNewRoute =
+  AuthedDashboardMonitorsNewRouteImport.update({
+    id: '/monitors/new',
+    path: '/monitors/new',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardIncidentsIncidentIdRoute =
   AuthedDashboardIncidentsIncidentIdRouteImport.update({
     id: '/incidents/$incidentId',
@@ -224,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof AuthedDashboardIndexRoute
   '/status/$slug/': typeof StatusSlugIndexRoute
   '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
+  '/dashboard/monitors/new': typeof AuthedDashboardMonitorsNewRoute
   '/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
   '/dashboard/incidents/': typeof AuthedDashboardIncidentsIndexRoute
   '/dashboard/maintenance/': typeof AuthedDashboardMaintenanceIndexRoute
@@ -254,6 +262,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthedDashboardIndexRoute
   '/status/$slug': typeof StatusSlugIndexRoute
   '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
+  '/dashboard/monitors/new': typeof AuthedDashboardMonitorsNewRoute
   '/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
   '/dashboard/incidents': typeof AuthedDashboardIncidentsIndexRoute
   '/dashboard/maintenance': typeof AuthedDashboardMaintenanceIndexRoute
@@ -287,6 +296,7 @@ export interface FileRoutesById {
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
   '/status/$slug/': typeof StatusSlugIndexRoute
   '/_authed/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
+  '/_authed/dashboard/monitors/new': typeof AuthedDashboardMonitorsNewRoute
   '/_authed/dashboard/status-pages/$pageId': typeof AuthedDashboardStatusPagesPageIdRoute
   '/_authed/dashboard/incidents/': typeof AuthedDashboardIncidentsIndexRoute
   '/_authed/dashboard/maintenance/': typeof AuthedDashboardMaintenanceIndexRoute
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/status/$slug/'
     | '/dashboard/incidents/$incidentId'
+    | '/dashboard/monitors/new'
     | '/dashboard/status-pages/$pageId'
     | '/dashboard/incidents/'
     | '/dashboard/maintenance/'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/status/$slug'
     | '/dashboard/incidents/$incidentId'
+    | '/dashboard/monitors/new'
     | '/dashboard/status-pages/$pageId'
     | '/dashboard/incidents'
     | '/dashboard/maintenance'
@@ -382,6 +394,7 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/'
     | '/status/$slug/'
     | '/_authed/dashboard/incidents/$incidentId'
+    | '/_authed/dashboard/monitors/new'
     | '/_authed/dashboard/status-pages/$pageId'
     | '/_authed/dashboard/incidents/'
     | '/_authed/dashboard/maintenance/'
@@ -614,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardStatusPagesPageIdRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/monitors/new': {
+      id: '/_authed/dashboard/monitors/new'
+      path: '/monitors/new'
+      fullPath: '/dashboard/monitors/new'
+      preLoaderRoute: typeof AuthedDashboardMonitorsNewRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/incidents/$incidentId': {
       id: '/_authed/dashboard/incidents/$incidentId'
       path: '/incidents/$incidentId'
@@ -631,6 +651,7 @@ interface AuthedDashboardRouteChildren {
   AuthedDashboardSubscribersRoute: typeof AuthedDashboardSubscribersRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
   AuthedDashboardIncidentsIncidentIdRoute: typeof AuthedDashboardIncidentsIncidentIdRoute
+  AuthedDashboardMonitorsNewRoute: typeof AuthedDashboardMonitorsNewRoute
   AuthedDashboardStatusPagesPageIdRoute: typeof AuthedDashboardStatusPagesPageIdRoute
   AuthedDashboardIncidentsIndexRoute: typeof AuthedDashboardIncidentsIndexRoute
   AuthedDashboardMaintenanceIndexRoute: typeof AuthedDashboardMaintenanceIndexRoute
@@ -646,6 +667,7 @@ const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
   AuthedDashboardIncidentsIncidentIdRoute:
     AuthedDashboardIncidentsIncidentIdRoute,
+  AuthedDashboardMonitorsNewRoute: AuthedDashboardMonitorsNewRoute,
   AuthedDashboardStatusPagesPageIdRoute: AuthedDashboardStatusPagesPageIdRoute,
   AuthedDashboardIncidentsIndexRoute: AuthedDashboardIncidentsIndexRoute,
   AuthedDashboardMaintenanceIndexRoute: AuthedDashboardMaintenanceIndexRoute,
