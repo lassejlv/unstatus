@@ -51,4 +51,35 @@ app.get("/api/status/summary.json", async (c) => {
   }
 });
 
+// Custom domain shorthand: /summary or /summary.json (mounted via routes/summary.ts)
+async function handleCustomDomainSummary(c: any) {
+  try {
+    const hostname = c.req.header("host")?.split(":")[0] ?? "";
+
+    if (
+      !APP_DOMAIN ||
+      hostname === APP_DOMAIN ||
+      hostname === `www.${APP_DOMAIN}` ||
+      hostname === "localhost" ||
+      hostname === "127.0.0.1"
+    ) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    const page = await resolvePublicPage({ customDomain: hostname });
+    const data = await getPublicStatusPage(page);
+    const pageUrl = `https://${hostname}`;
+    const summary = buildAtlassianSummary(data, pageUrl);
+
+    c.header("Cache-Control", "public, max-age=60, s-maxage=60");
+    c.header("Access-Control-Allow-Origin", "*");
+    return c.json(summary);
+  } catch {
+    return c.json({ error: "Status page not found" }, 404);
+  }
+}
+
+app.get("/summary.json", handleCustomDomainSummary);
+app.get("/summary", handleCustomDomainSummary);
+
 export { app as publicSummaryApi };
