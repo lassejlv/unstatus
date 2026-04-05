@@ -14,7 +14,7 @@ const createInput = z.object({
   monitorIds: z.array(z.string()).min(1),
   title: z.string(),
   status: z.enum(["investigating", "identified", "monitoring", "resolved"]).default("investigating"),
-  severity: z.enum(["minor", "major", "critical"]).default("minor"),
+  severity: z.enum(["maintenance", "minor", "degraded", "major", "critical"]).default("minor"),
   message: z.string(),
 });
 

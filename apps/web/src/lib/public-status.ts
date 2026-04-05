@@ -387,7 +387,11 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
               ? 0
               : incident.severity === "major"
                 ? 50
-                : 75;
+                : incident.severity === "degraded"
+                  ? 75
+                  : incident.severity === "maintenance"
+                    ? 100
+                    : 75;
           uptime = Math.min(uptime, cap);
         }
       }

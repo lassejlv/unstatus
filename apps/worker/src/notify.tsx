@@ -29,7 +29,9 @@ const EVENT_TO_FLAG: Record<NotifyEvent["type"], string> = {
 const SEVERITY_COLORS: Record<string, number> = {
   critical: 0xef4444,
   major: 0xf97316,
+  degraded: 0xf59e0b,
   minor: 0xeab308,
+  maintenance: 0x6b7280,
 };
 
 function buildEmbed(event: NotifyEvent) {

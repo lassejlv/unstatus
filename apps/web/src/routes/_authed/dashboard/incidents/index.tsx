@@ -143,7 +143,7 @@ function IncidentsPage() {
             </div>
             <div className="h-4 w-px bg-border" />
             <div className="flex gap-1">
-              {["all", "minor", "major", "critical"].map((s) => (
+              {["all", "maintenance", "minor", "degraded", "major", "critical"].map((s) => (
                 <Button
                   key={s}
                   variant={severityFilter === s ? "default" : "outline"}
@@ -185,7 +185,7 @@ function IncidentsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={i.severity === "critical" ? "destructive" : "outline"}
+                        variant={i.severity === "critical" || i.severity === "major" ? "destructive" : "outline"}
                       >
                         {i.severity}
                       </Badge>
@@ -455,7 +455,7 @@ function CreateIncidentDialog({
   const [open, setOpen] = useState(false);
   const [selectedMonitors, setSelectedMonitors] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState("");
-  const [severity, setSeverity] = useState<"minor" | "major" | "critical">("minor");
+  const [severity, setSeverity] = useState<"maintenance" | "minor" | "degraded" | "major" | "critical">("minor");
   const [message, setMessage] = useState("");
 
   const toggleMonitor = (id: string) => {
@@ -530,7 +530,9 @@ function CreateIncidentDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
                 <SelectItem value="minor">Minor</SelectItem>
+                <SelectItem value="degraded">Degraded</SelectItem>
                 <SelectItem value="major">Major</SelectItem>
                 <SelectItem value="critical">Critical</SelectItem>
               </SelectContent>
