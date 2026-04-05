@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { PublicNav } from "@/components/-public-nav";
 import {
   CenteredMessage,
@@ -7,37 +7,41 @@ import {
 } from "@/components/public-status-view";
 import { Hero } from "@/components/ui/animated-hero";
 import { Features } from "@/components/ui/features-2";
-
-import { getCurrentCustomDomainStatusPageServerFn } from "@/lib/public-status-server-fns";
-import { client } from "@/orpc/client";
+import { useCustomDomain } from "@/lib/use-custom-domain";
+import { orpc, client } from "@/orpc/client";
 
 export const Route = createFileRoute("/")({
-  loader: () => getCurrentCustomDomainStatusPageServerFn(),
   component: RootPage,
 });
 
 function RootPage() {
-  const { domain, data } = Route.useLoaderData();
+  const customDomain = useCustomDomain();
 
-  if (domain) {
-    return <CustomDomainStatusPage data={data} />;
+  // undefined = SSR (custom domains enabled but hostname unknown yet)
+  if (customDomain === undefined) return null;
+
+  if (customDomain) {
+    return <CustomDomainStatusPage domain={customDomain} />;
   }
+
   return <HomePage />;
 }
 
-type RootLoaderData = ReturnType<typeof Route.useLoaderData>;
+function CustomDomainStatusPage({ domain }: { domain: string }) {
+  const { data, isLoading, error } = useQuery(
+    orpc.publicStatus.getByDomain.queryOptions({ input: { domain } }),
+  );
 
-function CustomDomainStatusPage({
-  data,
-}: {
-  data: RootLoaderData["data"];
-}) {
   const subscribeMut = useMutation({
     mutationFn: (input: { email: string; monitorIds?: string[] }) =>
       client.publicStatus.subscribe({ slug: data?.slug ?? "", ...input }),
   });
 
-  if (!data) {
+  if (isLoading) {
+    return <CenteredMessage message="Loading…" />;
+  }
+
+  if (error || !data) {
     return <CenteredMessage message="Status page not found." />;
   }
 
@@ -58,7 +62,6 @@ function CustomDomainStatusPage({
     />
   );
 }
-
 
 function HomePage() {
   return (
