@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { PublicNav } from "@/components/-public-nav";
 import {
   CenteredMessage,
   PublicStatusPageView,
 } from "@/components/public-status-view";
+import { Hero } from "@/components/ui/animated-hero";
+import { Features } from "@/components/ui/features-2";
+
 import { getCurrentCustomDomainStatusPageServerFn } from "@/lib/public-status";
 import { client } from "@/orpc/client";
 
@@ -58,28 +60,6 @@ function CustomDomainStatusPage({
 }
 
 
-// ---------------------------------------------------------------------------
-// Data
-// ---------------------------------------------------------------------------
-
-const features = [
-  { title: "Uptime monitoring", desc: "HTTP, TCP, and ping checks from multiple regions." },
-  { title: "Status pages", desc: "Public pages on your domain with custom branding." },
-  { title: "Incident management", desc: "Auto-create incidents with timeline updates." },
-  { title: "Alerts", desc: "Discord, email, and webhook notifications." },
-  { title: "Dependencies", desc: "Track third-party service status." },
-  { title: "API", desc: "Full REST API for automation." },
-];
-
-// ---------------------------------------------------------------------------
-// Components
-// ---------------------------------------------------------------------------
-
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 function HomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -87,34 +67,10 @@ function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="mx-auto max-w-6xl px-6 pt-28 pb-16">
-          <h1 className="text-3xl font-medium tracking-tight lg:text-4xl">
-            Monitor your services. Alert your team.
-          </h1>
-          <p className="mt-4 max-w-lg text-muted-foreground">
-            Know when your services go down. Tell your users what's happening.
-          </p>
-          <div className="mt-6 flex items-center gap-4">
-            <Link to="/login">
-              <Button size="default">Get started</Button>
-            </Link>
-            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
-              Pricing
-            </Link>
-          </div>
-        </section>
+        <Hero />
 
         {/* Features */}
-        <section className="mx-auto max-w-6xl px-6 py-12">
-          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title}>
-                <p className="text-sm">{f.title}</p>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Features />
       </main>
 
       <footer className="mt-auto">
