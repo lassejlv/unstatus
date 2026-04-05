@@ -92,26 +92,36 @@ function isMissingMonitorPerfSchema(error: unknown) {
   );
 }
 
+const STATUS_PAGE_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  isPublic: true,
+  logoUrl: true,
+  brandColor: true,
+  headerText: true,
+  footerText: true,
+  showResponseTimes: true,
+  showDependencies: true,
+  customCss: true,
+  customJs: true,
+} as const;
+
 async function resolvePublicPage(
   where: { slug: string } | { customDomain: string },
 ): Promise<ResolvedPublicPage> {
-  const page = await prisma.statusPage.findUnique({
+  let page = await prisma.statusPage.findUnique({
     where,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      isPublic: true,
-      logoUrl: true,
-      brandColor: true,
-      headerText: true,
-      footerText: true,
-      showResponseTimes: true,
-      showDependencies: true,
-      customCss: true,
-      customJs: true,
-    },
+    select: STATUS_PAGE_SELECT,
   });
+
+  // Fallback: findFirst in case the unique index lookup fails with the adapter
+  if (!page && "customDomain" in where) {
+    page = await prisma.statusPage.findFirst({
+      where: { customDomain: where.customDomain },
+      select: STATUS_PAGE_SELECT,
+    });
+  }
 
   if (!page || !page.isPublic) {
     throw new ORPCError("NOT_FOUND");
