@@ -130,7 +130,7 @@ function isNotFoundError(error: unknown) {
 async function resolvePublicPage(
   where: { slug: string } | { customDomain: string },
 ): Promise<ResolvedPublicPage> {
-  const page = await prisma.statusPage.findUniqueOrThrow({
+  const page = await prisma.statusPage.findUnique({
     where,
     select: {
       id: true,
@@ -148,7 +148,7 @@ async function resolvePublicPage(
     },
   });
 
-  if (!page.isPublic) {
+  if (!page || !page.isPublic) {
     throw new ORPCError("NOT_FOUND");
   }
 
@@ -554,7 +554,7 @@ async function getPublicIncidentPage(
   page: ResolvedPublicPage,
   incidentId: string,
 ) {
-  const incident = await prisma.incident.findFirstOrThrow({
+  const incident = await prisma.incident.findFirst({
     where: {
       id: incidentId,
       monitor: {
@@ -568,6 +568,10 @@ async function getPublicIncidentPage(
       updates: { orderBy: { createdAt: "asc" } },
     },
   });
+
+  if (!incident) {
+    throw new ORPCError("NOT_FOUND");
+  }
 
   return {
     pageName: page.name,

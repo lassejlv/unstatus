@@ -77,12 +77,12 @@ export const publicStatusRouter = {
       monitorIds: z.array(z.string()).optional(),
     }))
     .handler(async ({ input, context }) => {
-      const page = await prisma.statusPage.findUniqueOrThrow({
+      const page = await prisma.statusPage.findUnique({
         where: { slug: input.slug },
         select: { id: true, name: true, slug: true, isPublic: true },
       });
 
-      if (!page.isPublic) {
+      if (!page || !page.isPublic) {
         throw new ORPCError("NOT_FOUND");
       }
 
