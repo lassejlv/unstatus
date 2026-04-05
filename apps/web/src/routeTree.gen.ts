@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
@@ -28,9 +27,9 @@ import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
-import { Route as StatusSlugSummaryRouteImport } from './routes/status/$slug/summary'
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiV1SplatRouteImport } from './routes/api.v1.$'
+import { Route as ApiStatusSplatRouteImport } from './routes/api.status.$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedDashboardUsageRouteImport } from './routes/_authed/dashboard/usage'
@@ -53,11 +52,6 @@ import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SummaryRoute = SummaryRouteImport.update({
-  id: '/summary',
-  path: '/summary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -145,11 +139,6 @@ const StatusSlugVerifyRoute = StatusSlugVerifyRouteImport.update({
   path: '/status/$slug/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StatusSlugSummaryRoute = StatusSlugSummaryRouteImport.update({
-  id: '/status/$slug/summary',
-  path: '/status/$slug/summary',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const StatusSlugIncidentIdRoute = StatusSlugIncidentIdRouteImport.update({
   id: '/status/$slug/$incidentId',
   path: '/status/$slug/$incidentId',
@@ -158,6 +147,11 @@ const StatusSlugIncidentIdRoute = StatusSlugIncidentIdRouteImport.update({
 const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
   id: '/api/v1/$',
   path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatusSplatRoute = ApiStatusSplatRouteImport.update({
+  id: '/api/status/$',
+  path: '/api/status/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
@@ -268,7 +262,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/admin': typeof AuthedAdminRouteWithChildren
@@ -287,9 +280,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/status/$': typeof ApiStatusSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
-  '/status/$slug/summary': typeof StatusSlugSummaryRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
@@ -309,7 +302,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
@@ -326,9 +318,9 @@ export interface FileRoutesByTo {
   '/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/status/$': typeof ApiStatusSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
-  '/status/$slug/summary': typeof StatusSlugSummaryRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
@@ -350,7 +342,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/_authed/account': typeof AuthedAccountRoute
   '/_authed/admin': typeof AuthedAdminRouteWithChildren
@@ -369,9 +360,9 @@ export interface FileRoutesById {
   '/_authed/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/status/$': typeof ApiStatusSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
-  '/status/$slug/summary': typeof StatusSlugSummaryRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
@@ -393,7 +384,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/account'
     | '/admin'
@@ -412,9 +402,9 @@ export interface FileRouteTypes {
     | '/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/status/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
-    | '/status/$slug/summary'
     | '/status/$slug/verify'
     | '/admin/'
     | '/dashboard/'
@@ -434,7 +424,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/account'
     | '/accept-invitation/$invitationId'
@@ -451,9 +440,9 @@ export interface FileRouteTypes {
     | '/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/status/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
-    | '/status/$slug/summary'
     | '/status/$slug/verify'
     | '/admin'
     | '/dashboard'
@@ -474,7 +463,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/_authed/account'
     | '/_authed/admin'
@@ -493,9 +481,9 @@ export interface FileRouteTypes {
     | '/_authed/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/api/status/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
-    | '/status/$slug/summary'
     | '/status/$slug/verify'
     | '/_authed/admin/'
     | '/_authed/dashboard/'
@@ -517,16 +505,15 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  SummaryRoute: typeof SummaryRoute
   TermsRoute: typeof TermsRoute
   AcceptInvitationInvitationIdRoute: typeof AcceptInvitationInvitationIdRoute
   RegistrySlugRoute: typeof RegistrySlugRoute
   RegistryIndexRoute: typeof RegistryIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiStatusSplatRoute: typeof ApiStatusSplatRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   StatusSlugIncidentIdRoute: typeof StatusSlugIncidentIdRoute
-  StatusSlugSummaryRoute: typeof StatusSlugSummaryRoute
   StatusSlugVerifyRoute: typeof StatusSlugVerifyRoute
   StatusSlugIndexRoute: typeof StatusSlugIndexRoute
 }
@@ -538,13 +525,6 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/summary': {
-      id: '/summary'
-      path: '/summary'
-      fullPath: '/summary'
-      preLoaderRoute: typeof SummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -666,13 +646,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusSlugVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/status/$slug/summary': {
-      id: '/status/$slug/summary'
-      path: '/status/$slug/summary'
-      fullPath: '/status/$slug/summary'
-      preLoaderRoute: typeof StatusSlugSummaryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/status/$slug/$incidentId': {
       id: '/status/$slug/$incidentId'
       path: '/status/$slug/$incidentId'
@@ -685,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/$'
       fullPath: '/api/v1/$'
       preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/status/$': {
+      id: '/api/status/$'
+      path: '/api/status/$'
+      fullPath: '/api/status/$'
+      preLoaderRoute: typeof ApiStatusSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
@@ -896,16 +876,15 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  SummaryRoute: SummaryRoute,
   TermsRoute: TermsRoute,
   AcceptInvitationInvitationIdRoute: AcceptInvitationInvitationIdRoute,
   RegistrySlugRoute: RegistrySlugRoute,
   RegistryIndexRoute: RegistryIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  ApiStatusSplatRoute: ApiStatusSplatRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
   StatusSlugIncidentIdRoute: StatusSlugIncidentIdRoute,
-  StatusSlugSummaryRoute: StatusSlugSummaryRoute,
   StatusSlugVerifyRoute: StatusSlugVerifyRoute,
   StatusSlugIndexRoute: StatusSlugIndexRoute,
 }
