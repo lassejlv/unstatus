@@ -30,8 +30,14 @@ app.post("/run/:monitorId", async (c) => {
   if (secret !== process.env.WORKER_SECRET) {
     return c.json({ error: "unauthorized" }, 401);
   }
-  const result = await runSingleCheck(c.req.param("monitorId"));
-  return c.json(result);
+  try {
+    const result = await runSingleCheck(c.req.param("monitorId"));
+    return c.json(result);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error(`Manual check failed for ${c.req.param("monitorId")}:`, e);
+    return c.json({ error: message }, 500);
+  }
 });
 
 export default {

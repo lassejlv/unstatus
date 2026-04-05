@@ -38,11 +38,12 @@ export async function runSingleCheck(monitorId: string) {
   const result = await runCheck(monitor);
   const check = await recordMonitorCheck(monitor, result, region, new Date());
 
-  // Fetch existing incident for this monitor
-  const existing = monitor.autoIncidents
-    ? await prisma.incident.findFirst({ where: { monitorId: monitor.id, resolvedAt: null } })
-    : null;
-  await handleAutoIncident(monitor, result.status, existing ?? undefined);
+  // Fire-and-forget: don't let incident handling block the response
+  if (monitor.autoIncidents) {
+    prisma.incident.findFirst({ where: { monitorId: monitor.id, resolvedAt: null } })
+      .then((existing) => handleAutoIncident(monitor, result.status, existing ?? undefined))
+      .catch((e) => console.error("Auto-incident handling failed:", e));
+  }
 
   return check;
 }

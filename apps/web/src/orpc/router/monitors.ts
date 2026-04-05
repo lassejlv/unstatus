@@ -484,11 +484,13 @@ export const monitorsRouter = {
       const res = await fetch(`${workerUrl}/run/${input.monitorId}`, {
         method: "POST",
         headers: { "x-worker-secret": env.WORKER_SECRET },
+        signal: AbortSignal.timeout(30_000),
       });
       if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        console.error(`Worker check failed: ${res.status} ${body}`);
-        throw new ORPCError("BAD_GATEWAY", { message: "Monitor check failed. Please try again later." });
+        const body = await res.json().catch(() => null) as { error?: string } | null;
+        const detail = body?.error ?? `Worker returned ${res.status}`;
+        console.error(`Worker check failed: ${detail}`);
+        throw new ORPCError("BAD_GATEWAY", { message: detail });
       }
       return res.json();
     }),
