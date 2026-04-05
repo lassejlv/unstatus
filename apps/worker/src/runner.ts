@@ -2,81 +2,43 @@ import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
-import { sendNotifications } from "./notify";
 import type { Monitor } from "@unstatus/db";
+import {
+  isMissingMonitorPerfSchema,
+  type WorkerMonitor,
+} from "./db/types.js";
 import {
   claimLegacyMonitor,
   claimDueMonitor,
   getMonitorById,
-  isMissingMonitorPerfSchema,
   listLegacyDueMonitors,
   listDueMonitors,
-  recordMonitorCheck,
-  type WorkerMonitor,
-} from "./monitor-perf.js";
+} from "./db/queries.js";
+import { recordMonitorCheck } from "./db/checks.js";
+import { handleAutoIncident } from "./incidents.js";
+import { createLimiter } from "./limiter.js";
 
 const region = process.env.REGION ?? "eu";
+const limit = createLimiter(Number(process.env.CHECK_CONCURRENCY ?? 20));
 
-async function handleAutoIncident(
-  monitor: Pick<WorkerMonitor, "id" | "name" | "organizationId" | "autoIncidents">,
-  status: string,
-) {
-  if (!monitor.autoIncidents) return;
-
-  if (status === "down") {
-    // Only create if no unresolved incident exists
-    const existing = await prisma.incident.findFirst({
-      where: { monitorId: monitor.id, resolvedAt: null },
-    });
-    if (!existing) {
-      await prisma.incident.create({
-        data: {
-          monitorId: monitor.id,
-          title: `${monitor.name} is down`,
-          status: "investigating",
-          severity: "major",
-          updates: { create: { status: "investigating", message: "Monitor detected as down." } },
-          monitors: { create: { monitorId: monitor.id } },
-        },
-      });
-      sendNotifications(monitor.organizationId, {
-        type: "monitor.down",
-        monitorName: monitor.name,
-      }).catch((e) => console.error("Notification failed:", e));
-    }
-  } else if (status === "up") {
-    // Auto-resolve any open incident
-    const open = await prisma.incident.findFirst({
-      where: { monitorId: monitor.id, resolvedAt: null },
-    });
-    if (open) {
-      await prisma.incident.update({
-        where: { id: open.id },
-        data: {
-          status: "resolved",
-          resolvedAt: new Date(),
-          updates: { create: { status: "resolved", message: "Monitor recovered automatically." } },
-        },
-      });
-      sendNotifications(monitor.organizationId, {
-        type: "monitor.recovered",
-        monitorName: monitor.name,
-      }).catch((e) => console.error("Notification failed:", e));
-    }
-  }
+async function runCheck(monitor: WorkerMonitor) {
+  return monitor.type === "tcp"
+    ? checkTcp(monitor as Monitor)
+    : monitor.type === "ping"
+      ? checkPing(monitor as Monitor)
+      : checkHttp(monitor as Monitor);
 }
 
 export async function runSingleCheck(monitorId: string) {
   const monitor = await getMonitorById(monitorId);
-  const result =
-    monitor.type === "tcp" ? await checkTcp(monitor as Monitor)
-    : monitor.type === "ping" ? await checkPing(monitor as Monitor)
-    : await checkHttp(monitor as Monitor);
-
+  const result = await runCheck(monitor);
   const check = await recordMonitorCheck(monitor, result, region, new Date());
 
-  await handleAutoIncident(monitor, result.status);
-  trackCheck(monitor.organizationId).catch(() => {});
+  // Fetch existing incident for this monitor
+  const existing = monitor.autoIncidents
+    ? await prisma.incident.findFirst({ where: { monitorId: monitor.id, resolvedAt: null } })
+    : null;
+  await handleAutoIncident(monitor, result.status, existing ?? undefined);
 
   return check;
 }
@@ -84,21 +46,24 @@ export async function runSingleCheck(monitorId: string) {
 async function runLegacyChecks(now: Date) {
   const monitors = await listLegacyDueMonitors(now, region);
 
+  // Batch pre-fetch open incidents for autoIncident monitors
+  const autoIds = monitors.filter((m) => m.autoIncidents).map((m) => m.id);
+  const openIncidents = autoIds.length > 0
+    ? await prisma.incident.findMany({ where: { monitorId: { in: autoIds }, resolvedAt: null } })
+    : [];
+  const incidentMap = new Map(openIncidents.map((i) => [i.monitorId, i]));
+
   const results = await Promise.allSettled(
-    monitors.map(async (monitor) => {
-      const claimed = await claimLegacyMonitor(monitor, now);
-      if (!claimed) return;
+    monitors.map((monitor) =>
+      limit(async () => {
+        const claimed = await claimLegacyMonitor(monitor, now);
+        if (!claimed) return;
 
-      const result =
-        monitor.type === "tcp"
-          ? await checkTcp(monitor as Monitor)
-          : monitor.type === "ping"
-            ? await checkPing(monitor as Monitor)
-            : await checkHttp(monitor as Monitor);
-
-      await recordMonitorCheck(monitor, result, region, new Date());
-      await handleAutoIncident(monitor, result.status);
-    }),
+        const result = await runCheck(monitor);
+        await recordMonitorCheck(monitor, result, region, new Date());
+        await handleAutoIncident(monitor, result.status, incidentMap.get(monitor.id));
+      }),
+    ),
   );
 
   const failed = results.filter((r) => r.status === "rejected").length;
@@ -111,21 +76,24 @@ export async function runChecks() {
   try {
     const monitors = await listDueMonitors(now, region);
 
+    // Batch pre-fetch open incidents for autoIncident monitors
+    const autoIds = monitors.filter((m) => m.autoIncidents).map((m) => m.id);
+    const openIncidents = autoIds.length > 0
+      ? await prisma.incident.findMany({ where: { monitorId: { in: autoIds }, resolvedAt: null } })
+      : [];
+    const incidentMap = new Map(openIncidents.map((i) => [i.monitorId, i]));
+
     const results = await Promise.allSettled(
-      monitors.map(async (monitor) => {
-        const claimed = await claimDueMonitor(monitor, now);
-        if (!claimed) return;
+      monitors.map((monitor) =>
+        limit(async () => {
+          const claimed = await claimDueMonitor(monitor, now);
+          if (!claimed) return;
 
-        const result =
-          monitor.type === "tcp"
-            ? await checkTcp(monitor as Monitor)
-            : monitor.type === "ping"
-              ? await checkPing(monitor as Monitor)
-              : await checkHttp(monitor as Monitor);
-
-        await recordMonitorCheck(monitor, result, region, new Date());
-        await handleAutoIncident(monitor, result.status);
+          const result = await runCheck(monitor);
+          await recordMonitorCheck(monitor, result, region, new Date());
+          await handleAutoIncident(monitor, result.status, incidentMap.get(monitor.id));
         }),
+      ),
     );
 
     const failed = results.filter((r) => r.status === "rejected").length;

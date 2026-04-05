@@ -3,8 +3,8 @@ import { sendNotifications } from "./notify.js";
 
 /**
  * Process maintenance window auto-transitions:
- * - scheduled → in_progress when scheduledStart <= now
- * - in_progress → completed when scheduledEnd <= now
+ * - scheduled -> in_progress when scheduledStart <= now
+ * - in_progress -> completed when scheduledEnd <= now
  */
 export async function processMaintenanceWindows() {
   const now = new Date();
@@ -22,18 +22,22 @@ export async function processMaintenanceWindows() {
     },
   });
 
-  for (const mw of toStart) {
-    await prisma.maintenanceWindow.update({
-      where: { id: mw.id },
+  if (toStart.length > 0) {
+    await prisma.maintenanceWindow.updateMany({
+      where: { id: { in: toStart.map((mw) => mw.id) } },
       data: { status: "in_progress", actualStart: now },
     });
-    console.log(`Maintenance started: ${mw.title} (${mw.id})`);
 
-    await sendNotifications(mw.organizationId, {
-      type: "maintenance.started",
-      title: mw.title,
-      monitorNames: mw.monitors.map((m) => m.monitor.name),
-    }).catch((e) => console.error("Maintenance start notification failed:", e));
+    await Promise.allSettled(
+      toStart.map((mw) => {
+        console.log(`Maintenance started: ${mw.title} (${mw.id})`);
+        return sendNotifications(mw.organizationId, {
+          type: "maintenance.started",
+          title: mw.title,
+          monitorNames: mw.monitors.map((m) => m.monitor.name),
+        });
+      }),
+    );
   }
 
   // Complete in-progress windows that are past their end time
@@ -49,18 +53,22 @@ export async function processMaintenanceWindows() {
     },
   });
 
-  for (const mw of toComplete) {
-    await prisma.maintenanceWindow.update({
-      where: { id: mw.id },
+  if (toComplete.length > 0) {
+    await prisma.maintenanceWindow.updateMany({
+      where: { id: { in: toComplete.map((mw) => mw.id) } },
       data: { status: "completed", actualEnd: now },
     });
-    console.log(`Maintenance completed: ${mw.title} (${mw.id})`);
 
-    await sendNotifications(mw.organizationId, {
-      type: "maintenance.completed",
-      title: mw.title,
-      monitorNames: mw.monitors.map((m) => m.monitor.name),
-    }).catch((e) => console.error("Maintenance complete notification failed:", e));
+    await Promise.allSettled(
+      toComplete.map((mw) => {
+        console.log(`Maintenance completed: ${mw.title} (${mw.id})`);
+        return sendNotifications(mw.organizationId, {
+          type: "maintenance.completed",
+          title: mw.title,
+          monitorNames: mw.monitors.map((m) => m.monitor.name),
+        });
+      }),
+    );
   }
 
   if (toStart.length > 0 || toComplete.length > 0) {

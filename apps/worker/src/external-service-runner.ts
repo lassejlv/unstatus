@@ -1,7 +1,9 @@
 import { prisma } from "./db.js";
 import { checkExternalService, type ExternalStatusResult } from "./checkers/external-status.js";
+import { createLimiter } from "./limiter.js";
 
 const DUE_BATCH_SIZE = 50;
+const limit = createLimiter(10);
 const STATUS_RETENTION_DAYS = 90;
 
 type DueService = {
@@ -70,19 +72,16 @@ async function recordExternalServiceStatus(
     nextFetchAt,
   );
 
-  // Upsert components (no transaction needed — each is independent)
-  for (const comp of result.components) {
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO external_service_component
-         ("id", "externalServiceId", "externalId", "name", "description", "groupName", "currentStatus", "updatedAt")
-       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7)
-       ON CONFLICT ("externalServiceId", "externalId")
-       DO UPDATE SET
-         "name" = EXCLUDED."name",
-         "description" = EXCLUDED."description",
-         "groupName" = EXCLUDED."groupName",
-         "currentStatus" = EXCLUDED."currentStatus",
-         "updatedAt" = EXCLUDED."updatedAt"`,
+  // Batch upsert all components in a single query
+  if (result.components.length > 0) {
+    const values = result.components
+      .map((_, i) => {
+        const o = i * 7;
+        return `(gen_random_uuid()::text, $${o + 1}, $${o + 2}, $${o + 3}, $${o + 4}, $${o + 5}, $${o + 6}, $${o + 7})`;
+      })
+      .join(", ");
+
+    const params = result.components.flatMap((comp) => [
       serviceId,
       comp.externalId,
       comp.name,
@@ -90,6 +89,20 @@ async function recordExternalServiceStatus(
       comp.groupName,
       comp.status,
       now,
+    ]);
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO external_service_component
+         ("id", "externalServiceId", "externalId", "name", "description", "groupName", "currentStatus", "updatedAt")
+       VALUES ${values}
+       ON CONFLICT ("externalServiceId", "externalId")
+       DO UPDATE SET
+         "name" = EXCLUDED."name",
+         "description" = EXCLUDED."description",
+         "groupName" = EXCLUDED."groupName",
+         "currentStatus" = EXCLUDED."currentStatus",
+         "updatedAt" = EXCLUDED."updatedAt"`,
+      ...params,
     );
   }
 
@@ -131,24 +144,26 @@ export async function runExternalServiceChecks() {
   let checked = 0;
 
   await Promise.allSettled(
-    services.map(async (service) => {
-      const claimed = await claimExternalService(service, now);
-      if (!claimed) return;
+    services.map((service) =>
+      limit(async () => {
+        const claimed = await claimExternalService(service, now);
+        if (!claimed) return;
 
-      try {
-        const result = await checkExternalService(
-          service.parserType,
-          service.statusPageApiUrl!,
-          service.parserConfig,
-        );
-        await recordExternalServiceStatus(service.id, result, now, service.pollInterval);
-        checked++;
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        console.error(`External service check failed for ${service.name}:`, msg);
-        await recordExternalServiceError(service.id, msg, now).catch(() => {});
-      }
-    }),
+        try {
+          const result = await checkExternalService(
+            service.parserType,
+            service.statusPageApiUrl!,
+            service.parserConfig,
+          );
+          await recordExternalServiceStatus(service.id, result, now, service.pollInterval);
+          checked++;
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`External service check failed for ${service.name}:`, msg);
+          await recordExternalServiceError(service.id, msg, now).catch(() => {});
+        }
+      }),
+    ),
   );
 
   if (checked > 0) {
