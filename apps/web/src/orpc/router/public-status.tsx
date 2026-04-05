@@ -129,7 +129,7 @@ function enforceRateLimit(
   subscribeRateLimiter.set(key, recentAttempts);
 }
 
-async function resolvePublicPage(
+export async function resolvePublicPage(
   where: { slug: string } | { customDomain: string },
 ): Promise<ResolvedPublicPage> {
   const page = await prisma.statusPage.findUniqueOrThrow({
@@ -284,7 +284,7 @@ async function getRollupPublicStatusRows(
   ]);
 }
 
-async function getPublicStatusPage(page: ResolvedPublicPage) {
+export async function getPublicStatusPage(page: ResolvedPublicPage) {
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
