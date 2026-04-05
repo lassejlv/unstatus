@@ -34,6 +34,12 @@ export default defineHandler((event) => {
 
   const path = event.path;
 
+  // Rewrite /summary and /summary.json to the Hono API handler
+  if (path === "/summary" || path === "/summary.json") {
+    event.path = "/api/status/summary.json";
+    return;
+  }
+
   // Allow: root, API routes, and static assets
   if (
     path === "/" ||

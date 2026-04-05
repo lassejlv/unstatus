@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
@@ -53,11 +52,6 @@ import { Route as AuthedDashboardIncidentsIncidentIdRouteImport } from './routes
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SummaryRoute = SummaryRouteImport.update({
-  id: '/summary',
-  path: '/summary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -268,7 +262,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/admin': typeof AuthedAdminRouteWithChildren
@@ -309,7 +302,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
@@ -350,7 +342,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/summary': typeof SummaryRoute
   '/terms': typeof TermsRoute
   '/_authed/account': typeof AuthedAccountRoute
   '/_authed/admin': typeof AuthedAdminRouteWithChildren
@@ -393,7 +384,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/account'
     | '/admin'
@@ -434,7 +424,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/account'
     | '/accept-invitation/$invitationId'
@@ -474,7 +463,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/privacy'
-    | '/summary'
     | '/terms'
     | '/_authed/account'
     | '/_authed/admin'
@@ -517,7 +505,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  SummaryRoute: typeof SummaryRoute
   TermsRoute: typeof TermsRoute
   AcceptInvitationInvitationIdRoute: typeof AcceptInvitationInvitationIdRoute
   RegistrySlugRoute: typeof RegistrySlugRoute
@@ -538,13 +525,6 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/summary': {
-      id: '/summary'
-      path: '/summary'
-      fullPath: '/summary'
-      preLoaderRoute: typeof SummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -896,7 +876,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  SummaryRoute: SummaryRoute,
   TermsRoute: TermsRoute,
   AcceptInvitationInvitationIdRoute: AcceptInvitationInvitationIdRoute,
   RegistrySlugRoute: RegistrySlugRoute,
