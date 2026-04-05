@@ -1,47 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 
 import {
   CenteredMessage,
   PublicIncidentPageView,
 } from "@/components/public-status-view";
-import { orpc } from "@/orpc/client";
-import { useCustomDomain } from "@/lib/use-custom-domain";
+import { getCurrentCustomDomainIncidentPageServerFn } from "@/lib/public-status";
 
 export const Route = createFileRoute("/$incidentId")({
+  loader: async ({ params }) =>
+    getCurrentCustomDomainIncidentPageServerFn({
+      data: { incidentId: params.incidentId },
+    }),
   component: CustomDomainIncidentPage,
 });
 
 function CustomDomainIncidentPage() {
-  const customDomain = useCustomDomain();
-  const { incidentId } = Route.useParams();
+  const { domain, data } = Route.useLoaderData();
 
-  if (customDomain === undefined) return null;
-  if (!customDomain) {
+  if (!domain) {
     return <CenteredMessage message="Page not found." />;
   }
 
-  return <IncidentView domain={customDomain} incidentId={incidentId} />;
-}
-
-function IncidentView({
-  domain,
-  incidentId,
-}: {
-  domain: string;
-  incidentId: string;
-}) {
-  const { data, isLoading, error } = useQuery(
-    orpc.publicStatus.getIncidentByDomain.queryOptions({
-      input: { domain, incidentId },
-    }),
-  );
-
-  if (isLoading) {
-    return <CenteredMessage message="Loading…" />;
-  }
-
-  if (error || !data) {
+  if (!data) {
     return <CenteredMessage message="Incident not found." />;
   }
 

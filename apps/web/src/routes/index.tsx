@@ -1,42 +1,41 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { PublicNav } from "@/components/-public-nav";
 import {
   CenteredMessage,
   PublicStatusPageView,
 } from "@/components/public-status-view";
-import { orpc, client } from "@/orpc/client";
-import { useCustomDomain } from "@/lib/use-custom-domain";
+import { getCurrentCustomDomainStatusPageServerFn } from "@/lib/public-status";
+import { client } from "@/orpc/client";
 
 export const Route = createFileRoute("/")({
+  loader: () => getCurrentCustomDomainStatusPageServerFn(),
   component: RootPage,
 });
 
 function RootPage() {
-  const customDomain = useCustomDomain();
-  if (customDomain === undefined) return null;
-  if (customDomain) {
-    return <CustomDomainStatusPage domain={customDomain} />;
+  const { domain, data } = Route.useLoaderData();
+
+  if (domain) {
+    return <CustomDomainStatusPage data={data} />;
   }
   return <HomePage />;
 }
 
-function CustomDomainStatusPage({ domain }: { domain: string }) {
-  const { data, isLoading, error } = useQuery(
-    orpc.publicStatus.getByDomain.queryOptions({ input: { domain } }),
-  );
+type RootLoaderData = ReturnType<typeof Route.useLoaderData>;
 
+function CustomDomainStatusPage({
+  data,
+}: {
+  data: RootLoaderData["data"];
+}) {
   const subscribeMut = useMutation({
     mutationFn: (input: { email: string; monitorIds?: string[] }) =>
       client.publicStatus.subscribe({ slug: data?.slug ?? "", ...input }),
   });
 
-  if (isLoading) {
-    return <CenteredMessage message="Loading..." />;
-  }
-
-  if (error || !data) {
+  if (!data) {
     return <CenteredMessage message="Status page not found." />;
   }
 

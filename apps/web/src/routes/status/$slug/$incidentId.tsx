@@ -1,29 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import {
   CenteredMessage,
   PublicIncidentPageView,
 } from "@/components/public-status-view";
-import { orpc } from "@/orpc/client";
+import { getPublicIncidentPageBySlugServerFn } from "@/lib/public-status";
 
 export const Route = createFileRoute("/status/$slug/$incidentId")({
+  loader: async ({ params }) =>
+    getPublicIncidentPageBySlugServerFn({
+      data: { slug: params.slug, incidentId: params.incidentId },
+    }),
   component: PublicIncidentPage,
 });
 
 function PublicIncidentPage() {
-  const { slug, incidentId } = Route.useParams();
-  const { data, isLoading, error } = useQuery(
-    orpc.publicStatus.getIncident.queryOptions({
-      input: { slug, incidentId },
-    }),
-  );
+  const { slug } = Route.useParams();
+  const data = Route.useLoaderData();
 
-  if (isLoading) {
-    return <CenteredMessage message="Loading…" />;
-  }
-
-  if (error || !data) {
+  if (!data) {
     return <CenteredMessage message="Incident not found." />;
   }
 
