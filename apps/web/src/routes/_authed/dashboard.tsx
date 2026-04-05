@@ -26,6 +26,7 @@ import {
   Globe,
   Mail,
   Bell,
+  BarChart3,
   CreditCard,
   Settings,
   Sun,
@@ -46,6 +47,7 @@ const navItems = [
   { label: "Status Pages", to: "/dashboard/status-pages", search: {}, icon: Globe },
   { label: "Subscribers", to: "/dashboard/subscribers", search: {}, icon: Mail },
   { label: "Notifications", to: "/dashboard/notifications", search: {}, icon: Bell },
+  { label: "Usage", to: "/dashboard/usage", search: {}, icon: BarChart3 },
   { label: "Billing", to: "/dashboard/billing", search: {}, icon: CreditCard },
   { label: "Settings", to: "/dashboard/settings", search: {}, icon: Settings },
 ] as const;

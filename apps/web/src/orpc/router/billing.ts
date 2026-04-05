@@ -1,6 +1,6 @@
 import { orgProcedure } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
-import { resolvePlanTier } from "@/lib/plans";
+import { resolvePlanTier, PLAN_LIMITS } from "@/lib/plans";
 import { polarClient } from "@/lib/auth";
 import { env } from "@/lib/env";
 import z from "zod";
@@ -19,6 +19,45 @@ export const billingRouter = {
       return {
         ...org,
         tier: resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName),
+      };
+    }),
+
+  getUsage: orgProcedure(z.object({ organizationId: z.string() }))
+    .handler(async ({ input }) => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { id: input.organizationId },
+        select: {
+          subscriptionActive: true,
+          subscriptionPlanName: true,
+        },
+      });
+      const tier = resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName);
+      const limits = PLAN_LIMITS[tier];
+
+      const [monitorCount, statusPageCount] = await Promise.all([
+        prisma.monitor.count({ where: { organizationId: input.organizationId } }),
+        prisma.statusPage.count({ where: { organizationId: input.organizationId } }),
+      ]);
+
+      return {
+        tier,
+        monitors: { used: monitorCount, limit: limits.monitors },
+        statusPages: { used: statusPageCount, limit: limits.statusPages },
+        features: {
+          multiRegion: limits.multiRegion,
+          autoIncidents: limits.autoIncidents,
+          customDomain: limits.customDomain,
+          customCss: limits.customCss,
+          customJs: limits.customJs,
+          discordAlerts: limits.discordAlerts,
+          apiAccess: limits.apiAccess,
+          removeBranding: limits.removeBranding,
+          pingMonitor: limits.pingMonitor,
+          redisMonitor: limits.redisMonitor,
+          postgresMonitor: limits.postgresMonitor,
+          dependencies: limits.dependencies,
+        },
+        minInterval: limits.minInterval,
       };
     }),
 
