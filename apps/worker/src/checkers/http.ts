@@ -37,6 +37,8 @@ async function performHttpCheck(monitor: Monitor) {
     let responseBody: string | null = null;
     try {
       responseBody = await res.text();
+      // Strip null bytes — PostgreSQL text columns reject them
+      responseBody = responseBody.replaceAll("\x00", "");
       if (responseBody.length > 64_000) responseBody = responseBody.slice(0, 64_000);
     } catch {}
 
