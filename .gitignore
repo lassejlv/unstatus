@@ -13,4 +13,6 @@ dist-ssr
 __unconfig*
 todos.json
 apps/worker/worker
+apps/worker-rs/target
 target
+apps/rc
