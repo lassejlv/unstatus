@@ -109,9 +109,8 @@ export type PublicIncidentData = {
 
 export function CenteredMessage({ message }: { message: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
+    <div className="flex min-h-screen items-center justify-center">
       <Spinner className="size-5" />
-      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
 }
@@ -142,10 +141,6 @@ export function PublicStatusPageView({
   // Collapsed groups persisted to localStorage, keyed by page slug
   const storageKey = `unstatus:collapsed-groups:${data.slug}`;
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") {
-      return new Set();
-    }
-
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) return new Set(JSON.parse(stored));

@@ -1,50 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { PublicNav } from "@/components/-public-nav";
+import { PricingCard } from "@/components/ui/pricing";
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
-
-const plans = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "",
-    description: "For side projects and personal use.",
-    cta: "Get started",
-    ctaVariant: "outline" as const,
-    highlight: false,
-    features: [
-      "1 monitor",
-      "1 status page",
-      "Email alerts",
-      "10 min check interval",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "$15",
-    period: "/mo",
-    description: "For teams that need reliability.",
-    cta: "Get started",
-    ctaVariant: "default" as const,
-    highlight: true,
-    features: [
-      "50 monitors",
-      "Unlimited status pages",
-      "Custom domains",
-      "Custom CSS",
-      "Auto incidents",
-      "Multi-region checks",
-      "Discord alerts",
-      "API access",
-      "Remove branding",
-    ],
-  },
-];
 
 const faqs = [
   { q: "What happens if I exceed 50 monitors?", a: "Contact us for Enterprise pricing." },
@@ -80,45 +42,42 @@ function PricingPage() {
 
         {/* Plans */}
         <section className="mx-auto max-w-3xl px-6 pb-16">
-          <div className="grid gap-6 sm:grid-cols-2">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative flex flex-col rounded-lg border p-6 ${
-                  plan.highlight ? "border-foreground/20 ring-1 ring-foreground/5" : ""
-                }`}
-              >
-                {plan.highlight && (
-                  <span className="absolute -top-2.5 left-5 rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium text-background">
-                    Popular
-                  </span>
-                )}
+          <div className="rounded-xl flex flex-col justify-between border p-1">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <PricingCard
+                title="Free"
+                price="$0 / mo"
+                description="For side projects and personal use."
+                buttonVariant="outline"
+                onAction={() => handleAction(false)}
+                features={[
+                  "1 monitor",
+                  "1 status page",
+                  "Email alerts",
+                  "10 min check interval",
+                ]}
+              />
 
-                <p className="text-sm font-medium">{plan.name}</p>
-                <p className="mt-3 text-3xl font-semibold tracking-tight">
-                  {plan.price}
-                  {plan.period && <span className="text-sm font-normal text-muted-foreground">{plan.period}</span>}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-
-                <Button
-                  variant={plan.ctaVariant}
-                  className="mt-5 w-full"
-                  onClick={() => handleAction(plan.highlight)}
-                >
-                  {plan.cta}
-                </Button>
-
-                <ul className="mt-6 flex-1 space-y-2.5 border-t pt-6">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm">
-                      <Check className="size-3.5 shrink-0 text-muted-foreground" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              <PricingCard
+                title="Pro"
+                price="$15 / mo"
+                description="For teams that need reliability."
+                buttonVariant="default"
+                highlight
+                onAction={() => handleAction(true)}
+                features={[
+                  "50 monitors",
+                  "Unlimited status pages",
+                  "Custom domains",
+                  "Custom CSS",
+                  "Auto incidents",
+                  "Multi-region checks",
+                  "Discord alerts",
+                  "API access",
+                  "Remove branding",
+                ]}
+              />
+            </div>
           </div>
         </section>
 
