@@ -7,7 +7,7 @@ import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
-const monitorTypeSchema = z.enum(["http", "tcp", "ping"]);
+const monitorTypeSchema = z.enum(["http", "tcp", "ping", "redis", "postgres"]);
 const regionSchema = z.enum(["eu", "us", "asia"]);
 const ruleSchema = z.object({
   type: z.string().trim().min(1),
@@ -55,6 +55,14 @@ function validateMonitorFields(
       code: z.ZodIssueCode.custom,
       path: ["host"],
       message: "host or url is required for ping monitors",
+    });
+  }
+
+  if ((value.type === "redis" || value.type === "postgres") && !value.url) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["url"],
+      message: `url is required for ${value.type} monitors`,
     });
   }
 }
@@ -133,6 +141,12 @@ app.post("/", async (c) => {
   const count = await prisma.monitor.count({ where: { organizationId } });
   if (count >= maxMonitors) {
     throw new ApiError("FORBIDDEN", `Maximum of ${maxMonitors} monitors reached on your plan`, 403);
+  }
+  if (type === "redis" && !PLAN_LIMITS[tier].redisMonitor) {
+    throw new ApiError("FORBIDDEN", "Redis monitors require the Scale plan", 403);
+  }
+  if (type === "postgres" && !PLAN_LIMITS[tier].postgresMonitor) {
+    throw new ApiError("FORBIDDEN", "Postgres monitors require the Scale plan", 403);
   }
 
   const monitor = await prisma.monitor.create({

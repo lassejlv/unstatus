@@ -2,6 +2,8 @@ import { prisma } from "./db.js";
 import { checkHttp } from "./checkers/http.js";
 import { checkTcp } from "./checkers/tcp.js";
 import { checkPing } from "./checkers/ping.js";
+import { checkRedis } from "./checkers/redis.js";
+import { checkPostgres } from "./checkers/postgres.js";
 import type { Monitor } from "@unstatus/db";
 import {
   isMissingMonitorPerfSchema,
@@ -22,11 +24,13 @@ const region = process.env.REGION ?? "eu";
 const limit = createLimiter(Number(process.env.CHECK_CONCURRENCY ?? 20));
 
 async function runCheck(monitor: WorkerMonitor) {
-  return monitor.type === "tcp"
-    ? checkTcp(monitor as Monitor)
-    : monitor.type === "ping"
-      ? checkPing(monitor as Monitor)
-      : checkHttp(monitor as Monitor);
+  switch (monitor.type) {
+    case "tcp": return checkTcp(monitor as Monitor);
+    case "ping": return checkPing(monitor as Monitor);
+    case "redis": return checkRedis(monitor as Monitor);
+    case "postgres": return checkPostgres(monitor as Monitor);
+    default: return checkHttp(monitor as Monitor);
+  }
 }
 
 export async function runSingleCheck(monitorId: string) {

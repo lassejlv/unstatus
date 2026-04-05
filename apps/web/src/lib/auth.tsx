@@ -9,7 +9,7 @@ import { env } from "./env";
 import { email } from "./email";
 import { InvitationEmail } from "@unstatus/email";
 
-const polarClient = new Polar({
+export const polarClient = new Polar({
   accessToken: env.POLAR_ACCESS_TOKEN,
   server: env.POLAR_MODE === "production" ? "production" : "sandbox",
 });

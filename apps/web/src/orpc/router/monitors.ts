@@ -21,7 +21,7 @@ const REGIONS = ["eu", "us", "asia"] as const;
 const createInput = z.object({
   organizationId: z.string(),
   name: z.string(),
-  type: z.enum(["http", "tcp", "ping"]),
+  type: z.enum(["http", "tcp", "ping", "redis", "postgres"]),
   interval: z.number().int().min(10).default(60),
   timeout: z.number().int().min(1).default(10),
   url: z.string().optional(),
@@ -251,6 +251,8 @@ export const monitorsRouter = {
     if (input.autoIncidents) requireFeature(tier, "autoIncidents", "Auto-create incidents");
     if (input.regions.length > 1) requireFeature(tier, "multiRegion", "Multiple regions");
     if (input.type === "ping") requireFeature(tier, "pingMonitor", "Ping monitors");
+    if (input.type === "redis") requireFeature(tier, "redisMonitor", "Redis monitors");
+    if (input.type === "postgres") requireFeature(tier, "postgresMonitor", "Postgres monitors");
     if (input.interval < PLAN_LIMITS[tier].minInterval) {
       throw new ORPCError("FORBIDDEN", {
         message: `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds. Upgrade to unlock faster checks.`,
@@ -271,6 +273,8 @@ export const monitorsRouter = {
     if (data.autoIncidents) requireFeature(tier, "autoIncidents", "Auto-create incidents");
     if (data.regions && data.regions.length > 1) requireFeature(tier, "multiRegion", "Multiple regions");
     if (data.type === "ping") requireFeature(tier, "pingMonitor", "Ping monitors");
+    if (data.type === "redis") requireFeature(tier, "redisMonitor", "Redis monitors");
+    if (data.type === "postgres") requireFeature(tier, "postgresMonitor", "Postgres monitors");
     if (data.interval !== undefined && data.interval < PLAN_LIMITS[tier].minInterval) {
       throw new ORPCError("FORBIDDEN", {
         message: `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds. Upgrade to unlock faster checks.`,

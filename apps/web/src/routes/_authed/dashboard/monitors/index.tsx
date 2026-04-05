@@ -5,7 +5,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
+import { orpc, client } from "@/orpc/client";
 import { useOrg } from "@/components/org-context";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -170,7 +170,7 @@ function MonitorsPage() {
                   </Badge>
                 </div>
                 <span className="text-xs text-muted-foreground truncate">
-                  {m.type === "http" ? m.url : m.type === "ping" ? `ping ${m.host}` : `${m.host}:${m.port}`}
+                  {m.type === "http" || m.type === "redis" || m.type === "postgres" ? m.url : m.type === "ping" ? `ping ${m.host}` : `${m.host}:${m.port}`}
                 </span>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span
@@ -325,13 +325,13 @@ function MonitorSidecar({
                     <h2 className="text-lg font-semibold truncate">{monitor.name}</h2>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                       <span className="font-mono truncate max-w-[280px]">
-                        {monitor.type === "http" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`}
+                        {monitor.type === "http" || monitor.type === "redis" || monitor.type === "postgres" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`}
                       </span>
                       <button
                         type="button"
                         className="shrink-0 rounded p-0.5 hover:text-foreground"
                         onClick={() => {
-                          const target = monitor.type === "http" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`;
+                          const target = monitor.type === "http" || monitor.type === "redis" || monitor.type === "postgres" ? monitor.url : monitor.type === "ping" ? monitor.host : `${monitor.host}:${monitor.port}`;
                           if (target) navigator.clipboard.writeText(target);
                           setCopied(true);
                           setTimeout(() => setCopied(false), 1500);
@@ -796,6 +796,22 @@ function EditMonitorOverlay({
               <Input type="number" value={port} onChange={(e) => setPort(e.target.value)} className="h-8 text-xs" />
             </div>
           </div>
+        ) : monitor.type === "redis" || monitor.type === "postgres" ? (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs">Connection URL</Label>
+              <Input value={url} onChange={(e) => setUrl(e.target.value)} className="h-8 text-xs font-mono" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs">{monitor.type === "redis" ? "Command" : "Query"} (optional)</Label>
+              <Input
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                className="h-8 text-xs font-mono"
+                placeholder={monitor.type === "redis" ? "PING" : "SELECT 1"}
+              />
+            </div>
+          </>
         ) : (
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Host</Label>
@@ -993,7 +1009,9 @@ function EditMonitorOverlay({
                     }
                   : monitor.type === "tcp"
                     ? { host, port: Number(port) }
-                    : { host }),
+                    : monitor.type === "redis" || monitor.type === "postgres"
+                      ? { url, body: body || undefined }
+                      : { host }),
               })
             }
           >
@@ -1023,22 +1041,52 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
     orpc.dependencies.listExternalServices.queryOptions({ input: hasDeps ? undefined : skipToken }),
   );
   const [addOpen, setAddOpen] = useState(false);
-  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
+  const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [selectedComponentIds, setSelectedComponentIds] = useState<Set<string>>(new Set());
+  const [addWholeService, setAddWholeService] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
-  const addDep = useMutation({
-    ...orpc.dependencies.add.mutationOptions(),
-    onSuccess: () => {
+  const { data: components, isLoading: componentsLoading } = useQuery(
+    orpc.dependencies.listComponentsForService.queryOptions({
+      input: selectedServiceId ? { externalServiceId: selectedServiceId } : skipToken,
+    }),
+  );
+
+  const selectedService = useMemo(
+    () => services?.find((s) => s.id === selectedServiceId),
+    [services, selectedServiceId],
+  );
+
+  const resetDialog = () => {
+    setSelectedServiceId("");
+    setSelectedComponentIds(new Set());
+    setAddWholeService(false);
+    setSearchQuery("");
+    setIsAdding(false);
+  };
+
+  const handleAdd = async () => {
+    if (!selectedServiceId) return;
+    setIsAdding(true);
+    try {
+      if (addWholeService || !components?.length) {
+        await client.dependencies.add({ monitorId, externalServiceId: selectedServiceId, externalComponentId: null });
+      } else {
+        for (const componentId of selectedComponentIds) {
+          await client.dependencies.add({ monitorId, externalServiceId: selectedServiceId, externalComponentId: componentId });
+        }
+      }
       qc.invalidateQueries({ queryKey: depsOpts.queryKey });
       setAddOpen(false);
-      setSelectedServiceId("");
-      setSearchQuery("");
-      toast.success("Dependency added");
-    },
-    onError: (err) => {
+      resetDialog();
+      toast.success(selectedComponentIds.size > 1 ? "Dependencies added" : "Dependency added");
+    } catch (err: any) {
       toast.error(err.message || "Failed to add dependency");
-    },
-  });
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const removeDep = useMutation({
     ...orpc.dependencies.remove.mutationOptions(),
@@ -1051,12 +1099,43 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
     },
   });
 
-  const existingServiceIds = new Set(deps?.map((d) => d.externalServiceId) ?? []);
+  // Track existing (serviceId, componentId) pairs to disable already-linked items
+  const existingPairs = useMemo(() => {
+    const set = new Set<string>();
+    for (const d of deps ?? []) {
+      set.add(`${d.externalServiceId}:${d.externalComponentId ?? ""}`);
+    }
+    return set;
+  }, [deps]);
+
   const filteredServices = services?.filter(
-    (s) =>
-      !existingServiceIds.has(s.id) &&
-      (searchQuery === "" || s.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    (s) => searchQuery === "" || s.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // Group components by groupName
+  const groupedComponents = useMemo(() => {
+    if (!components) return [];
+    const groups = new Map<string, typeof components>();
+    for (const c of components) {
+      const key = c.groupName ?? "";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(c);
+    }
+    return Array.from(groups.entries());
+  }, [components]);
+
+  const toggleComponent = (id: string) => {
+    setSelectedComponentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setAddWholeService(false);
+  };
+
+  const canAdd = addWholeService || selectedComponentIds.size > 0 || !components?.length;
+  const addCount = addWholeService ? 1 : selectedComponentIds.size;
 
   const DEP_COLORS: Record<string, string> = {
     operational: "bg-emerald-500",
@@ -1084,57 +1163,128 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Dependencies</span>
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetDialog(); }}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm" className="h-6 text-xs">+ Add</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add dependency</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col gap-3">
-              <Input
-                placeholder="Search services..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
-                {filteredServices?.length === 0 && (
-                  <p className="p-3 text-xs text-muted-foreground">No services found.</p>
-                )}
-                {filteredServices?.map((s) => (
+              <DialogTitle>
+                {selectedServiceId && selectedService ? (
                   <button
-                    key={s.id}
                     type="button"
-                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-colors ${selectedServiceId === s.id ? "bg-accent" : ""}`}
-                    onClick={() => setSelectedServiceId(s.id)}
+                    className="flex items-center gap-1.5 text-sm hover:text-muted-foreground transition-colors"
+                    onClick={() => { setSelectedServiceId(""); setSelectedComponentIds(new Set()); setAddWholeService(false); }}
                   >
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded border bg-background">
-                      {s.logoUrl ? (
-                        <img src={s.logoUrl} alt={s.name} className="size-4 rounded" />
-                      ) : (
-                        <span className="text-[10px] font-semibold text-muted-foreground">{s.name.charAt(0)}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm">{s.name}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
-                    </div>
-                    <span className={`size-2 rounded-full ${DEP_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                    <span>&larr;</span>
+                    <span>{selectedService.name}</span>
                   </button>
-                ))}
+                ) : (
+                  "Add dependency"
+                )}
+              </DialogTitle>
+            </DialogHeader>
+
+            {!selectedServiceId ? (
+              <div className="flex flex-col gap-3">
+                <Input
+                  placeholder="Search services..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
+                  {filteredServices?.length === 0 && (
+                    <p className="p-3 text-xs text-muted-foreground">No services found.</p>
+                  )}
+                  {filteredServices?.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-colors"
+                      onClick={() => { setSelectedServiceId(s.id); setSearchQuery(""); }}
+                    >
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded border bg-background">
+                        {s.logoUrl ? (
+                          <img src={s.logoUrl} alt={s.name} className="size-4 rounded" />
+                        ) : (
+                          <span className="text-[10px] font-semibold text-muted-foreground">{s.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm">{s.name}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
+                      </div>
+                      <span className={`size-2 rounded-full ${DEP_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {componentsLoading ? (
+                  <p className="p-3 text-xs text-muted-foreground">Loading components...</p>
+                ) : !components?.length ? (
+                  <p className="p-3 text-xs text-muted-foreground">This service has no individual components. It will be added as a whole.</p>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto rounded-lg border divide-y">
+                    {/* Entire service option */}
+                    <label className="flex w-full items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors">
+                      <Checkbox
+                        checked={addWholeService}
+                        onCheckedChange={(checked) => {
+                          setAddWholeService(!!checked);
+                          if (checked) setSelectedComponentIds(new Set());
+                        }}
+                        disabled={existingPairs.has(`${selectedServiceId}:`)}
+                      />
+                      <span className="text-sm font-medium">Entire service</span>
+                    </label>
+                    {/* Components grouped by groupName */}
+                    {groupedComponents.map(([group, comps]) => (
+                      <div key={group}>
+                        {group && (
+                          <div className="px-3 pt-2 pb-1">
+                            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{group}</span>
+                          </div>
+                        )}
+                        {comps.map((c) => {
+                          const alreadyLinked = existingPairs.has(`${selectedServiceId}:${c.id}`);
+                          return (
+                            <label
+                              key={c.id}
+                              className={`flex w-full items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors ${alreadyLinked ? "opacity-50" : ""}`}
+                            >
+                              <Checkbox
+                                checked={alreadyLinked || selectedComponentIds.has(c.id)}
+                                onCheckedChange={() => toggleComponent(c.id)}
+                                disabled={addWholeService || alreadyLinked}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm">{c.name}</span>
+                              </div>
+                              <span className={`size-2 rounded-full ${DEP_COLORS[c.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button
-                disabled={!selectedServiceId || addDep.isPending}
-                onClick={() => addDep.mutate({ monitorId, externalServiceId: selectedServiceId })}
-              >
-                Add
-              </Button>
+              {selectedServiceId && (
+                <Button
+                  disabled={!canAdd || isAdding}
+                  onClick={handleAdd}
+                >
+                  {isAdding ? "Adding..." : `Add${addCount > 1 ? ` (${addCount})` : ""}`}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

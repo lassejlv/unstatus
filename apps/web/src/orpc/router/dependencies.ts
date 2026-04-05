@@ -22,6 +22,16 @@ export const dependenciesRouter = {
     });
   }),
 
+  listComponentsForService: authedProcedure
+    .input(z.object({ externalServiceId: z.string() }))
+    .handler(async ({ input }) => {
+      return prisma.externalServiceComponent.findMany({
+        where: { externalServiceId: input.externalServiceId },
+        select: { id: true, name: true, groupName: true, currentStatus: true },
+        orderBy: [{ groupName: "asc" }, { name: "asc" }],
+      });
+    }),
+
   listForMonitor: authedProcedure
     .input(z.object({ monitorId: z.string() }))
     .handler(async ({ input, context }) => {

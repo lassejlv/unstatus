@@ -16,6 +16,8 @@ export const PLAN_LIMITS = {
     apiAccess: false,
     removeBranding: false,
     pingMonitor: false,
+    redisMonitor: false,
+    postgresMonitor: false,
     dependencies: false,
   },
   hobby: {
@@ -31,6 +33,8 @@ export const PLAN_LIMITS = {
     apiAccess: true,
     removeBranding: false,
     pingMonitor: false,
+    redisMonitor: false,
+    postgresMonitor: false,
     dependencies: false,
   },
   scale: {
@@ -46,6 +50,8 @@ export const PLAN_LIMITS = {
     apiAccess: true,
     removeBranding: true,
     pingMonitor: true,
+    redisMonitor: true,
+    postgresMonitor: true,
     dependencies: true,
   },
 } as const satisfies Record<PlanTier, Record<string, number | boolean>>;

@@ -2,11 +2,13 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useOrg } from "@/components/org-context";
 import { authClient } from "@/lib/auth-client";
+import { client } from "@/orpc/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useTheme } from "@/hooks/use-theme";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authed/dashboard/billing")({
   component: BillingPage,
@@ -43,6 +45,16 @@ function BillingPage() {
   );
 }
 
+async function openScaleCheckout(orgId: string, theme: "light" | "dark") {
+  const { url } = await client.billing.createScaleCheckout({
+    organizationId: orgId,
+    theme,
+  });
+  // Dynamic import to avoid SSR bundling issues with browser-only @polar-sh/checkout
+  const { PolarEmbedCheckout } = await (new Function('return import("@polar-sh/checkout")')() as Promise<{ PolarEmbedCheckout: any }>);
+  await PolarEmbedCheckout.create(url, { theme });
+}
+
 function CurrentPlanCard({ orgId }: { orgId: string }) {
   const { tier, planName, cancelAtPeriodEnd } = useSubscription();
   const { theme } = useTheme();
@@ -50,6 +62,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
 
   const displayName = planName ?? PLAN_LABELS[tier];
   const price = PLAN_PRICES[tier];
+  const checkoutTheme = theme === "dark" ? "dark" : "light" as const;
 
   return (
     <Card>
@@ -84,7 +97,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
                 onClick={async () => {
                   setLoading(true);
                   try {
-                    await authClient.checkoutEmbed({ slug: "hobby", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                    await authClient.checkoutEmbed({ slug: "hobby", referenceId: orgId, theme: checkoutTheme });
                   } finally {
                     setLoading(false);
                   }
@@ -98,7 +111,9 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
                 onClick={async () => {
                   setLoading(true);
                   try {
-                    await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                    await openScaleCheckout(orgId, checkoutTheme);
+                  } catch (err: any) {
+                    toast.error(err.message || "Failed to open checkout");
                   } finally {
                     setLoading(false);
                   }
@@ -116,7 +131,9 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
               onClick={async () => {
                 setLoading(true);
                 try {
-                  await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme: theme === "dark" ? "dark" : "light" });
+                  await openScaleCheckout(orgId, checkoutTheme);
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to open checkout");
                 } finally {
                   setLoading(false);
                 }

@@ -47,7 +47,7 @@ function NewMonitorPage() {
   const qc = useQueryClient();
 
   const [step, setStep] = useState(0);
-  const [type, setType] = useState<"http" | "tcp" | "ping">("http");
+  const [type, setType] = useState<"http" | "tcp" | "ping" | "redis" | "postgres">("http");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [host, setHost] = useState("");
@@ -81,7 +81,7 @@ function NewMonitorPage() {
 
   const canAdvance =
     step === 0 ? !!name :
-    step === 1 ? (type === "http" ? !!url : !!host) :
+    step === 1 ? (type === "http" || type === "redis" || type === "postgres" ? !!url : !!host) :
     true;
 
   const isLastStep = step === STEPS.length - 1;
@@ -105,7 +105,9 @@ function NewMonitorPage() {
             }
           : type === "tcp"
             ? { host, port: Number(port) }
-            : { host }),
+            : type === "redis" || type === "postgres"
+              ? { url, body: body || undefined }
+              : { host }),
       });
     } else {
       setStep(step + 1);
@@ -157,7 +159,7 @@ function NewMonitorPage() {
               <Label>Type</Label>
               <Select
                 value={type}
-                onValueChange={(v) => setType(v as "http" | "tcp" | "ping")}
+                onValueChange={(v) => setType(v as typeof type)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -167,6 +169,12 @@ function NewMonitorPage() {
                   <SelectItem value="tcp">TCP</SelectItem>
                   <SelectItem value="ping" disabled={!limits.pingMonitor}>
                     <span className="flex items-center gap-1.5">Ping{!limits.pingMonitor && <ProBadge label="Scale" />}</span>
+                  </SelectItem>
+                  <SelectItem value="redis" disabled={!limits.redisMonitor}>
+                    <span className="flex items-center gap-1.5">Redis{!limits.redisMonitor && <ProBadge label="Scale" />}</span>
+                  </SelectItem>
+                  <SelectItem value="postgres" disabled={!limits.postgresMonitor}>
+                    <span className="flex items-center gap-1.5">PostgreSQL{!limits.postgresMonitor && <ProBadge label="Scale" />}</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -234,6 +242,26 @@ function NewMonitorPage() {
                   />
                 </div>
               </div>
+            ) : type === "redis" || type === "postgres" ? (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Connection URL</Label>
+                  <Input
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder={type === "redis" ? "redis://user:pass@host:6379" : "postgresql://user:pass@host:5432/dbname"}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>{type === "redis" ? "Command" : "Query"} (optional)</Label>
+                  <Input
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder={type === "redis" ? "PING" : "SELECT 1"}
+                  />
+                </div>
+              </>
             ) : (
               <div className="flex flex-col gap-1.5">
                 <Label>Host</Label>
