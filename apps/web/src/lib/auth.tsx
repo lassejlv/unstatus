@@ -27,6 +27,9 @@ export const auth = betterAuth({
     },
   },
   user: {
+    additionalFields: {
+      isAdmin: { type: "boolean", defaultValue: false, required: false },
+    },
     deleteUser: {
       enabled: true,
     },

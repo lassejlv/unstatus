@@ -9,6 +9,7 @@ import { registryRouter } from "./registry";
 import { dependenciesRouter } from "./dependencies";
 import { maintenanceRouter } from "./maintenance";
 import { apiKeysRouter } from "./api-keys";
+import { adminRouter } from "./admin";
 
 const router = {
   monitors: monitorsRouter,
@@ -22,6 +23,7 @@ const router = {
   dependencies: dependenciesRouter,
   maintenance: maintenanceRouter,
   apiKeys: apiKeysRouter,
+  admin: adminRouter,
 };
 
 export default router;

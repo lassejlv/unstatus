@@ -21,18 +21,25 @@ import { Route as RegistryIndexRouteImport } from './routes/registry/index'
 import { Route as RegistrySlugRouteImport } from './routes/registry/$slug'
 import { Route as AcceptInvitationInvitationIdRouteImport } from './routes/accept-invitation.$invitationId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
 import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
 import { Route as StatusSlugIndexRouteImport } from './routes/status/$slug/index'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
+import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as StatusSlugVerifyRouteImport } from './routes/status/$slug/verify'
 import { Route as StatusSlugIncidentIdRouteImport } from './routes/status/$slug/$incidentId'
 import { Route as ApiV1SplatRouteImport } from './routes/api.v1.$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedDashboardUsageRouteImport } from './routes/_authed/dashboard/usage'
 import { Route as AuthedDashboardSubscribersRouteImport } from './routes/_authed/dashboard/subscribers'
 import { Route as AuthedDashboardSettingsRouteImport } from './routes/_authed/dashboard/settings'
 import { Route as AuthedDashboardNotificationsRouteImport } from './routes/_authed/dashboard/notifications'
 import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
+import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
+import { Route as AuthedAdminRegistryRouteImport } from './routes/_authed/admin/registry'
+import { Route as AuthedAdminOrganizationsRouteImport } from './routes/_authed/admin/organizations'
+import { Route as AuthedAdminMonitorsRouteImport } from './routes/_authed/admin/monitors'
 import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
 import { Route as AuthedDashboardMonitorsIndexRouteImport } from './routes/_authed/dashboard/monitors/index'
 import { Route as AuthedDashboardMaintenanceIndexRouteImport } from './routes/_authed/dashboard/maintenance/index'
@@ -101,6 +108,11 @@ const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAdminRoute = AuthedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedAccountRoute = AuthedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -115,6 +127,11 @@ const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAdminRoute,
 } as any)
 const StatusSlugVerifyRoute = StatusSlugVerifyRouteImport.update({
   id: '/status/$slug/verify',
@@ -141,6 +158,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedDashboardUsageRoute = AuthedDashboardUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
 const AuthedDashboardSubscribersRoute =
   AuthedDashboardSubscribersRouteImport.update({
     id: '/subscribers',
@@ -162,6 +184,27 @@ const AuthedDashboardBillingRoute = AuthedDashboardBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminRegistryRoute = AuthedAdminRegistryRouteImport.update({
+  id: '/registry',
+  path: '/registry',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminOrganizationsRoute =
+  AuthedAdminOrganizationsRouteImport.update({
+    id: '/organizations',
+    path: '/organizations',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminMonitorsRoute = AuthedAdminMonitorsRouteImport.update({
+  id: '/monitors',
+  path: '/monitors',
+  getParentRoute: () => AuthedAdminRoute,
 } as any)
 const AuthedDashboardStatusPagesIndexRoute =
   AuthedDashboardStatusPagesIndexRouteImport.update({
@@ -215,19 +258,26 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
+  '/admin': typeof AuthedAdminRouteWithChildren
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
+  '/admin/monitors': typeof AuthedAdminMonitorsRoute
+  '/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/admin/registry': typeof AuthedAdminRegistryRoute
+  '/admin/users': typeof AuthedAdminUsersRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
   '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
+  '/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
+  '/admin/': typeof AuthedAdminIndexRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
   '/status/$slug/': typeof StatusSlugIndexRoute
   '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
@@ -250,15 +300,21 @@ export interface FileRoutesByTo {
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry': typeof RegistryIndexRoute
+  '/admin/monitors': typeof AuthedAdminMonitorsRoute
+  '/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/admin/registry': typeof AuthedAdminRegistryRoute
+  '/admin/users': typeof AuthedAdminUsersRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
   '/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
+  '/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
+  '/admin': typeof AuthedAdminIndexRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
   '/status/$slug': typeof StatusSlugIndexRoute
   '/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
@@ -280,19 +336,26 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/_authed/account': typeof AuthedAccountRoute
+  '/_authed/admin': typeof AuthedAdminRouteWithChildren
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
+  '/_authed/admin/monitors': typeof AuthedAdminMonitorsRoute
+  '/_authed/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/_authed/admin/registry': typeof AuthedAdminRegistryRoute
+  '/_authed/admin/users': typeof AuthedAdminUsersRoute
   '/_authed/dashboard/billing': typeof AuthedDashboardBillingRoute
   '/_authed/dashboard/notifications': typeof AuthedDashboardNotificationsRoute
   '/_authed/dashboard/settings': typeof AuthedDashboardSettingsRoute
   '/_authed/dashboard/subscribers': typeof AuthedDashboardSubscribersRoute
+  '/_authed/dashboard/usage': typeof AuthedDashboardUsageRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/status/$slug/$incidentId': typeof StatusSlugIncidentIdRoute
   '/status/$slug/verify': typeof StatusSlugVerifyRoute
+  '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
   '/status/$slug/': typeof StatusSlugIndexRoute
   '/_authed/dashboard/incidents/$incidentId': typeof AuthedDashboardIncidentsIncidentIdRoute
@@ -314,19 +377,26 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/account'
+    | '/admin'
     | '/dashboard'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
+    | '/admin/monitors'
+    | '/admin/organizations'
+    | '/admin/registry'
+    | '/admin/users'
     | '/dashboard/billing'
     | '/dashboard/notifications'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
+    | '/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
+    | '/admin/'
     | '/dashboard/'
     | '/status/$slug/'
     | '/dashboard/incidents/$incidentId'
@@ -349,15 +419,21 @@ export interface FileRouteTypes {
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry'
+    | '/admin/monitors'
+    | '/admin/organizations'
+    | '/admin/registry'
+    | '/admin/users'
     | '/dashboard/billing'
     | '/dashboard/notifications'
     | '/dashboard/settings'
     | '/dashboard/subscribers'
+    | '/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
+    | '/admin'
     | '/dashboard'
     | '/status/$slug'
     | '/dashboard/incidents/$incidentId'
@@ -378,19 +454,26 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/_authed/account'
+    | '/_authed/admin'
     | '/_authed/dashboard'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
+    | '/_authed/admin/monitors'
+    | '/_authed/admin/organizations'
+    | '/_authed/admin/registry'
+    | '/_authed/admin/users'
     | '/_authed/dashboard/billing'
     | '/_authed/dashboard/notifications'
     | '/_authed/dashboard/settings'
     | '/_authed/dashboard/subscribers'
+    | '/_authed/dashboard/usage'
     | '/api/auth/$'
     | '/api/rpc/$'
     | '/api/v1/$'
     | '/status/$slug/$incidentId'
     | '/status/$slug/verify'
+    | '/_authed/admin/'
     | '/_authed/dashboard/'
     | '/status/$slug/'
     | '/_authed/dashboard/incidents/$incidentId'
@@ -508,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/admin': {
+      id: '/_authed/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthedAdminRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/account': {
       id: '/_authed/account'
       path: '/account'
@@ -528,6 +618,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/admin/': {
+      id: '/_authed/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
     }
     '/status/$slug/verify': {
       id: '/status/$slug/verify'
@@ -564,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/dashboard/usage': {
+      id: '/_authed/dashboard/usage'
+      path: '/usage'
+      fullPath: '/dashboard/usage'
+      preLoaderRoute: typeof AuthedDashboardUsageRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/subscribers': {
       id: '/_authed/dashboard/subscribers'
       path: '/subscribers'
@@ -591,6 +695,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/billing'
       preLoaderRoute: typeof AuthedDashboardBillingRouteImport
       parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/admin/users': {
+      id: '/_authed/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthedAdminUsersRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/registry': {
+      id: '/_authed/admin/registry'
+      path: '/registry'
+      fullPath: '/admin/registry'
+      preLoaderRoute: typeof AuthedAdminRegistryRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/organizations': {
+      id: '/_authed/admin/organizations'
+      path: '/organizations'
+      fullPath: '/admin/organizations'
+      preLoaderRoute: typeof AuthedAdminOrganizationsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/monitors': {
+      id: '/_authed/admin/monitors'
+      path: '/monitors'
+      fullPath: '/admin/monitors'
+      preLoaderRoute: typeof AuthedAdminMonitorsRouteImport
+      parentRoute: typeof AuthedAdminRoute
     }
     '/_authed/dashboard/status-pages/': {
       id: '/_authed/dashboard/status-pages/'
@@ -644,11 +776,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthedAdminRouteChildren {
+  AuthedAdminMonitorsRoute: typeof AuthedAdminMonitorsRoute
+  AuthedAdminOrganizationsRoute: typeof AuthedAdminOrganizationsRoute
+  AuthedAdminRegistryRoute: typeof AuthedAdminRegistryRoute
+  AuthedAdminUsersRoute: typeof AuthedAdminUsersRoute
+  AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
+}
+
+const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
+  AuthedAdminMonitorsRoute: AuthedAdminMonitorsRoute,
+  AuthedAdminOrganizationsRoute: AuthedAdminOrganizationsRoute,
+  AuthedAdminRegistryRoute: AuthedAdminRegistryRoute,
+  AuthedAdminUsersRoute: AuthedAdminUsersRoute,
+  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+}
+
+const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
+  AuthedAdminRouteChildren,
+)
+
 interface AuthedDashboardRouteChildren {
   AuthedDashboardBillingRoute: typeof AuthedDashboardBillingRoute
   AuthedDashboardNotificationsRoute: typeof AuthedDashboardNotificationsRoute
   AuthedDashboardSettingsRoute: typeof AuthedDashboardSettingsRoute
   AuthedDashboardSubscribersRoute: typeof AuthedDashboardSubscribersRoute
+  AuthedDashboardUsageRoute: typeof AuthedDashboardUsageRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
   AuthedDashboardIncidentsIncidentIdRoute: typeof AuthedDashboardIncidentsIncidentIdRoute
   AuthedDashboardMonitorsNewRoute: typeof AuthedDashboardMonitorsNewRoute
@@ -664,6 +817,7 @@ const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardNotificationsRoute: AuthedDashboardNotificationsRoute,
   AuthedDashboardSettingsRoute: AuthedDashboardSettingsRoute,
   AuthedDashboardSubscribersRoute: AuthedDashboardSubscribersRoute,
+  AuthedDashboardUsageRoute: AuthedDashboardUsageRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
   AuthedDashboardIncidentsIncidentIdRoute:
     AuthedDashboardIncidentsIncidentIdRoute,
@@ -681,11 +835,13 @@ const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
 
 interface AuthedRouteChildren {
   AuthedAccountRoute: typeof AuthedAccountRoute
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
   AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAccountRoute: AuthedAccountRoute,
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
   AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
 }
 

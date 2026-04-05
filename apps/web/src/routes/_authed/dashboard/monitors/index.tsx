@@ -720,6 +720,7 @@ function EditMonitorOverlay({
   onBack: () => void;
   onSuccess: () => void;
 }) {
+  const [type, setType] = useState(monitor.type as "http" | "tcp" | "ping" | "redis" | "postgres");
   const [name, setName] = useState(monitor.name);
   const [url, setUrl] = useState(monitor.url ?? "");
   const [method, setMethod] = useState(monitor.method ?? "GET");
@@ -736,6 +737,8 @@ function EditMonitorOverlay({
     (monitor.rules as { type: string; operator: string; value: string }[]) ?? [],
   );
   const [autoIncidents, setAutoIncidents] = useState(monitor.autoIncidents);
+  const { tier } = useSubscription();
+  const limits = PLAN_LIMITS[tier];
 
   const update = useMutation({
     ...orpc.monitors.update.mutationOptions(),
@@ -765,7 +768,28 @@ function EditMonitorOverlay({
           <Label className="text-xs">Name</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
         </div>
-        {monitor.type === "http" ? (
+        <div className="flex flex-col gap-1.5">
+          <Label className="text-xs">Type</Label>
+          <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="http">HTTP</SelectItem>
+              <SelectItem value="tcp">TCP</SelectItem>
+              <SelectItem value="ping" disabled={!limits.pingMonitor}>
+                <span className="flex items-center gap-1.5">Ping{!limits.pingMonitor && <ProBadge label="Scale" />}</span>
+              </SelectItem>
+              <SelectItem value="redis" disabled={!limits.redisMonitor}>
+                <span className="flex items-center gap-1.5">Redis{!limits.redisMonitor && <ProBadge label="Scale" />}</span>
+              </SelectItem>
+              <SelectItem value="postgres" disabled={!limits.postgresMonitor}>
+                <span className="flex items-center gap-1.5">PostgreSQL{!limits.postgresMonitor && <ProBadge label="Scale" />}</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {type === "http" ? (
           <>
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs">URL</Label>
@@ -785,7 +809,7 @@ function EditMonitorOverlay({
               </Select>
             </div>
           </>
-        ) : monitor.type === "tcp" ? (
+        ) : type === "tcp" ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Host</Label>
@@ -796,14 +820,14 @@ function EditMonitorOverlay({
               <Input type="number" value={port} onChange={(e) => setPort(e.target.value)} className="h-8 text-xs" />
             </div>
           </div>
-        ) : monitor.type === "redis" || monitor.type === "postgres" ? (
+        ) : type === "redis" || type === "postgres" ? (
           <>
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Connection URL</Label>
               <Input value={url} onChange={(e) => setUrl(e.target.value)} className="h-8 text-xs font-mono" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs">{monitor.type === "redis" ? "Command" : "Query"} (optional)</Label>
+              <Label className="text-xs">{type === "redis" ? "Command" : "Query"} (optional)</Label>
               <Input
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -818,7 +842,7 @@ function EditMonitorOverlay({
             <Input value={host} onChange={(e) => setHost(e.target.value)} className="h-8 text-xs" />
           </div>
         )}
-        {monitor.type === "http" && (
+        {type === "http" && (
           <>
             {/* Headers */}
             <div className="flex flex-col gap-1.5">
@@ -995,11 +1019,12 @@ function EditMonitorOverlay({
               update.mutate({
                 id: monitor.id,
                 name,
+                type,
                 interval: Number(interval),
                 timeout: Number(timeout),
                 regions,
                 autoIncidents,
-                ...(monitor.type === "http"
+                ...(type === "http"
                   ? {
                       url,
                       method,
@@ -1007,9 +1032,9 @@ function EditMonitorOverlay({
                       body: body || undefined,
                       rules: rules.length ? rules : undefined,
                     }
-                  : monitor.type === "tcp"
+                  : type === "tcp"
                     ? { host, port: Number(port) }
-                    : monitor.type === "redis" || monitor.type === "postgres"
+                    : type === "redis" || type === "postgres"
                       ? { url, body: body || undefined }
                       : { host }),
               })

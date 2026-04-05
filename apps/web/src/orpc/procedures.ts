@@ -25,6 +25,15 @@ export const authedProcedure = publicProcedure.use(
   },
 );
 
+export const adminProcedure = authedProcedure.use(
+  async ({ context, next }) => {
+    if (!(context.session.user as any).isAdmin) {
+      throw new ORPCError("FORBIDDEN", { message: "Admin access required" });
+    }
+    return next();
+  },
+);
+
 export async function verifyOrgMembership(userId: string, organizationId: string): Promise<string> {
   const member = await prisma.member.findFirst({
     where: { userId, organizationId },

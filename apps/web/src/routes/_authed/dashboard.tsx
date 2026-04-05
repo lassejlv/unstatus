@@ -31,6 +31,7 @@ import {
   Settings,
   Sun,
   Moon,
+  Shield,
 } from "lucide-react";
 import { Canvas } from "@/components/canvas";
 import { useTheme } from "@/hooks/use-theme";
@@ -105,6 +106,18 @@ function DashboardLayout() {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
+            {session?.user && (session.user as any).isAdmin && (
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link to="/admin">
+                      <Shield className="size-4" />
+                      <span>Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
             {session?.user && <UserDropdown user={session.user} />}
           </SidebarFooter>
         </Sidebar>
