@@ -17,6 +17,7 @@ function isCustomDomain(hostname: string): boolean {
   return (
     hostname !== APP_DOMAIN &&
     hostname !== `www.${APP_DOMAIN}` &&
+    !hostname.endsWith(`.${APP_DOMAIN}`) &&
     hostname !== "localhost" &&
     hostname !== "127.0.0.1"
   );
@@ -38,6 +39,9 @@ export default defineHandler(async (event) => {
 
   // Handle /summary and /summary.json directly (event.path is readonly in Nitro v3)
   if (path === "/summary" || path === "/summary.json") {
+
+    console.log(hostname)
+
     try {
       const page = await resolvePublicPage({ customDomain: hostname });
       const data = await getPublicStatusPage(page);
