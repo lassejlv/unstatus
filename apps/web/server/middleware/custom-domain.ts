@@ -1,4 +1,6 @@
 import { defineHandler } from "nitro";
+import { resolvePublicPage, getPublicStatusPage } from "@/orpc/router/public-status";
+import { buildAtlassianSummary } from "@/lib/atlassian-summary";
 
 const APP_DOMAIN = process.env.APP_DOMAIN;
 
@@ -20,7 +22,7 @@ function isCustomDomain(hostname: string): boolean {
   );
 }
 
-export default defineHandler((event) => {
+export default defineHandler(async (event) => {
   if (!APP_DOMAIN) return;
 
   // Caddy sends the original domain in X-Forwarded-Host
@@ -34,10 +36,21 @@ export default defineHandler((event) => {
 
   const path = event.path;
 
-  // Rewrite /summary and /summary.json to the Hono API handler
+  // Handle /summary and /summary.json directly (event.path is readonly in Nitro v3)
   if (path === "/summary" || path === "/summary.json") {
-    event.path = "/api/status/summary.json";
-    return;
+    try {
+      const page = await resolvePublicPage({ customDomain: hostname });
+      const data = await getPublicStatusPage(page);
+      const summary = buildAtlassianSummary(data, `https://${hostname}`);
+      return Response.json(summary, {
+        headers: {
+          "Cache-Control": "public, max-age=60, s-maxage=60",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    } catch {
+      return Response.json({ error: "Status page not found" }, { status: 404 });
+    }
   }
 
   // Allow: root, API routes, and static assets

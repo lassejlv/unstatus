@@ -6,6 +6,12 @@ const APP_DOMAIN = process.env.APP_DOMAIN ?? "";
 
 const app = new Hono();
 
+function getCustomDomainHostname(c: { req: { header: (name: string) => string | undefined } }): string {
+  const forwardedHost = c.req.header("x-forwarded-host");
+  const host = forwardedHost ?? c.req.header("host") ?? "";
+  return host.split(":")[0];
+}
+
 // Slug-based: /api/status/:slug/summary.json
 app.get("/api/status/:slug/summary.json", async (c) => {
   try {
@@ -26,7 +32,7 @@ app.get("/api/status/:slug/summary.json", async (c) => {
 // Custom domain: /summary.json
 app.get("/api/status/summary.json", async (c) => {
   try {
-    const hostname = c.req.header("host")?.split(":")[0] ?? "";
+    const hostname = getCustomDomainHostname(c);
 
     if (
       !APP_DOMAIN ||
@@ -54,7 +60,7 @@ app.get("/api/status/summary.json", async (c) => {
 // Custom domain shorthand: /summary or /summary.json (mounted via routes/summary.ts)
 async function handleCustomDomainSummary(c: any) {
   try {
-    const hostname = c.req.header("host")?.split(":")[0] ?? "";
+    const hostname = getCustomDomainHostname(c);
 
     if (
       !APP_DOMAIN ||
