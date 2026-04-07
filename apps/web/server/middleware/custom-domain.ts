@@ -28,6 +28,7 @@ export default defineHandler(async (event) => {
 
   // Caddy sends the original domain in X-Forwarded-Host
   const forwardedHost = event.req.headers.get("x-forwarded-host");
+  const forwaredHost = event.req.headers.get("X-Forwarded-Host")
   const host = forwardedHost ?? event.req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
 
@@ -40,7 +41,7 @@ export default defineHandler(async (event) => {
   // Handle /summary and /summary.json directly (event.path is readonly in Nitro v3)
   if (path === "/summary" || path === "/summary.json") {
 
-    console.log(hostname)
+    console.log(hostname, forwaredHost, forwardedHost)
 
     try {
       const page = await resolvePublicPage({ customDomain: hostname });
