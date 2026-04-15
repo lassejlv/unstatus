@@ -40,20 +40,6 @@ pub async fn run_external_service_checks(state: &AppState) -> Result<RunExternal
             )
             .await;
 
-            if result.overall_status == "unknown"
-                && result.components.is_empty()
-                && result.active_incident_name.is_none()
-            {
-                external_db::record_external_service_error(
-                    &state.db,
-                    &service.id,
-                    &result.description,
-                    now,
-                )
-                .await?;
-                return Ok(false);
-            }
-
             external_db::record_external_service_status(
                 &state.db,
                 &service.id,

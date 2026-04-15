@@ -24,7 +24,7 @@ pub async fn send_inbound_email(
     }
 
     let response = client
-        .post("https://api.inbound.new/v2/emails")
+        .post("https://inbound.new/api/v2/emails")
         .bearer_auth(api_key)
         .json(&EmailRequest {
             from,
