@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use sqlx::{PgPool, query, query_as};
 
 use crate::types::{DUE_BATCH_SIZE, OpenIncident, WorkerMonitor};
@@ -40,7 +40,7 @@ pub async fn get_monitor_by_id(pool: &PgPool, monitor_id: &str) -> Result<Worker
 
 pub async fn list_due_monitors(
     pool: &PgPool,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
     region: &str,
 ) -> Result<Vec<WorkerMonitor>> {
     let sql = format!(
@@ -70,7 +70,7 @@ pub async fn list_due_monitors(
 
 pub async fn list_legacy_due_monitors(
     pool: &PgPool,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
     region: &str,
 ) -> Result<Vec<WorkerMonitor>> {
     let sql = format!(
@@ -104,8 +104,8 @@ pub async fn list_legacy_due_monitors(
 pub async fn claim_due_monitor(
     pool: &PgPool,
     monitor_id: &str,
-    claimed_until: DateTime<Utc>,
-    now: DateTime<Utc>,
+    claimed_until: NaiveDateTime,
+    now: NaiveDateTime,
 ) -> Result<bool> {
     let rows = query(
         r#"
@@ -130,8 +130,8 @@ pub async fn claim_due_monitor(
 pub async fn claim_legacy_monitor(
     pool: &PgPool,
     monitor_id: &str,
-    previous_last_checked_at: Option<DateTime<Utc>>,
-    now: DateTime<Utc>,
+    previous_last_checked_at: Option<NaiveDateTime>,
+    now: NaiveDateTime,
 ) -> Result<bool> {
     let rows = query(
         r#"

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::FromRow;
@@ -29,10 +29,10 @@ pub struct WorkerMonitor {
     pub rules: Option<Value>,
     pub regions: Value,
     pub auto_incidents: bool,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-    pub last_checked_at: Option<DateTime<Utc>>,
-    pub next_check_at: Option<DateTime<Utc>>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub last_checked_at: Option<NaiveDateTime>,
+    pub next_check_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Clone, FromRow)]
@@ -66,7 +66,7 @@ pub struct MonitorCheckRecord {
     pub region: Option<String>,
     pub response_headers: Option<Value>,
     pub response_body: Option<String>,
-    pub checked_at: DateTime<Utc>,
+    pub checked_at: NaiveDateTime,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -95,7 +95,7 @@ pub struct ExternalServiceRow {
     pub parser_type: String,
     pub parser_config: Option<Value>,
     pub poll_interval: i32,
-    pub next_fetch_at: Option<DateTime<Utc>>,
+    pub next_fetch_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -123,8 +123,12 @@ pub struct AutoIncidentMonitor {
     pub auto_incidents: bool,
 }
 
-pub fn get_next_check_at(interval_seconds: i32, checked_at: DateTime<Utc>) -> DateTime<Utc> {
+pub fn get_next_check_at(interval_seconds: i32, checked_at: NaiveDateTime) -> NaiveDateTime {
     checked_at + chrono::TimeDelta::seconds(interval_seconds as i64)
+}
+
+pub fn current_time() -> NaiveDateTime {
+    chrono::Utc::now().naive_utc()
 }
 
 pub fn get_status_count(status: &str, expected: &str) -> i32 {

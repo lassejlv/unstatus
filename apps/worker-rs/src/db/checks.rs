@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use sqlx::{PgPool, Postgres, Transaction, query_as};
 use uuid::Uuid;
 
@@ -12,7 +12,7 @@ pub async fn record_monitor_check(
     monitor: &WorkerMonitor,
     result: &CheckResult,
     region: &str,
-    checked_at: DateTime<Utc>,
+    checked_at: NaiveDateTime,
 ) -> Result<MonitorCheckRecord> {
     let next_check_at = get_next_check_at(monitor.interval, checked_at);
     let mut tx = pool.begin().await?;
@@ -56,7 +56,7 @@ pub async fn record_monitor_check_legacy(
     monitor: &WorkerMonitor,
     result: &CheckResult,
     region: &str,
-    checked_at: DateTime<Utc>,
+    checked_at: NaiveDateTime,
 ) -> Result<MonitorCheckRecord> {
     let mut tx = pool.begin().await?;
     let check = insert_monitor_check(&mut tx, monitor, result, region, checked_at).await?;
@@ -83,7 +83,7 @@ async fn insert_monitor_check(
     monitor: &WorkerMonitor,
     result: &CheckResult,
     region: &str,
-    checked_at: DateTime<Utc>,
+    checked_at: NaiveDateTime,
 ) -> Result<MonitorCheckRecord> {
     let check_id = Uuid::new_v4().to_string();
 
@@ -125,14 +125,14 @@ async fn upsert_hourly_rollup(
     tx: &mut Transaction<'_, Postgres>,
     monitor: &WorkerMonitor,
     result: &CheckResult,
-    checked_at: DateTime<Utc>,
+    checked_at: NaiveDateTime,
 ) -> Result<()> {
     sqlx::query(
         r#"
         INSERT INTO monitor_check_hourly_rollup
           ("monitorId", "bucketStart", "totalChecks", "upChecks", "downChecks", "degradedChecks", "latencySum")
         VALUES
-          ($1, date_trunc('hour', $2::timestamptz), 1, $3, $4, $5, $6)
+          ($1, date_trunc('hour', $2::timestamp), 1, $3, $4, $5, $6)
         ON CONFLICT ("monitorId", "bucketStart")
         DO UPDATE SET
           "totalChecks" = monitor_check_hourly_rollup."totalChecks" + 1,
@@ -158,14 +158,14 @@ async fn upsert_daily_rollup(
     tx: &mut Transaction<'_, Postgres>,
     monitor: &WorkerMonitor,
     result: &CheckResult,
-    checked_at: DateTime<Utc>,
+    checked_at: NaiveDateTime,
 ) -> Result<()> {
     sqlx::query(
         r#"
         INSERT INTO monitor_check_daily_rollup
           ("monitorId", "bucketDate", "totalChecks", "upChecks", "downChecks", "degradedChecks", "latencySum")
         VALUES
-          ($1, date_trunc('day', $2::timestamptz), 1, $3, $4, $5, $6)
+          ($1, date_trunc('day', $2::timestamp), 1, $3, $4, $5, $6)
         ON CONFLICT ("monitorId", "bucketDate")
         DO UPDATE SET
           "totalChecks" = monitor_check_daily_rollup."totalChecks" + 1,

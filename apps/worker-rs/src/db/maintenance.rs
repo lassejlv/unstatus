@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use sqlx::{PgPool, query, query_as};
 
 use crate::types::{
@@ -17,7 +17,7 @@ struct MaintenanceMonitorName {
 
 pub async fn list_windows_to_start(
     pool: &PgPool,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<Vec<MaintenanceWindowRow>> {
     query_as::<_, MaintenanceWindowRow>(
         r#"
@@ -35,7 +35,7 @@ pub async fn list_windows_to_start(
 
 pub async fn list_windows_to_complete(
     pool: &PgPool,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<Vec<MaintenanceWindowRow>> {
     query_as::<_, MaintenanceWindowRow>(
         r#"
@@ -84,7 +84,7 @@ pub async fn list_monitor_names_by_window(
     Ok(grouped)
 }
 
-pub async fn mark_windows_started(pool: &PgPool, ids: &[String], now: DateTime<Utc>) -> Result<()> {
+pub async fn mark_windows_started(pool: &PgPool, ids: &[String], now: NaiveDateTime) -> Result<()> {
     if ids.is_empty() {
         return Ok(());
     }
@@ -108,7 +108,7 @@ pub async fn mark_windows_started(pool: &PgPool, ids: &[String], now: DateTime<U
 pub async fn mark_windows_completed(
     pool: &PgPool,
     ids: &[String],
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<()> {
     if ids.is_empty() {
         return Ok(());
@@ -131,7 +131,7 @@ pub async fn mark_windows_completed(
 }
 
 pub async fn run_monitor_perf_maintenance(pool: &PgPool) -> Result<()> {
-    let now = Utc::now();
+    let now = crate::types::current_time();
     let raw_cutoff = now - chrono::TimeDelta::days(RAW_RETENTION_DAYS);
     let hourly_cutoff = now - chrono::TimeDelta::days(HOURLY_RETENTION_DAYS);
     let hourly_backfill_cutoff = now - chrono::TimeDelta::days(HOURLY_BACKFILL_DAYS);

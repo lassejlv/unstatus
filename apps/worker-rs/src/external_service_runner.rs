@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use chrono::Utc;
 use futures::future::join_all;
 use tokio::sync::Semaphore;
 use tracing::{error, info};
@@ -12,7 +11,7 @@ use crate::db::external as external_db;
 use crate::types::RunExternalResponse;
 
 pub async fn run_external_service_checks(state: &AppState) -> Result<RunExternalResponse> {
-    let now = Utc::now();
+    let now = crate::types::current_time();
     let services = external_db::list_due_external_services(&state.db, now).await?;
     if services.is_empty() {
         return Ok(RunExternalResponse { checked: 0 });

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use anyhow::{Result, anyhow};
-use chrono::Utc;
 use futures::future::join_all;
 use tokio::sync::Semaphore;
 use tracing::error;
@@ -13,13 +12,13 @@ use crate::db::{checks as checks_db, monitors as monitors_db};
 use crate::incidents;
 use crate::types::{
     AutoIncidentMonitor, CheckResult, MonitorCheckRecord, OpenIncident, RunChecksResponse,
-    WorkerMonitor, get_next_check_at, is_missing_monitor_perf_schema,
+    WorkerMonitor, current_time, get_next_check_at, is_missing_monitor_perf_schema,
 };
 
 pub async fn run_single_check(state: &AppState, monitor_id: &str) -> Result<MonitorCheckRecord> {
     let monitor = monitors_db::get_monitor_by_id(&state.db, monitor_id).await?;
     let result = run_monitor_check(state, &monitor).await;
-    let checked_at = Utc::now();
+    let checked_at = current_time();
 
     let check = match checks_db::record_monitor_check(
         &state.db,
@@ -68,7 +67,7 @@ pub async fn run_single_check(state: &AppState, monitor_id: &str) -> Result<Moni
 }
 
 pub async fn run_checks(state: &AppState) -> Result<RunChecksResponse> {
-    let now = Utc::now();
+    let now = current_time();
 
     match monitors_db::list_due_monitors(&state.db, now, &state.config.region).await {
         Ok(monitors) => process_due_monitors(state, monitors, now, false).await,
@@ -87,7 +86,7 @@ pub async fn run_checks(state: &AppState) -> Result<RunChecksResponse> {
 async fn process_due_monitors(
     state: &AppState,
     monitors: Vec<WorkerMonitor>,
-    now: chrono::DateTime<Utc>,
+    now: chrono::NaiveDateTime,
     legacy: bool,
 ) -> Result<RunChecksResponse> {
     let open_incident_map = load_open_incidents(&state.db, &monitors).await?;
@@ -123,7 +122,7 @@ async fn process_due_monitors(
             }
 
             let result = run_monitor_check(&state, &monitor).await;
-            let checked_at = Utc::now();
+            let checked_at = current_time();
 
             if legacy {
                 checks_db::record_monitor_check_legacy(

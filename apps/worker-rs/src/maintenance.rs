@@ -7,7 +7,7 @@ use crate::db::maintenance as maintenance_db;
 use crate::notifications::{self, NotifyEvent};
 
 pub async fn process_maintenance_windows(state: &AppState) -> Result<()> {
-    let now = chrono::Utc::now();
+    let now = crate::types::current_time();
 
     let to_start = maintenance_db::list_windows_to_start(&state.db, now).await?;
     if !to_start.is_empty() {

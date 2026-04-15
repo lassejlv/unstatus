@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use serde_json::{Map, Value};
 use sqlx::{PgPool, Postgres, QueryBuilder, query, query_as};
 use uuid::Uuid;
@@ -11,7 +11,7 @@ const STATUS_RETENTION_DAYS: i64 = 90;
 
 pub async fn list_due_external_services(
     pool: &PgPool,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<Vec<ExternalServiceRow>> {
     query_as::<_, ExternalServiceRow>(&format!(
         r#"
@@ -40,7 +40,7 @@ pub async fn list_due_external_services(
 pub async fn claim_external_service(
     pool: &PgPool,
     service: &ExternalServiceRow,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<bool> {
     let next_fetch_at = now + chrono::TimeDelta::seconds(service.poll_interval as i64);
     let rows = query(
@@ -67,7 +67,7 @@ pub async fn record_external_service_status(
     pool: &PgPool,
     service_id: &str,
     result: &ExternalStatusResult,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
     poll_interval: i32,
 ) -> Result<()> {
     let next_fetch_at = now + chrono::TimeDelta::seconds(poll_interval as i64);
@@ -162,7 +162,7 @@ pub async fn record_external_service_error(
     pool: &PgPool,
     service_id: &str,
     error: &str,
-    now: DateTime<Utc>,
+    now: NaiveDateTime,
 ) -> Result<()> {
     query(
         r#"
@@ -182,7 +182,7 @@ pub async fn record_external_service_error(
 }
 
 pub async fn run_external_service_maintenance(pool: &PgPool) -> Result<()> {
-    let cutoff = Utc::now() - chrono::TimeDelta::days(STATUS_RETENTION_DAYS);
+    let cutoff = crate::types::current_time() - chrono::TimeDelta::days(STATUS_RETENTION_DAYS);
     query(r#"DELETE FROM external_service_status WHERE "checkedAt" < $1"#)
         .bind(cutoff)
         .execute(pool)
