@@ -4,7 +4,7 @@
     "buildCommand": "cargo build --release"
   },
   "deploy": {
-    "startCommand": "./target/release/worker-rs",
+    "startCommand": "./bin/worker-rs",
     "sleepApplication": false,
     "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 67
