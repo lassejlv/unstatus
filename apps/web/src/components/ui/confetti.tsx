@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 interface ConfettiPiece {
@@ -171,6 +171,3 @@ export function useConfetti() {
 
   return { isActive, fire, reset };
 }
-
-// Need to import useState for the hook
-import { useState } from "react";

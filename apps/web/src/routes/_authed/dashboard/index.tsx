@@ -74,6 +74,16 @@ function DashboardIndex() {
     notificationCount: (notifications as Array<{ id: string }> | undefined)?.length ?? 0,
   });
 
+  // Live polling for real-time feel - must be before any early returns
+  const { isRefreshing, secondsSinceRefresh, refresh, isPolling } = useLivePolling({
+    interval: 30000,
+    enabled: !!orgId && !overviewLoading,
+    queryKeys: [
+      ["monitors", "overview", { organizationId: orgId, hours }],
+      ["incidents", "listByOrg", { organizationId: orgId }],
+    ],
+  });
+
   if (overviewLoading || pagesLoading || incidentsLoading) {
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
@@ -112,16 +122,6 @@ function DashboardIndex() {
   const avgLatencyAll = monitorsWithLatency.length > 0
     ? Math.round(monitorsWithLatency.reduce((s, m) => s + (m.avgLatency24h ?? 0), 0) / monitorsWithLatency.length)
     : null;
-
-  // Live polling for real-time feel
-  const { isRefreshing, secondsSinceRefresh, refresh, isPolling } = useLivePolling({
-    interval: 30000,
-    enabled: !!orgId,
-    queryKeys: [
-      ["monitors", "overview", { organizationId: orgId, hours }],
-      ["incidents", "listByOrg", { organizationId: orgId }],
-    ],
-  });
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
