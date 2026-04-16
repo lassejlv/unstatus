@@ -633,6 +633,7 @@ function MonitorCard({
   monitor: PublicStatusMonitorData;
   showResponseTimes: boolean;
 }) {
+  const [showChart, setShowChart] = useState(false);
 
   const uptimeColor =
     monitor.uptimePercent >= 99.5
@@ -693,10 +694,26 @@ function MonitorCard({
         )}
       </div>
 
-      {/* Response time chart - visible by default when data available */}
+      {/* Response time chart - expandable */}
       {hasChart && monitor.responseTimeSeries && monitor.responseTimeSeries.length > 0 && (
-        <div className="border-t border-border/50 px-4 pt-4 pb-4">
-          <ResponseTimeChart data={monitor.responseTimeSeries} />
+        <div className="border-t border-border/50">
+          <button
+            type="button"
+            onClick={() => setShowChart((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+          >
+            <span className="font-medium">Response Time</span>
+            {showChart ? (
+              <ChevronDown className="size-3.5" />
+            ) : (
+              <ChevronRight className="size-3.5" />
+            )}
+          </button>
+          {showChart && (
+            <div className="px-4 pb-4">
+              <ResponseTimeChart data={monitor.responseTimeSeries} />
+            </div>
+          )}
         </div>
       )}
     </div>
