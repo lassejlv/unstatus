@@ -167,7 +167,7 @@ function MonitorsPage() {
                 <span className="text-xs text-muted-foreground truncate">
                   {m.type === "http" || m.type === "redis" || m.type === "postgres" ? m.url : m.type === "ping" ? `ping ${m.host}` : `${m.host}:${m.port}`}
                 </span>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span
                     className={`size-1.5 shrink-0 rounded-full ${
                       !m.active ? "bg-muted-foreground"
@@ -177,7 +177,7 @@ function MonitorsPage() {
                       : "bg-muted-foreground"
                     }`}
                   />
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline">
                     {m.type.toUpperCase()}
                   </Badge>
                   <span>
@@ -294,12 +294,22 @@ function MonitorSidecar({
   const [tab, setTab] = useState<"overview" | "checks" | "settings">("overview");
 
   return (
-    <div
-      className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[520px] opacity-100" : "w-0 opacity-0"
-      }`}
-    >
-      <div className="relative flex h-full w-[520px] flex-col border-l bg-background/95 backdrop-blur-sm overflow-hidden">
+    <div className="contents">
+      {/* Mobile overlay backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md shrink-0 overflow-hidden transition-all duration-300 ease-out md:relative md:inset-auto md:z-auto md:max-w-none ${
+          isOpen
+            ? "translate-x-0 md:w-[520px] md:opacity-100"
+            : "translate-x-full md:w-0 md:translate-x-0 md:opacity-0"
+        }`}
+      >
+        <div className="relative flex h-full w-full flex-col border-l bg-background/95 backdrop-blur-sm overflow-hidden md:w-[520px]">
         {!monitor ? (
           <div className="flex flex-1 items-center justify-center">
             <Spinner className="size-5" />
@@ -357,7 +367,7 @@ function MonitorSidecar({
 
               {/* Metadata pills — Railway style */}
               <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
-                <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-mono">
+                <Badge variant="outline" className="font-mono">
                   {monitor.type.toUpperCase()}
                 </Badge>
                 <span className="font-mono">{monitor.interval}s</span>
@@ -367,7 +377,7 @@ function MonitorSidecar({
                 {monitor.lastLatency != null && (
                   <span className="font-mono">{monitor.lastLatency}ms</span>
                 )}
-                <Badge variant={monitor.active ? "default" : "secondary"} className="text-[10px] px-2 py-0.5 ml-auto">
+                <Badge variant={monitor.active ? "default" : "secondary"} className="ml-auto">
                   {monitor.active ? "Active" : "Paused"}
                 </Badge>
               </div>
@@ -421,7 +431,7 @@ function MonitorSidecar({
                     <div className="flex items-center justify-between px-6 py-3">
                       <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Recent checks</span>
                       {checks?.length ? (
-                        <button type="button" onClick={() => setTab("checks")} className="text-[11px] text-muted-foreground hover:text-foreground">
+                        <button type="button" onClick={() => setTab("checks")} className="text-xs text-muted-foreground hover:text-foreground">
                           View all
                         </button>
                       ) : null}
@@ -464,7 +474,7 @@ function MonitorSidecar({
                   <div className="flex items-center justify-between px-6 py-3 border-b">
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">All checks</span>
                     {checksTotal > 0 && (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {checkPage * 50 + 1}–{Math.min((checkPage + 1) * 50, checksTotal)} of {checksTotal}
                       </span>
                     )}
@@ -597,7 +607,7 @@ function MonitorSidecar({
                       ).map(([key, value], i, arr) => (
                         <div
                           key={key}
-                          className={`flex gap-3 px-3 py-2 text-[11px] ${i < arr.length - 1 ? "border-b" : ""}`}
+                          className={`flex gap-3 px-3 py-2 text-xs ${i < arr.length - 1 ? "border-b" : ""}`}
                         >
                           <span className="shrink-0 font-mono font-medium text-muted-foreground">{key}</span>
                           <span className="font-mono break-all text-right ml-auto">{value}</span>
@@ -609,7 +619,7 @@ function MonitorSidecar({
                 {selectedCheck.responseBody && (
                   <div className="flex flex-col gap-2">
                     <span className="text-xs font-medium">Response body</span>
-                    <pre className="rounded-lg border bg-muted/50 p-3 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all max-h-64">
+                    <pre className="rounded-lg border bg-muted/50 p-3 text-xs font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all max-h-64">
                       {formatBody(selectedCheck.responseBody)}
                     </pre>
                   </div>
@@ -686,6 +696,7 @@ function MonitorSidecar({
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
@@ -847,7 +858,7 @@ function EditMonitorOverlay({
                 <Label className="text-xs">Headers</Label>
                 <button
                   type="button"
-                  className="text-[11px] text-muted-foreground hover:text-foreground"
+                  className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => setHeaders([...headers, { key: "", value: "" }])}
                 >
                   + Add
@@ -903,7 +914,7 @@ function EditMonitorOverlay({
                 <Label className="text-xs">Rules</Label>
                 <button
                   type="button"
-                  className="text-[11px] text-muted-foreground hover:text-foreground"
+                  className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => setRules([...rules, { type: "status", operator: "eq", value: "200" }])}
                 >
                   + Add
@@ -967,7 +978,7 @@ function EditMonitorOverlay({
                 </div>
               ))}
               {rules.length === 0 && (
-                <p className="text-[10px] text-muted-foreground">No rules — defaults to 2xx check.</p>
+                <p className="text-xs text-muted-foreground">No rules — defaults to 2xx check.</p>
               )}
             </div>
           </>
@@ -1167,7 +1178,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Dependencies</span>
           <ProBadge label="Scale" />
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Link external services your monitor depends on. Upgrade to Scale to use dependencies.
         </p>
       </div>
@@ -1222,7 +1233,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
                         {s.logoUrl ? (
                           <img src={s.logoUrl} alt={s.name} className="size-4 rounded" />
                         ) : (
-                          <span className="text-[10px] font-semibold text-muted-foreground">{s.name.charAt(0)}</span>
+                          <span className="text-xs font-semibold text-muted-foreground">{s.name.charAt(0)}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1259,7 +1270,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
                       <div key={group}>
                         {group && (
                           <div className="px-3 pt-2 pb-1">
-                            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{group}</span>
+                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{group}</span>
                           </div>
                         )}
                         {comps.map((c) => {
@@ -1316,7 +1327,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
                   <span className="text-xs text-muted-foreground"> / {dep.externalComponent.name}</span>
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground">{dep.externalService.category}</span>
+              <span className="text-xs text-muted-foreground">{dep.externalService.category}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1330,7 +1341,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
           ))}
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           No dependencies — link external services this monitor depends on.
         </p>
       )}

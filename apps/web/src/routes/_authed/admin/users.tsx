@@ -88,7 +88,7 @@ function AdminUsersPage() {
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       {user.name}
-                      {user.isAdmin && <Badge variant="secondary" className="text-[10px]">Admin</Badge>}
+                      {user.isAdmin && <Badge variant="secondary" className="">Admin</Badge>}
                     </div>
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">{user.email}</td>
@@ -141,10 +141,10 @@ function AdminUsersPage() {
                           {userDetail.organizations.map((org) => (
                             <div key={org.id} className="flex items-center gap-3 text-xs">
                               <span className="font-medium">{org.name}</span>
-                              <Badge variant="outline" className="text-[10px]">{org.role}</Badge>
+                              <Badge variant="outline" className="">{org.role}</Badge>
                               <span className="text-muted-foreground">{org.monitorCount} monitors</span>
                               {org.subscriptionActive && (
-                                <Badge variant="secondary" className="text-[10px]">{org.subscriptionPlanName}</Badge>
+                                <Badge variant="secondary" className="">{org.subscriptionPlanName}</Badge>
                               )}
                             </div>
                           ))}

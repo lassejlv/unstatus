@@ -134,7 +134,7 @@ function StatusPagesPage() {
                 <span className="text-xs text-muted-foreground truncate">
                   /status/{p.slug}
                 </span>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{p.monitors.length} monitor{p.monitors.length !== 1 ? "s" : ""}</span>
                 </div>
               </button>
@@ -211,12 +211,22 @@ function StatusPageSidecar({
   const [tab, setTab] = useState<"overview" | "monitors" | "settings">("overview");
 
   return (
-    <div
-      className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[520px] opacity-100" : "w-0 opacity-0"
-      }`}
-    >
-      <div className="relative flex h-full w-[520px] flex-col border-l bg-background/95 backdrop-blur-sm overflow-hidden">
+    <div className="contents">
+      {/* Mobile overlay backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md shrink-0 overflow-hidden transition-all duration-300 ease-out md:relative md:inset-auto md:z-auto md:max-w-none ${
+          isOpen
+            ? "translate-x-0 md:w-[520px] md:opacity-100"
+            : "translate-x-full md:w-0 md:translate-x-0 md:opacity-0"
+        }`}
+      >
+        <div className="relative flex h-full w-full flex-col border-l bg-background/95 backdrop-blur-sm overflow-hidden md:w-[520px]">
         {!page ? (
           <div className="flex flex-1 items-center justify-center">
             <Spinner className="size-5" />
@@ -230,7 +240,7 @@ function StatusPageSidecar({
                   <h2 className="text-lg font-semibold truncate">{page.name}</h2>
                   <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                     <span className="font-mono">/status/{page.slug}</span>
-                    <Badge variant={page.isPublic ? "default" : "secondary"} className="text-[10px] px-2 py-0.5">
+                    <Badge variant={page.isPublic ? "default" : "secondary"}>
                       {page.isPublic ? "Public" : "Private"}
                     </Badge>
                   </div>
@@ -436,6 +446,7 @@ function StatusPageSidecar({
           )}
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -559,7 +570,7 @@ function DroppableGroup({
           <div className="flex items-center gap-2 flex-1">
             <span className="text-xs font-medium text-muted-foreground">Ungrouped</span>
             {monitors.length > 0 && (
-              <span className="text-[10px] text-muted-foreground/60">{monitors.length}</span>
+              <span className="text-xs text-muted-foreground/60">{monitors.length}</span>
             )}
           </div>
         ) : editing ? (
@@ -580,7 +591,7 @@ function DroppableGroup({
           <>
             <span className="text-xs font-medium">{groupName}</span>
             {monitors.length > 0 && (
-              <span className="text-[10px] text-muted-foreground/60">{monitors.length}</span>
+              <span className="text-xs text-muted-foreground/60">{monitors.length}</span>
             )}
             <div className="flex-1" />
             <div className="flex items-center gap-0.5">
@@ -1182,7 +1193,7 @@ function CustomDomainInline({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             + Add
           </button>
@@ -1234,10 +1245,10 @@ function CustomDomainInline({
           </div>
           {currentDomain && (
             <div className="border-t px-3 py-2.5">
-              <p className="text-[10px] text-muted-foreground mb-1.5">
+              <p className="text-xs text-muted-foreground mb-1.5">
                 Add a CNAME record pointing to:
               </p>
-              <div className="rounded bg-muted px-2 py-1.5 font-mono text-[11px] select-all">
+              <div className="rounded bg-muted px-2 py-1.5 font-mono text-xs select-all">
                 cname.unstatus.app
               </div>
             </div>

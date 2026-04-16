@@ -5,7 +5,7 @@ import { Sparkles } from "lucide-react";
 
 export function ProBadge({ label }: { label?: string }) {
   return (
-    <Badge variant="outline" className="text-[10px] gap-0.5">
+    <Badge variant="outline" className="gap-0.5">
       <Sparkles className="size-2.5" />
       {label ?? "Pro"}
     </Badge>

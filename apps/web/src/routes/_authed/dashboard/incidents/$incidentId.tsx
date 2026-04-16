@@ -92,11 +92,11 @@ function IncidentDetailPage() {
                 <div className="absolute left-[7px] top-4 bottom-0 w-px bg-border" />
               )}
               {/* Dot */}
-              <div className={`relative z-10 mt-1 h-[15px] w-[15px] shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
+              <div className={`relative z-10 mt-1 size-3 shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[11px]">{u.status}</Badge>
-                  <span className="text-[11px] text-muted-foreground">
+                  <Badge variant="outline">{u.status}</Badge>
+                  <span className="text-xs text-muted-foreground">
                     {new Date(u.createdAt).toLocaleString()}
                   </span>
                 </div>

@@ -72,17 +72,17 @@ function SettingsPage() {
   const { activeOrg } = useOrg();
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
+        <p className="mt-1 text-muted-foreground">
           Manage your organization, members, and preferences.
         </p>
       </div>
 
       {activeOrg && (
-        <Tabs defaultValue="general" orientation="vertical" className="flex-row gap-8">
-          <TabsList variant="line" className="w-44 shrink-0 flex-col items-stretch">
+        <Tabs defaultValue="general" orientation="vertical" className="flex-col gap-4 md:flex-row md:gap-8">
+          <TabsList variant="line" className="w-full flex-row overflow-x-auto md:w-44 md:shrink-0 md:flex-col md:items-stretch">
             <TabsTrigger value="general" className="justify-start">
               <Settings className="size-3.5" />
               General
@@ -95,7 +95,7 @@ function SettingsPage() {
               <Key className="size-3.5" />
               API
             </TabsTrigger>
-            <Separator className="my-2" />
+            <Separator className="my-2 hidden md:block" />
             <TabsTrigger value="organizations" className="justify-start">
               <Building2 className="size-3.5" />
               Organizations
@@ -324,9 +324,12 @@ function MembersSection({ orgId }: { orgId: string }) {
           ))}
         </CardContent>
       ) : (
-        <CardContent className="py-6 text-center">
-          <p className="text-xs text-muted-foreground">
-            No members yet. Invite someone to get started.
+        <CardContent className="py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No members
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Invite team members to collaborate on monitoring.
           </p>
         </CardContent>
       )}
@@ -501,9 +504,12 @@ function ApiKeysSection({ orgId }: { orgId: string }) {
             <Spinner className="mx-auto size-5" />
           </CardContent>
         ) : activeKeys.length === 0 && revokedKeys.length === 0 ? (
-          <CardContent className="py-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              No API keys yet. Create one to get started.
+          <CardContent className="py-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No API keys
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Create one for programmatic access to the REST API.
             </p>
           </CardContent>
         ) : (

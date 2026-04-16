@@ -38,7 +38,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X, Play, Square, Ban } from "lucide-react";
+import { X, Play, Square, Ban, Wrench } from "lucide-react";
 
 export const Route = createFileRoute(
   "/_authed/dashboard/maintenance/",
@@ -114,7 +114,7 @@ function MaintenancePage() {
   if (!activeOrg) return null;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Maintenance</h1>
@@ -167,6 +167,9 @@ function MaintenancePage() {
         </div>
       ) : filtered.length === 0 ? (
         <Empty>
+          <div className="flex size-12 items-center justify-center rounded-xl border bg-muted/50 mx-auto mb-3">
+            <Wrench className="size-5 text-muted-foreground" />
+          </div>
           <EmptyHeader>
             <EmptyTitle>{filter === "all" ? "No maintenance windows" : `No ${filter.replace("_", " ")} maintenance`}</EmptyTitle>
             <EmptyDescription>
@@ -218,9 +221,17 @@ function MaintenancePage() {
             </Table>
           </div>
 
+          {/* Mobile overlay backdrop */}
+          {selected && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              onClick={() => setSelectedId(null)}
+            />
+          )}
+
           {/* Sidecar */}
           {selected && (
-            <div className="w-80 shrink-0 rounded-lg border bg-card">
+            <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm shrink-0 rounded-lg border bg-card md:relative md:inset-auto md:z-auto md:w-80 md:max-w-none">
               <div className="flex items-center justify-between px-4 py-3 border-b">
                 <h3 className="text-sm font-medium truncate">{selected.title}</h3>
                 <button type="button" onClick={() => setSelectedId(null)} className="rounded p-1 text-muted-foreground hover:text-foreground">
@@ -384,13 +395,13 @@ function CreateMaintenanceDialog({
                     onCheckedChange={() => toggleMonitor(m.id)}
                   />
                   <span>{m.name}</span>
-                  <Badge variant="outline" className="ml-auto text-[10px]">{m.type}</Badge>
+                  <Badge variant="outline" className="ml-auto">{m.type}</Badge>
                 </label>
               ))
             )}
           </div>
           {selectedMonitors.size > 0 && (
-            <span className="text-[10px] text-muted-foreground">{selectedMonitors.size} selected</span>
+            <span className="text-xs text-muted-foreground">{selectedMonitors.size} selected</span>
           )}
         </div>
       </div>

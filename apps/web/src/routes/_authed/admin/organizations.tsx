@@ -94,7 +94,7 @@ function AdminOrganizationsPage() {
                   <td className="px-4 py-2.5 font-medium">{org.name}</td>
                   <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{org.slug}</td>
                   <td className="px-4 py-2.5">
-                    <Badge variant={org.subscriptionActive ? "default" : "secondary"} className="text-[10px]">
+                    <Badge variant={org.subscriptionActive ? "default" : "secondary"} className="">
                       {planLabel(org)}
                     </Badge>
                   </td>
@@ -143,7 +143,7 @@ function AdminOrganizationsPage() {
                               <div key={m.id} className="flex items-center gap-2 text-xs">
                                 <span>{m.user.name}</span>
                                 <span className="text-muted-foreground">{m.user.email}</span>
-                                <Badge variant="outline" className="text-[10px]">{m.role}</Badge>
+                                <Badge variant="outline" className="">{m.role}</Badge>
                               </div>
                             ))}
                           </div>
@@ -158,13 +158,13 @@ function AdminOrganizationsPage() {
                                 <div key={m.id} className="flex items-center gap-2 text-xs">
                                   <span
                                     className={`size-1.5 rounded-full ${
-                                      m.lastStatus === "up" ? "bg-green-500" :
+                                      m.lastStatus === "up" ? "bg-emerald-500" :
                                       m.lastStatus === "down" ? "bg-red-500" :
-                                      m.lastStatus === "degraded" ? "bg-yellow-500" : "bg-gray-400"
+                                      m.lastStatus === "degraded" ? "bg-yellow-500" : "bg-muted-foreground"
                                     }`}
                                   />
                                   <span className="font-medium">{m.name}</span>
-                                  <Badge variant="outline" className="text-[10px]">{m.type}</Badge>
+                                  <Badge variant="outline" className="">{m.type}</Badge>
                                   {m.lastLatency != null && (
                                     <span className="text-muted-foreground">{m.lastLatency}ms</span>
                                   )}

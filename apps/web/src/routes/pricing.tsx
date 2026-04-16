@@ -101,12 +101,12 @@ function PricingPage() {
         {/* FAQ */}
         <section className="border-t">
           <div className="mx-auto max-w-4xl px-6 py-16">
-            <h2 className="text-lg font-medium tracking-tight">Questions</h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            <h2 className="text-xl font-semibold tracking-tight">Questions</h2>
+            <div className="mt-8 grid gap-8 sm:grid-cols-2">
               {faqs.map((faq) => (
                 <div key={faq.q}>
-                  <p className="text-sm font-medium">{faq.q}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{faq.a}</p>
+                  <p className="font-medium">{faq.q}</p>
+                  <p className="mt-1.5 text-muted-foreground">{faq.a}</p>
                 </div>
               ))}
             </div>

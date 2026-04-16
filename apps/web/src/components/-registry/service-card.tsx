@@ -41,7 +41,7 @@ export function ServiceCard({ name, slug, category, currentStatus, logoUrl }: Se
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium">{name}</span>
-          <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0">
+          <Badge variant="secondary" className="shrink-0">
             {CATEGORY_LABELS[category] ?? category}
           </Badge>
         </div>

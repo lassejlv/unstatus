@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authed/admin/monitors")({
 const PAGE_SIZE = 25;
 
 const STATUS_COLORS: Record<string, string> = {
-  up: "bg-green-500",
+  up: "bg-emerald-500",
   down: "bg-red-500",
   degraded: "bg-yellow-500",
 };
@@ -116,7 +116,7 @@ function AdminMonitorsPage() {
             {data?.items.map((monitor) => (
               <tr key={monitor.id} className="border-b hover:bg-muted/30">
                 <td className="px-4 py-2.5">
-                  <span className={`inline-block size-2 rounded-full ${STATUS_COLORS[monitor.lastStatus ?? ""] ?? "bg-gray-400"}`} />
+                  <span className={`inline-block size-2 rounded-full ${STATUS_COLORS[monitor.lastStatus ?? ""] ?? "bg-muted-foreground"}`} />
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex flex-col">
@@ -127,7 +127,7 @@ function AdminMonitorsPage() {
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
-                  <Badge variant="outline" className="text-[10px]">{monitor.type}</Badge>
+                  <Badge variant="outline" className="">{monitor.type}</Badge>
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">{monitor.organization.name}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">
@@ -221,7 +221,7 @@ function AdminMonitorsPage() {
                 {checksData?.items.map((check) => (
                   <tr key={check.id} className="border-b">
                     <td className="px-3 py-1.5">
-                      <span className={`inline-block size-1.5 rounded-full ${STATUS_COLORS[check.status] ?? "bg-gray-400"}`} />
+                      <span className={`inline-block size-1.5 rounded-full ${STATUS_COLORS[check.status] ?? "bg-muted-foreground"}`} />
                     </td>
                     <td className="px-3 py-1.5">{check.statusCode ?? "-"}</td>
                     <td className="px-3 py-1.5">{check.latency}ms</td>

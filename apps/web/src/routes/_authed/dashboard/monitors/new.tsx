@@ -496,7 +496,7 @@ function RulesEditor({
                   ×
                 </button>
 
-                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Rule {i + 1}
                 </span>
 

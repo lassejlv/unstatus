@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity, Clock } from "lucide-react";
+import { StatusDot } from "@/components/ui/status-dot";
+import { SectionHeader } from "@/components/ui/section-header";
 
 export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardIndex,
@@ -74,10 +76,10 @@ function DashboardIndex() {
 
   if (overviewLoading || pagesLoading || incidentsLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
         <div className="flex flex-col gap-5">
           <Skeleton className="h-6 w-56" />
-          <div className="grid grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-8">
             <Skeleton className="h-14" />
             <Skeleton className="h-14" />
             <Skeleton className="h-14" />
@@ -99,12 +101,12 @@ function DashboardIndex() {
   const downCount = monitors.filter((m) => m.currentStatus === "down").length;
   const openIncidents = incidents?.filter((i) => i.status !== "resolved") ?? [];
 
-  const dotColorClass =
+  const overallStatus =
     downCount > 0
-      ? "bg-red-500"
+      ? "down"
       : openIncidents.length > 0
-        ? "bg-yellow-500"
-        : "bg-emerald-500";
+        ? "degraded"
+        : "up";
 
   const monitorsWithLatency = monitors.filter((m) => m.avgLatency24h !== null);
   const avgLatencyAll = monitorsWithLatency.length > 0
@@ -112,15 +114,12 @@ function DashboardIndex() {
     : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
       {/* Status + key metrics */}
-      <motion.div {...fadeUp(0)} className="flex flex-col gap-6">
+      <motion.div {...fadeUp(0)} className="flex flex-col gap-4 sm:gap-6">
         <div className="flex items-center gap-3">
-          <span className="relative flex size-2.5">
-            <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 ${dotColorClass}`} />
-            <span className={`relative inline-flex size-2.5 rounded-full ${dotColorClass}`} />
-          </span>
-          <span className="font-medium">
+          <StatusDot status={overallStatus} pulse />
+          <span className="font-medium text-sm sm:text-base">
             {downCount > 0
               ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
               : openIncidents.length > 0
@@ -129,7 +128,7 @@ function DashboardIndex() {
           </span>
         </div>
 
-        <div className="grid grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-8">
           <Metric
             value={overview?.uptimePercent != null ? `${overview.uptimePercent}%` : "—"}
             label="30-day uptime"
@@ -175,7 +174,7 @@ function DashboardIndex() {
 
       {/* Monitors */}
       <motion.div {...fadeUp(0.1)} className="flex flex-col gap-3">
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Monitors</h2>
+        <SectionHeader>Monitors</SectionHeader>
         {monitors.length > 0 ? (
           <div className="flex flex-col gap-3">
             {monitors.map((m) => (
@@ -198,7 +197,7 @@ function DashboardIndex() {
       {/* Recent Activity */}
       {((overview?.recentChecks?.length ?? 0) > 0 || openIncidents.length > 0) && (
         <motion.div {...fadeUp(0.15)} className="flex flex-col gap-3">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Recent Activity</h2>
+          <SectionHeader>Recent Activity</SectionHeader>
           <div className="rounded-lg border bg-card">
             {openIncidents.map((inc, i) => (
               <div
@@ -207,12 +206,12 @@ function DashboardIndex() {
                   i < openIncidents.length - 1 || (overview?.recentChecks?.length ?? 0) > 0 ? "border-b" : ""
                 }`}
               >
-                <div className="size-1.5 shrink-0 rounded-full bg-red-500" />
+                <StatusDot status="down" size="xs" />
                 <span className="text-sm truncate flex-1">{inc.title}</span>
                 <span className="text-xs text-muted-foreground shrink-0">
                   {inc.monitor?.name} · {formatTimeAgo(new Date(inc.startedAt))}
                 </span>
-                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">
+                <Badge variant="destructive" className="shrink-0">
                   {inc.status}
                 </Badge>
               </div>
@@ -224,12 +223,7 @@ function DashboardIndex() {
                   i < (overview?.recentChecks?.length ?? 0) - 1 ? "border-b" : ""
                 }`}
               >
-                <div
-                  className={`size-1.5 shrink-0 rounded-full ${
-                    check.status === "up" ? "bg-emerald-500" :
-                    check.status === "down" ? "bg-red-500" : "bg-yellow-500"
-                  }`}
-                />
+                <StatusDot status={check.status as "up" | "down" | "degraded"} size="xs" />
                 <span className="text-sm truncate">{check.monitorName}</span>
                 <span className="text-xs text-muted-foreground">
                   {check.region?.toUpperCase() ?? "—"}
@@ -253,7 +247,7 @@ function DashboardIndex() {
       {/* Empty activity state */}
       {openIncidents.length === 0 && (overview?.recentChecks?.length ?? 0) === 0 && monitors.length > 0 && (
         <motion.div {...fadeUp(0.15)} className="flex flex-col gap-3">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Recent Activity</h2>
+          <SectionHeader>Recent Activity</SectionHeader>
           <div className="rounded-lg border bg-card">
             <Empty className="py-10">
               <EmptyHeader>
@@ -280,7 +274,7 @@ function Metric({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className={`text-3xl font-semibold tracking-tight tabular-nums ${accent ?? ""}`}>
+      <span className={`text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums ${accent ?? ""}`}>
         {typeof value === "number" ? <AnimatedNumber value={value} /> : value}
       </span>
       <span className="text-xs text-muted-foreground">{label}</span>
@@ -298,12 +292,9 @@ function MonitorCard({ monitor: m }: { monitor: {
   avgLatency24h: number | null;
   dailyStats: { date: string; status: string }[];
 }}) {
-  const statusDot = !m.active
-    ? "bg-muted-foreground"
-    : m.currentStatus === "up" ? "bg-emerald-500"
-    : m.currentStatus === "down" ? "bg-red-500"
-    : m.currentStatus === "degraded" ? "bg-yellow-500"
-    : "bg-muted-foreground";
+  const dotStatus = !m.active
+    ? "paused"
+    : (m.currentStatus as "up" | "down" | "degraded") || "unknown";
 
   const statusLabel = !m.active ? "paused" : m.currentStatus === "up" ? "operational" : m.currentStatus;
 
@@ -318,9 +309,9 @@ function MonitorCard({ monitor: m }: { monitor: {
     <div className="rounded-lg border bg-card p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`size-2.5 shrink-0 rounded-full ${statusDot}`} />
+          <StatusDot status={dotStatus} />
           <span className="font-medium truncate">{m.name}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.type}</span>
+          <span className="text-xs text-muted-foreground uppercase tracking-widest">{m.type}</span>
         </div>
         <div className="flex items-center gap-4 shrink-0">
           {m.avgLatency24h !== null && (
@@ -407,7 +398,7 @@ function ResponseTimeChart({
               key={r.hours}
               variant={hours === r.hours ? "default" : "ghost"}
               size="sm"
-              className="h-6 text-[10px] px-2"
+              className="h-6 text-xs px-2"
               onClick={() => onHoursChange(r.hours)}
             >
               {r.label}
@@ -499,7 +490,7 @@ function UptimeBars({ days }: { days: { date: string; status: string }[] }) {
           />
         ))}
       </div>
-      <div className="flex justify-between text-[10px] text-muted-foreground">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>45 days ago</span>
         {uptimePercent !== null && (
           <span className="tabular-nums">{uptimePercent}% uptime</span>

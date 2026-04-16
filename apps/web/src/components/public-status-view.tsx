@@ -185,9 +185,9 @@ export function PublicStatusPageView({
         <div className="animate-fade-in mb-8 flex flex-col items-center gap-3 text-center">
           <div className="flex flex-col items-center gap-2">
             {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8" />}
-            <h1 className="text-lg font-semibold tracking-tight">{data.name}</h1>
+            <h1 className="text-xl font-semibold tracking-tight">{data.name}</h1>
             {data.headerText && (
-              <p className="text-sm text-muted-foreground">{data.headerText}</p>
+              <p className="text-muted-foreground">{data.headerText}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -300,7 +300,7 @@ export function PublicStatusPageView({
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
                         {section.name}
                       </h3>
-                      <span className="text-[10px] text-muted-foreground/60">{section.monitors.length}</span>
+                      <span className="text-xs text-muted-foreground/60">{section.monitors.length}</span>
                       {isCollapsed && (
                         <span className={`ml-auto size-2 rounded-full ${groupDot}`} />
                       )}
@@ -382,7 +382,7 @@ export function PublicStatusPageView({
             {data.footerText && (
               <p className="text-xs text-muted-foreground">{data.footerText}</p>
             )}
-            <p className="text-[11px] text-muted-foreground/60">
+            <p className="text-xs text-muted-foreground/60">
               Powered by <span className="font-medium">Unstatus</span>
             </p>
           </div>
@@ -437,10 +437,10 @@ export function PublicIncidentPageView({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[11px]">
+                  <Badge variant="outline" className="">
                     {update.status}
                   </Badge>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {timeAgo(new Date(update.createdAt))}
                   </span>
                 </div>
@@ -564,7 +564,7 @@ function MonitorCard({
       {/* Uptime bar */}
       <div className="px-4 pb-3">
         <UptimeBar daily={monitor.daily} />
-        <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground">
+        <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
           <span>90d ago</span>
           <span>Today</span>
         </div>
@@ -624,7 +624,7 @@ function ResponseTimeChart({
         </span>
       </div>
       <ChartContainer config={chartConfig} className="aspect-[5/1] w-full">
-        <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.2} />
@@ -645,9 +645,9 @@ function ResponseTimeChart({
           <YAxis
             tickLine={false}
             axisLine={false}
-            tickMargin={8}
-            width={40}
-            tickFormatter={(v) => `${v}ms`}
+            tickMargin={4}
+            width={52}
+            tickFormatter={(v) => `${Math.round(v)}ms`}
           />
           <ChartTooltip
             content={
@@ -791,7 +791,7 @@ function IncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {timeAgo(new Date(incident.startedAt))}
           </span>
           <Badge variant={incident.resolvedAt ? "outline" : "default"}>

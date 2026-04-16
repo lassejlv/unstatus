@@ -48,11 +48,11 @@ function DependencyRow({ dep }: { dep: Dependency }) {
             <span className={`size-1.5 shrink-0 rounded-full ${config.dot}`} />
             <span className="text-xs text-muted-foreground">{dep.serviceName}</span>
             {dep.componentName && (
-              <span className="text-[10px] text-muted-foreground/60">
+              <span className="text-xs text-muted-foreground/60">
                 ({dep.componentName})
               </span>
             )}
-            <span className="ml-auto text-[10px] text-muted-foreground">
+            <span className="ml-auto text-xs text-muted-foreground">
               {config.label}
             </span>
           </div>
@@ -103,7 +103,7 @@ export function DependencyList({ dependencies }: { dependencies: Dependency[] })
       {/* Desktop: always visible */}
       <div className="hidden sm:block">
         <div className="mt-2 flex flex-col gap-0.5 pl-1">
-          <span className="mb-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="mb-0.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Dependencies
           </span>
           {dependencies.map((dep) => (
@@ -115,7 +115,7 @@ export function DependencyList({ dependencies }: { dependencies: Dependency[] })
       {/* Mobile: collapsible */}
       <div className="sm:hidden">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="mt-2 flex w-full items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground">
+          <CollapsibleTrigger className="mt-2 flex w-full items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
             <ChevronDown
               className={`size-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
             />

@@ -120,7 +120,7 @@ function IncidentsPage() {
       {/* Main content */}
       <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-y-auto">
         <div className="flex items-center justify-between">
-          <h1 className="text-sm font-medium">Incidents</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Incidents</h1>
           {monitors?.length ? (
             <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
           ) : null}
@@ -267,12 +267,20 @@ function IncidentSidecar({
   const isOpen = incidentId !== null;
 
   return (
-    <div
-      className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-        isOpen ? "w-[440px] opacity-100" : "w-0 opacity-0"
-      }`}
-    >
-      <div className="flex h-full w-[440px] flex-col rounded-xl border bg-card shadow-sm">
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-hidden transition-transform duration-300 ease-out md:relative md:inset-auto md:z-auto md:w-auto md:max-w-none md:shrink-0 md:transition-all ${
+          isOpen ? "translate-x-0 md:w-[440px] md:opacity-100" : "translate-x-full md:w-0 md:translate-x-0 md:opacity-0"
+        }`}
+      >
+        <div className="flex h-full w-full flex-col border-l bg-card md:w-[440px] md:rounded-xl md:border md:shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="text-sm font-medium truncate">
@@ -340,13 +348,13 @@ function IncidentSidecar({
                       {i < incident.updates.length - 1 && (
                         <div className="absolute left-[5px] top-3 bottom-0 w-px bg-border" />
                       )}
-                      <div className={`relative z-10 mt-0.5 size-[11px] shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
+                      <div className={`relative z-10 mt-0.5 size-2.5 shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          <Badge variant="outline">
                             {u.status}
                           </Badge>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {new Date(u.createdAt).toLocaleString()}
                           </span>
                         </div>
@@ -373,6 +381,7 @@ function IncidentSidecar({
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -499,7 +508,7 @@ function CreateIncidentDialog({
               ))}
             </div>
             {selectedMonitors.size > 0 && (
-              <span className="text-[10px] text-muted-foreground">{selectedMonitors.size} selected</span>
+              <span className="text-xs text-muted-foreground">{selectedMonitors.size} selected</span>
             )}
           </div>
           <div className="flex flex-col gap-1.5">

@@ -233,9 +233,12 @@ function SubscribersList({ orgId }: { orgId: string }) {
           ))}
         </CardContent>
       ) : (
-        <CardContent className="py-6 text-center">
-          <p className="text-xs text-muted-foreground">
-            No subscribers yet. Add one above or they can sign up on your status pages.
+        <CardContent className="py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No subscribers yet
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Users can subscribe on your status pages, or you can add them manually.
           </p>
         </CardContent>
       )}

@@ -147,7 +147,7 @@ function NotificationsList({ orgId }: { orgId: string }) {
                     </Badge>
                     {!ch.enabled && <Badge variant="secondary">Disabled</Badge>}
                   </div>
-                  <span className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
+                  <span className="max-w-xs truncate font-mono text-xs text-muted-foreground">
                     {ch.type === "discord"
                       ? ch.webhookUrl?.replace(
                           /\/webhooks\/\d+\/.*/,
@@ -209,10 +209,12 @@ function NotificationsList({ orgId }: { orgId: string }) {
           ))}
         </CardContent>
       ) : (
-        <CardContent className="py-6 text-center">
-          <p className="text-xs text-muted-foreground">
-            No notification channels configured. Add a Discord webhook or email
-            to receive alerts.
+        <CardContent className="py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No notification channels
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Add a Discord webhook or email to receive alerts.
           </p>
         </CardContent>
       )}
@@ -287,7 +289,7 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="alerts@example.com, team@example.com"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Separate multiple emails with commas
               </p>
             </div>

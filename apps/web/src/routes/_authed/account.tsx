@@ -95,7 +95,7 @@ function ProfileSection({
         <div className="flex flex-col gap-1.5">
           <Label>Email</Label>
           <Input value={user.email} disabled />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Email cannot be changed for OAuth accounts.
           </p>
         </div>

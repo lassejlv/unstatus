@@ -34,6 +34,36 @@ export const MONITOR_STATUS_COLORS: Record<string, string> = {
 };
 
 /**
+ * Monitor check status text colors for better contrast.
+ */
+export const MONITOR_STATUS_TEXT_COLORS: Record<string, string> = {
+  up: "text-emerald-600 dark:text-emerald-400",
+  down: "text-red-600 dark:text-red-400",
+  degraded: "text-yellow-600 dark:text-yellow-400",
+};
+
+/**
+ * Get the background color class for a monitor status.
+ */
+export function getMonitorStatusColor(status: string | null | undefined): string {
+  return MONITOR_STATUS_COLORS[status ?? ""] ?? "bg-muted-foreground";
+}
+
+/**
+ * Get the text color class for a monitor status.
+ */
+export function getMonitorStatusTextColor(status: string | null | undefined): string {
+  return MONITOR_STATUS_TEXT_COLORS[status ?? ""] ?? "text-muted-foreground";
+}
+
+/**
+ * Get the background color class for an external service status.
+ */
+export function getExternalStatusColor(status: string | null | undefined): string {
+  return EXTERNAL_STATUS_COLORS[status ?? ""] ?? "bg-muted-foreground";
+}
+
+/**
  * External service/dependency status colors (for Atlassian-style statuses).
  */
 export const EXTERNAL_STATUS_COLORS: Record<string, string> = {
@@ -42,6 +72,19 @@ export const EXTERNAL_STATUS_COLORS: Record<string, string> = {
   partial_outage: "bg-orange-500",
   major_outage: "bg-red-500",
   maintenance: "bg-blue-500",
+  unknown: "bg-muted-foreground",
+};
+
+/**
+ * External service/dependency status text colors for better contrast.
+ */
+export const EXTERNAL_STATUS_TEXT_COLORS: Record<string, string> = {
+  operational: "text-emerald-600 dark:text-emerald-400",
+  degraded_performance: "text-yellow-600 dark:text-yellow-400",
+  partial_outage: "text-orange-600 dark:text-orange-400",
+  major_outage: "text-red-600 dark:text-red-400",
+  maintenance: "text-blue-600 dark:text-blue-400",
+  unknown: "text-muted-foreground",
 };
 
 /**

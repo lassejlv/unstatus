@@ -9,7 +9,7 @@ export function Canvas({ children }: { children: ReactNode }) {
         backgroundSize: "24px 24px",
       }}
     >
-      <div className="flex flex-1 flex-col p-4">{children}</div>
+      <div className="flex flex-1 flex-col p-6">{children}</div>
     </div>
   );
 }

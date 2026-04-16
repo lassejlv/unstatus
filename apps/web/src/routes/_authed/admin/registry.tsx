@@ -46,7 +46,7 @@ const CATEGORIES = [
 ] as const;
 
 const STATUS_COLORS: Record<string, string> = {
-  operational: "bg-green-500",
+  operational: "bg-emerald-500",
   degraded_performance: "bg-yellow-500",
   partial_outage: "bg-orange-500",
   major_outage: "bg-red-500",
@@ -209,7 +209,7 @@ function AdminRegistryPage() {
             {services?.map((service) => (
               <tr key={service.id} className="border-b hover:bg-muted/30">
                 <td className="px-4 py-2.5">
-                  <span className={`inline-block size-2 rounded-full ${STATUS_COLORS[service.currentStatus ?? ""] ?? "bg-gray-400"}`} />
+                  <span className={`inline-block size-2 rounded-full ${STATUS_COLORS[service.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex flex-col">
@@ -218,14 +218,14 @@ function AdminRegistryPage() {
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
-                  <Badge variant="outline" className="text-[10px]">{service.category}</Badge>
+                  <Badge variant="outline" className="">{service.category}</Badge>
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground text-xs">{service.parserType}</td>
                 <td className="px-4 py-2.5">
                   {service.active ? (
-                    <Badge variant="secondary" className="text-[10px]">Active</Badge>
+                    <Badge variant="secondary" className="">Active</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">Inactive</Badge>
+                    <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
                   )}
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground text-xs">
