@@ -90,6 +90,8 @@ function StatCard({
 
 function AdminOverview() {
   const [days, setDays] = useState(30);
+  const [failureDays, setFailureDays] = useState(14);
+  const [incidentDays, setIncidentDays] = useState(30);
 
   const { data: stats, isLoading: statsLoading } = useQuery(
     orpc.admin.stats.queryOptions({ input: undefined }),
@@ -111,6 +113,28 @@ function AdminOverview() {
   const { data: monitorInsights, isLoading: monitorInsightsLoading } = useQuery(
     orpc.admin.monitorInsights.queryOptions({ input: { days } }),
   );
+
+  const { data: failureTrend } = useQuery(
+    orpc.admin.failureTrend.queryOptions({ input: { days: failureDays } }),
+  );
+
+  const { data: incidentTrend } = useQuery(
+    orpc.admin.incidentTrend.queryOptions({ input: { days: incidentDays } }),
+  );
+
+  const { data: recentIncidents } = useQuery(
+    orpc.admin.recentIncidents.queryOptions({ input: { limit: 5 } }),
+  );
+
+  // Calculate average failure rate from trend data
+  const avgFailureRate = failureTrend && failureTrend.length > 0
+    ? (failureTrend.reduce((sum, d) => sum + d.failureRate, 0) / failureTrend.length).toFixed(2)
+    : "0.00";
+
+  // Calculate total incidents in period
+  const totalIncidentsInPeriod = incidentTrend
+    ? incidentTrend.reduce((sum, d) => sum + d.critical + d.major + d.minor, 0)
+    : 0;
 
   // Format type distribution for display
   const typeData = Object.entries(monitorInsights?.typeCounts ?? {}).map(([type, count]) => ({
@@ -292,7 +316,27 @@ function AdminOverview() {
           </CardHeader>
           <CardContent>
             {failureTrend && failureTrend.length > 0 ? (
-              <FailureRateChart data={failureTrend} />
+              <ChartContainer config={{ failureRate: { label: "Failure Rate", color: "hsl(var(--chart-1))" } }} className="h-[160px] w-full">
+                <AreaChart data={failureTrend} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/30" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
+                    tickFormatter={(v) => new Date(v).toLocaleDateString([], { month: "short", day: "numeric" })}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
+                    tickFormatter={(v) => `${v}%`}
+                    width={40}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="failureRate" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.2} />
+                </AreaChart>
+              </ChartContainer>
             ) : (
               <div className="flex h-[160px] items-center justify-center text-sm text-muted-foreground">
                 No data available
@@ -325,7 +369,27 @@ function AdminOverview() {
           </CardHeader>
           <CardContent>
             {incidentTrend && incidentTrend.length > 0 ? (
-              <IncidentTrendChart data={incidentTrend} />
+              <ChartContainer config={{ total: { label: "Incidents", color: "hsl(var(--chart-2))" } }} className="h-[160px] w-full">
+                <BarChart data={incidentTrend} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/30" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
+                    tickFormatter={(v) => new Date(v).toLocaleDateString([], { month: "short", day: "numeric" })}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
+                    width={30}
+                    allowDecimals={false}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="total" fill="hsl(var(--chart-2))" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
             ) : (
               <div className="flex h-[160px] items-center justify-center text-sm text-muted-foreground">
                 No incidents recorded
