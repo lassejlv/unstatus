@@ -33,7 +33,7 @@ const faqs = [
   },
   {
     q: "How secure is my data?",
-    a: "All data is encrypted in transit and at rest. We never store your endpoint responses - only status and timing metadata. Your status page credentials and API keys are encrypted with industry-standard algorithms."
+    a: "All data is encrypted in transit via TLS. We never store your endpoint responses - only status and timing metadata."
   },
   {
     q: "What kind of support do you offer?",
