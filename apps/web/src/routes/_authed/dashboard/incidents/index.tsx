@@ -210,22 +210,24 @@ function IncidentsPage() {
             No incidents match your filters.
           </div>
         ) : (
-          <Empty>
-            <div className="flex size-12 items-center justify-center rounded-xl border bg-muted/50 mx-auto mb-3">
-              <AlertTriangle className="size-5 text-muted-foreground" />
-            </div>
-            <EmptyHeader>
-              <EmptyTitle>No incidents</EmptyTitle>
-              <EmptyDescription>
-                {monitors?.length
-                  ? "No incidents have been reported yet. That's a good thing!"
-                  : "Create a monitor first to start reporting incidents."}
-              </EmptyDescription>
-            </EmptyHeader>
-            {monitors?.length ? (
-              <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
-            ) : null}
-          </Empty>
+          <div className="flex flex-1 items-center justify-center">
+            <Empty className="flex-none">
+              <div className="flex size-12 items-center justify-center rounded-xl border bg-muted/50 mx-auto mb-3">
+                <AlertTriangle className="size-5 text-muted-foreground" />
+              </div>
+              <EmptyHeader>
+                <EmptyTitle>No incidents</EmptyTitle>
+                <EmptyDescription>
+                  {monitors?.length
+                    ? "No incidents have been reported yet. That's a good thing!"
+                    : "Create a monitor first to start reporting incidents."}
+                </EmptyDescription>
+              </EmptyHeader>
+              {monitors?.length ? (
+                <CreateIncidentDialog monitors={monitors} orgId={orgId!} />
+              ) : null}
+            </Empty>
+          </div>
         )}
       </div>
 
