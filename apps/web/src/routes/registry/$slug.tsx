@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ServiceStatusBadge, STATUS_CONFIG } from "@/components/-registry/service-status-badge";
+import { StatusHistoryBar } from "@/components/ui/uptime-bar";
+import { ServiceStatusBadge } from "@/components/-registry/service-status-badge";
 import { CATEGORY_LABELS } from "@/components/-registry/service-card";
 import { orpc } from "@/orpc/client";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -122,31 +122,7 @@ function ServiceDetailPage() {
         {/* 90-day history */}
         <div className="mb-8">
           <h2 className="mb-3 text-sm font-medium">90-day status history</h2>
-          <TooltipProvider>
-            <div className="flex gap-[2px]">
-              {service.daily.map((day) => {
-                const config = STATUS_CONFIG[day.status] ?? STATUS_CONFIG.unknown!;
-                return (
-                  <Tooltip key={day.date}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`h-8 flex-1 rounded-sm ${config.dot} opacity-80 hover:opacity-100 transition-opacity`}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">
-                        {day.date}: {(STATUS_CONFIG[day.status] ?? STATUS_CONFIG.unknown!).label}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </TooltipProvider>
-          <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-            <span>90 days ago</span>
-            <span>Today</span>
-          </div>
+          <StatusHistoryBar daily={service.daily} />
         </div>
 
         {/* Components */}

@@ -4,6 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   CenteredMessage,
   PublicStatusPageView,
+  StatusPageSkeleton,
 } from "@/components/public-status-view";
 import { orpc, client } from "@/orpc/client";
 
@@ -23,7 +24,7 @@ function PublicStatusPage() {
   });
 
   if (isLoading) {
-    return <CenteredMessage message="Loading…" />;
+    return <StatusPageSkeleton />;
   }
 
   if (error || !data) {

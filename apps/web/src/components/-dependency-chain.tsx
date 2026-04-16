@@ -9,6 +9,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { StatusDot } from "@/components/ui/status-dot";
+import { getExternalStatusConfig } from "@/lib/constants";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
@@ -24,18 +26,9 @@ type Dependency = {
   componentStatus: string | null;
 };
 
-const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string }> = {
-  operational: { label: "Operational", dot: "bg-emerald-500", bg: "" },
-  degraded_performance: { label: "Degraded", dot: "bg-yellow-500", bg: "bg-yellow-500/5" },
-  partial_outage: { label: "Partial Outage", dot: "bg-orange-500", bg: "bg-orange-500/5" },
-  major_outage: { label: "Major Outage", dot: "bg-red-500", bg: "bg-red-500/5" },
-  maintenance: { label: "Maintenance", dot: "bg-blue-500", bg: "bg-blue-500/5" },
-  unknown: { label: "Unknown", dot: "bg-muted-foreground", bg: "" },
-};
-
 function DependencyRow({ dep }: { dep: Dependency }) {
   const status = dep.componentStatus ?? dep.serviceStatus;
-  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.unknown!;
+  const config = getExternalStatusConfig(status);
   const isDown = status !== "operational" && status !== "unknown";
 
   return (
@@ -45,7 +38,10 @@ function DependencyRow({ dep }: { dep: Dependency }) {
           <div
             className={`flex items-center gap-2 rounded px-2 py-1 ${isDown ? config.bg : ""}`}
           >
-            <span className={`size-1.5 shrink-0 rounded-full ${config.dot}`} />
+            <StatusDot
+              status={status as "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "maintenance" | "unknown"}
+              size="xs"
+            />
             <span className="text-xs text-muted-foreground">{dep.serviceName}</span>
             {dep.componentName && (
               <span className="text-xs text-muted-foreground/60">
@@ -115,16 +111,16 @@ export function DependencyList({ dependencies }: { dependencies: Dependency[] })
       {/* Mobile: collapsible */}
       <div className="sm:hidden">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="mt-2 flex w-full items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+          <CollapsibleTrigger className="mt-2 flex w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground">
             <ChevronDown
-              className={`size-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`size-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
             />
             Dependencies ({dependencies.length})
             {hasIssues && (
-              <span className="size-1.5 rounded-full bg-orange-500" />
+              <span className="size-1.5 rounded-full bg-orange-500 animate-pulse" />
             )}
           </CollapsibleTrigger>
-          <CollapsibleContent>
+          <CollapsibleContent className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-top-1 data-[state=open]:slide-in-from-top-1 overflow-hidden">
             <div className="mt-1 flex flex-col gap-0.5 pl-1">
               {dependencies.map((dep) => (
                 <DependencyRow key={`${dep.serviceId}-${dep.componentName ?? ""}`} dep={dep} />

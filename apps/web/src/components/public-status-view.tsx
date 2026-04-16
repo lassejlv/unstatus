@@ -19,10 +19,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Spinner } from "@/components/ui/spinner";
+import { StatusDot } from "@/components/ui/status-dot";
+import { UptimeBar } from "@/components/ui/uptime-bar";
 import { useTheme } from "@/hooks/use-theme";
 import { DependencyList, DependencyImpactBanner } from "@/components/-dependency-chain";
-import { getIncidentStatusColor } from "@/lib/constants";
-import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle, Wrench, Clock } from "lucide-react";
+import { getOverallStatusConfig, getIncidentStatusColor, getIncidentSeverityConfig, getIncidentStatusConfig } from "@/lib/constants";
+import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle, Wrench, Clock, CheckCircle2 } from "lucide-react";
 
 export type PublicStatusMonitorDependency = {
   serviceId: string;
@@ -86,6 +88,7 @@ export type PublicStatusPageData = {
     active: PublicMaintenanceWindow[];
     upcoming: PublicMaintenanceWindow[];
   };
+  lastUpdatedAt?: string | Date | null;
 };
 
 export type PublicIncidentData = {
@@ -110,7 +113,119 @@ export function CenteredMessage({ message }: { message: string }) {
   const isLoading = message.toLowerCase().includes("loading");
   return (
     <div className="flex min-h-screen items-center justify-center">
-      {isLoading ? <Spinner className="size-5" /> : <p className="text-sm text-muted-foreground">{message}</p>}
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-2.5">
+          <Spinner className="size-5" />
+          <p className="text-xs text-muted-foreground animate-pulse">{message}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{message}</p>
+      )}
+    </div>
+  );
+}
+
+/** Skeleton loader matching the status page layout */
+export function StatusPageSkeleton() {
+  return (
+    <div className="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+      {/* Header skeleton */}
+      <div className="mb-10 flex flex-col items-center gap-4">
+        <div className="h-9 w-36 rounded-md bg-muted animate-pulse" />
+        <div className="h-6 w-52 rounded-md bg-muted animate-pulse" />
+        <div className="flex gap-2 pt-1">
+          <div className="h-7 w-24 rounded-md bg-muted animate-pulse" />
+          <div className="h-7 w-32 rounded-md bg-muted animate-pulse" />
+        </div>
+      </div>
+
+      {/* Overall status skeleton */}
+      <div className="h-14 rounded-lg bg-muted animate-pulse" />
+
+      {/* Monitor cards skeleton */}
+      <div className="mt-8 flex flex-col gap-3">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="rounded-lg border bg-card p-4 animate-fade-in"
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-2 rounded-full bg-muted animate-pulse" />
+                <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-3 w-12 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-14 rounded bg-muted animate-pulse" />
+              </div>
+            </div>
+            <div className="mt-4 flex gap-[2px]">
+              {Array.from({ length: 45 }).map((_, j) => (
+                <div
+                  key={j}
+                  className="h-8 flex-1 rounded-[3px] bg-muted animate-pulse"
+                  style={{ animationDelay: `${j * 15}ms` }}
+                />
+              ))}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-10 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+/** Skeleton loader for incident detail page */
+export function IncidentPageSkeleton() {
+  return (
+    <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
+      {/* Back link skeleton */}
+      <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+
+      {/* Title section skeleton */}
+      <div className="mt-6">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-48 rounded bg-muted animate-pulse" />
+          <div className="h-5 w-16 rounded-full bg-muted animate-pulse" />
+          <div className="h-5 w-14 rounded-full bg-muted animate-pulse" />
+        </div>
+        <div className="mt-2 h-3 w-64 rounded bg-muted animate-pulse" />
+      </div>
+
+      {/* Separator */}
+      <div className="my-6 h-px w-full bg-border" />
+
+      {/* Updates skeleton */}
+      <div className="flex flex-col gap-0">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="relative flex gap-4 pb-8 animate-fade-in"
+            style={{ animationDelay: `${i * 100}ms` }}
+          >
+            {i < 2 && (
+              <div className="absolute top-5 bottom-0 left-[9px] w-px bg-border" />
+            )}
+            <div className="relative z-10 mt-1">
+              <div className="size-[19px] rounded-full bg-muted animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-20 rounded-full bg-muted animate-pulse" />
+                <div className="h-3 w-12 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="mt-2 h-4 w-full max-w-md rounded bg-muted animate-pulse" />
+              <div className="mt-1.5 h-4 w-3/4 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -180,17 +295,17 @@ export function PublicStatusPageView({
         <style dangerouslySetInnerHTML={{ __html: data.customCss }} />
       )}
 
-      <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
+      <div className="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         {/* Header */}
-        <div className="animate-fade-in mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="flex flex-col items-center gap-2">
-            {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8" />}
-            <h1 className="text-xl font-semibold tracking-tight">{data.name}</h1>
+        <div className="animate-fade-in mb-8 flex flex-col items-center gap-4 text-center sm:mb-10">
+          <div className="flex flex-col items-center gap-2.5">
+            {data.logoUrl && <img src={data.logoUrl} alt="" className="h-8 sm:h-9" />}
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{data.name}</h1>
             {data.headerText && (
-              <p className="text-muted-foreground">{data.headerText}</p>
+              <p className="text-sm text-muted-foreground max-w-md">{data.headerText}</p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-2 pt-1 w-full sm:flex-row sm:w-auto">
             {onSubscribe && (
               <SubscribeDialog
                 monitors={data.monitors}
@@ -239,7 +354,7 @@ export function PublicStatusPageView({
         )}
 
         {/* Monitors — grouped */}
-        <div className="mt-6 flex flex-col gap-6">
+        <div className="mt-8 flex flex-col gap-4">
           {(() => {
             const groups = new Map<string, PublicStatusMonitorData[]>();
             const ungrouped: PublicStatusMonitorData[] = [];
@@ -290,17 +405,17 @@ export function PublicStatusPageView({
                     <button
                       type="button"
                       onClick={() => toggleGroup(section.name!)}
-                      className="mb-2 flex w-full items-center gap-2 group"
+                      className="mb-3 flex w-full items-center gap-2 group py-1"
                     >
                       {isCollapsed ? (
-                        <ChevronRight className="size-3.5 text-muted-foreground transition-transform" />
+                        <ChevronRight className="size-3.5 text-muted-foreground/70 transition-transform group-hover:text-muted-foreground" />
                       ) : (
-                        <ChevronDown className="size-3.5 text-muted-foreground transition-transform" />
+                        <ChevronDown className="size-3.5 text-muted-foreground/70 transition-transform group-hover:text-muted-foreground" />
                       )}
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80 group-hover:text-foreground transition-colors">
                         {section.name}
                       </h3>
-                      <span className="text-xs text-muted-foreground/60">{section.monitors.length}</span>
+                      <span className="text-[11px] text-muted-foreground/50 tabular-nums">{section.monitors.length}</span>
                       {isCollapsed && (
                         <span className={`ml-auto size-2 rounded-full ${groupDot}`} />
                       )}
@@ -331,15 +446,15 @@ export function PublicStatusPageView({
 
         {/* Upcoming maintenance */}
         {data.maintenance?.upcoming && data.maintenance.upcoming.length > 0 && (
-          <div className="animate-fade-in mt-10" style={{ animationDelay: `${100 + data.monitors.length * 40 + 30}ms` }}>
-            <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="animate-fade-in mt-12" style={{ animationDelay: `${100 + data.monitors.length * 40 + 30}ms` }}>
+            <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
               Scheduled maintenance
             </h2>
             <div className="flex flex-col gap-2">
               {data.maintenance.upcoming.map((mw) => (
                 <div
                   key={mw.id}
-                  className="flex items-start gap-3 rounded-lg border px-4 py-3"
+                  className="flex items-start gap-3 rounded-lg border bg-card px-4 py-3 ring-1 ring-foreground/5"
                 >
                   <Clock className="size-4 text-blue-500 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -347,9 +462,9 @@ export function PublicStatusPageView({
                     {mw.description && (
                       <p className="text-xs text-muted-foreground mt-0.5">{mw.description}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted-foreground">
                       <span>{new Date(mw.scheduledStart).toLocaleString()} — {new Date(mw.scheduledEnd).toLocaleString()}</span>
-                      <span>{mw.monitorNames.join(", ")}</span>
+                      <span className="text-muted-foreground/70">{mw.monitorNames.join(", ")}</span>
                     </div>
                   </div>
                 </div>
@@ -358,32 +473,72 @@ export function PublicStatusPageView({
           </div>
         )}
 
-        {/* Incidents */}
-        {data.incidents.length > 0 && (
-          <div className="animate-fade-in mt-10" style={{ animationDelay: `${100 + data.monitors.length * 40 + 50}ms` }}>
-            <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Recent incidents
-            </h2>
-            <div className="flex flex-col gap-2">
-              {[...data.incidents]
-                .sort((a, b) => (a.resolvedAt ? 1 : 0) - (b.resolvedAt ? 1 : 0))
-                .map((incident) => (
+        {/* Active Incidents - Prominent Display */}
+        {(() => {
+          const activeIncidents = data.incidents.filter((i) => !i.resolvedAt);
+          if (activeIncidents.length === 0) return null;
+          return (
+            <div className="animate-fade-in mt-6" style={{ animationDelay: "80ms" }}>
+              <div className="rounded-lg border-2 border-red-500/30 bg-red-500/5 p-4">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-600 dark:text-red-400">
+                  <span className="relative flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                  </span>
+                  Active Incidents
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {activeIncidents.map((incident) => (
+                    <Fragment key={incident.id}>
+                      {renderIncidentLink(incident, <ActiveIncidentRow incident={incident} />)}
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Past Incidents */}
+        <div className="animate-fade-in mt-12" style={{ animationDelay: `${100 + data.monitors.length * 40 + 50}ms` }}>
+          <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+            Past incidents (90 days)
+          </h2>
+          {(() => {
+            const resolvedIncidents = data.incidents
+              .filter((i) => i.resolvedAt)
+              .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+            if (resolvedIncidents.length === 0) {
+              return <NoIncidentsMessage />;
+            }
+            return (
+              <div className="flex flex-col gap-2">
+                {resolvedIncidents.map((incident) => (
                   <Fragment key={incident.id}>
-                    {renderIncidentLink(incident, <IncidentRow incident={incident} />)}
+                    {renderIncidentLink(incident, <ResolvedIncidentRow incident={incident} />)}
                   </Fragment>
                 ))}
-            </div>
-          </div>
-        )}
+              </div>
+            );
+          })()}
+        </div>
 
         {/* Footer */}
-        <div className="mt-14 flex items-center justify-between">
-          <div className="flex flex-col gap-1">
+        <div className="mt-16 flex items-center justify-between border-t pt-6">
+          <div className="flex flex-col gap-1.5">
             {data.footerText && (
               <p className="text-xs text-muted-foreground">{data.footerText}</p>
             )}
-            <p className="text-xs text-muted-foreground/60">
-              Powered by <span className="font-medium">Unstatus</span>
+            <p className="text-[11px] text-muted-foreground/50">
+              Powered by{" "}
+              <a
+                href="https://unstatus.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+              >
+                Unstatus
+              </a>
             </p>
           </div>
           <ThemeToggle />
@@ -401,25 +556,27 @@ export function PublicIncidentPageView({
   backLink: ReactNode;
 }) {
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-4 py-10">
-      {backLink}
+    <div className="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="inline-flex items-center rounded-md border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground hover:border-foreground/20">
+        {backLink}
+      </div>
 
-      <div className="mt-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold tracking-tight">{data.title}</h1>
-          <Badge variant={data.status === "resolved" ? "secondary" : "destructive"}>
+      <div className="mt-8">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-xl font-semibold tracking-tight">{data.title}</h1>
+          <Badge variant={data.status === "resolved" ? "success" : "destructive"}>
             {data.status}
           </Badge>
           <Badge variant="outline">{data.severity}</Badge>
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
           {data.monitorName} · Started {new Date(data.startedAt).toLocaleString()}
           {data.resolvedAt &&
             ` · Resolved ${new Date(data.resolvedAt).toLocaleString()}`}
         </p>
       </div>
 
-      <Separator className="my-6" />
+      <Separator className="my-8" />
 
       <div className="flex flex-col gap-0">
         {data.updates.map((update, index) => {
@@ -437,14 +594,14 @@ export function PublicIncidentPageView({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="">
+                  <Badge variant="outline">
                     {update.status}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground/70">
                     {timeAgo(new Date(update.createdAt))}
                   </span>
                 </div>
-                <p className="mt-1.5 text-sm leading-relaxed">{update.message}</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/90">{update.message}</p>
               </div>
             </div>
           );
@@ -454,53 +611,20 @@ export function PublicIncidentPageView({
   );
 }
 
-const STATUS_CONFIG = {
-  operational: {
-    label: "All Systems Operational",
-    dotClass: "bg-emerald-500",
-    bgClass: "border-emerald-500/20 bg-emerald-500/5",
-    textClass: "text-emerald-600 dark:text-emerald-400",
-  },
-  degraded: {
-    label: "Degraded Performance",
-    dotClass: "bg-yellow-500",
-    bgClass: "border-yellow-500/20 bg-yellow-500/5",
-    textClass: "text-yellow-600 dark:text-yellow-400",
-  },
-  major_outage: {
-    label: "Major Outage",
-    dotClass: "bg-red-500",
-    bgClass: "border-red-500/20 bg-red-500/5",
-    textClass: "text-red-600 dark:text-red-400",
-  },
-  maintenance: {
-    label: "Scheduled Maintenance",
-    dotClass: "bg-blue-500",
-    bgClass: "border-blue-500/20 bg-blue-500/5",
-    textClass: "text-blue-600 dark:text-blue-400",
-  },
-  unknown: {
-    label: "No Data",
-    dotClass: "bg-muted-foreground",
-    bgClass: "bg-muted",
-    textClass: "text-muted-foreground",
-  },
-} as const;
-
 function OverallBanner({ status, accent }: { status: string; accent?: string }) {
-  const config =
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unknown;
+  const config = getOverallStatusConfig(status);
 
   return (
     <div
-      className={`flex items-center justify-center gap-2.5 rounded-lg border px-5 py-4 ${config.bgClass}`}
+      className={`flex items-center justify-center gap-2.5 rounded-lg border px-5 py-4 ${config.bg}`}
       style={accent && accent !== "#000000" ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined}
     >
-      <span className="relative flex size-2.5">
-        <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 ${config.dotClass}`} />
-        <span className={`relative inline-flex size-2.5 rounded-full ${config.dotClass}`} />
-      </span>
-      <span className={`text-sm font-medium ${config.textClass}`}>
+      <StatusDot
+        status={status as "operational" | "degraded" | "major_outage" | "maintenance" | "unknown"}
+        size="default"
+        pulse={config.animate} // Only animate when there are issues requiring attention
+      />
+      <span className={`text-sm font-medium ${config.text}`}>
         {config.label}
       </span>
     </div>
@@ -518,14 +642,6 @@ function MonitorCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const statusColor =
-    monitor.currentStatus === "up"
-      ? "bg-emerald-500"
-      : monitor.currentStatus === "degraded"
-        ? "bg-yellow-500"
-        : monitor.currentStatus === "down"
-          ? "bg-red-500"
-          : "bg-muted-foreground";
 
   const uptimeColor =
     monitor.uptimePercent >= 99.5
@@ -537,35 +653,49 @@ function MonitorCard({
   const hasChart = showResponseTimes && (monitor.responseTimeSeries?.length ?? 0) > 0;
 
   return (
-    <div className="rounded-lg border bg-card ring-1 ring-foreground/5 transition-all hover:ring-foreground/10">
+    <div className={`rounded-lg border bg-card ring-1 ring-foreground/5 transition-all duration-150 ${hasChart ? "hover:ring-foreground/15 hover:shadow-sm" : ""}`}>
       {/* Top row */}
       <button
         type="button"
-        className="flex w-full items-center justify-between p-4"
+        className={`flex w-full items-center justify-between px-4 pt-4 pb-2 transition-colors duration-150 ${hasChart ? "cursor-pointer hover:bg-muted/30" : "cursor-default"}`}
         onClick={hasChart ? onToggle : undefined}
       >
         <div className="flex items-center gap-2.5">
-          <span className={`size-2 rounded-full ${statusColor}`} />
+          <StatusDot status={monitor.currentStatus as "up" | "down" | "degraded" | "paused" | "unknown"} size="sm" />
           <span className="text-sm font-medium">{monitor.name}</span>
         </div>
-        <div className="flex items-center gap-3 text-right">
-          <span className="text-xs text-muted-foreground">{monitor.avgLatency}ms</span>
-          <span className={`text-sm font-semibold tabular-nums ${uptimeColor}`}>
-            {monitor.uptimePercent}%
-          </span>
+        <div className="flex items-center gap-4 text-right">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-xs text-muted-foreground/80 tabular-nums cursor-default">{monitor.avgLatency}ms</span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              <p>Avg response time</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={`text-sm font-semibold tabular-nums cursor-default ${uptimeColor}`}>
+                {monitor.uptimePercent}%
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              <p>90-day uptime</p>
+            </TooltipContent>
+          </Tooltip>
           {hasChart && (
             <ChevronDown
-              className={`size-4 text-muted-foreground transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+              className={`size-4 text-muted-foreground/60 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
             />
           )}
         </div>
       </button>
 
       {/* Uptime bar */}
-      <div className="px-4 pb-3">
-        <UptimeBar daily={monitor.daily} />
-        <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
-          <span>90d ago</span>
+      <div className="px-4 pb-4">
+        <UptimeBar daily={monitor.daily} showLabels={false} />
+        <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground/70">
+          <span>90 days ago</span>
           <span>Today</span>
         </div>
 
@@ -623,8 +753,8 @@ function ResponseTimeChart({
           avg {Math.round(data.reduce((s, d) => s + d.avgLatency, 0) / data.length)}ms
         </span>
       </div>
-      <ChartContainer config={chartConfig} className="aspect-[5/1] w-full">
-        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+      <ChartContainer config={chartConfig} className="aspect-[3/1] sm:aspect-[4/1] w-full">
+        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
           <defs>
             <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.2} />
@@ -637,7 +767,7 @@ function ResponseTimeChart({
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            minTickGap={50}
+            minTickGap={60}
             tickFormatter={(v) =>
               new Date(v).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             }
@@ -646,7 +776,7 @@ function ResponseTimeChart({
             tickLine={false}
             axisLine={false}
             tickMargin={4}
-            width={52}
+            width={48}
             tickFormatter={(v) => `${Math.round(v)}ms`}
           />
           <ChartTooltip
@@ -671,30 +801,6 @@ function ResponseTimeChart({
           />
         </AreaChart>
       </ChartContainer>
-    </div>
-  );
-}
-
-function UptimeBar({ daily }: { daily: { date: string; uptime: number; totalChecks: number }[] }) {
-  return (
-    <div className="flex gap-[2px]">
-      {daily.map((day) => (
-        <Tooltip key={day.date}>
-          <TooltipTrigger asChild>
-            <div
-              className={`h-8 flex-1 rounded-[3px] transition-all hover:opacity-80 hover:scale-y-110 ${barColor(day.uptime, day.totalChecks)}`}
-            />
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs">
-            <p className="font-medium">{formatDate(day.date)}</p>
-            {day.totalChecks > 0 ? (
-              <p className="tabular-nums">{day.uptime.toFixed(2)}% uptime</p>
-            ) : (
-              <p className="text-muted-foreground">No data</p>
-            )}
-          </TooltipContent>
-        </Tooltip>
-      ))}
     </div>
   );
 }
@@ -726,14 +832,27 @@ function SubscribeDialog({
         <DialogHeader>
           <DialogTitle>Subscribe to updates</DialogTitle>
         </DialogHeader>
-        {success ? (
-          <div className="flex items-center gap-2 text-sm py-2">
-            <Check className="size-4 text-emerald-500" />
-            <span>Check your email to verify your subscription.</span>
+        <div className="relative min-h-[120px]">
+          {/* Success state with fade-in animation */}
+          <div
+            className={`absolute inset-0 flex items-center gap-3 py-2 transition-all duration-300 ${
+              success ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+            }`}
+          >
+            <div className="flex size-8 items-center justify-center rounded-full bg-emerald-500/10">
+              <Check className="size-4 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">You're subscribed</p>
+              <p className="text-xs text-muted-foreground">Check your email to verify your subscription.</p>
+            </div>
           </div>
-        ) : (
+
+          {/* Form with fade-out animation */}
           <form
-            className="flex flex-col gap-3"
+            className={`flex flex-col gap-3 transition-all duration-300 ${
+              success ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100 translate-y-0"
+            }`}
             onSubmit={async (e) => {
               e.preventDefault();
               if (!emailValue) return;
@@ -751,42 +870,30 @@ function SubscribeDialog({
               required
             />
             {error && (
-              <p className="text-xs text-red-500">{error}</p>
+              <p className="text-xs text-red-500 animate-fade-in">{error}</p>
             )}
             <Button type="submit" disabled={loading || !emailValue}>
               {loading ? <Spinner className="size-4" /> : "Subscribe"}
             </Button>
           </form>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-function IncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
-  const severityBorder =
-    incident.severity === "critical"
-      ? "border-l-red-500"
-      : incident.severity === "major"
-        ? "border-l-yellow-500"
-        : "border-l-muted-foreground";
+/** Active incident row - more prominent styling for ongoing issues */
+function ActiveIncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
+  const severityConfig = getIncidentSeverityConfig(incident.severity);
 
   return (
     <div
-      className={`rounded-lg border border-l-[3px] bg-card px-4 py-3 ring-1 ring-foreground/5 transition-all hover:ring-foreground/10 hover:-translate-y-px ${severityBorder}`}
+      className="group cursor-pointer rounded-lg border bg-card px-3 py-2.5 sm:px-4 sm:py-3 transition-all duration-150 hover:shadow-sm hover:-translate-y-0.5"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{incident.title}</span>
-          <Badge
-            variant={
-              incident.severity === "critical"
-                ? "destructive"
-                : incident.severity === "major"
-                  ? "secondary"
-                  : "outline"
-            }
-          >
+          <Badge variant={severityConfig.badge}>
             {incident.severity}
           </Badge>
         </div>
@@ -794,16 +901,58 @@ function IncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
           <span className="text-xs text-muted-foreground">
             {timeAgo(new Date(incident.startedAt))}
           </span>
-          <Badge variant={incident.resolvedAt ? "outline" : "default"}>
+          <Badge variant="destructive">
             {incident.status}
           </Badge>
         </div>
       </div>
       {incident.lastUpdate && (
-        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
+        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
           {incident.lastUpdate}
         </p>
       )}
+    </div>
+  );
+}
+
+/** Resolved incident row - subdued styling for past incidents */
+function ResolvedIncidentRow({ incident }: { incident: PublicStatusIncidentSummary }) {
+  return (
+    <div
+      className="group cursor-pointer rounded-lg border bg-card/50 px-3 py-2.5 sm:px-4 sm:py-3 transition-all duration-150 hover:bg-card hover:-translate-y-0.5"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="size-4 text-emerald-500" />
+          <span className="text-sm font-medium text-muted-foreground">{incident.title}</span>
+          <Badge variant="outline" className="text-muted-foreground">
+            {incident.severity}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {formatDateFull(new Date(incident.startedAt))}
+          </span>
+          <Badge variant="success">
+            resolved
+          </Badge>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Empty state when no past incidents */
+function NoIncidentsMessage() {
+  return (
+    <div className="rounded-lg border border-dashed bg-muted/30 px-6 py-8 text-center">
+      <CheckCircle2 className="mx-auto size-8 text-emerald-500/60" />
+      <p className="mt-3 text-sm font-medium text-muted-foreground">
+        No incidents in the past 90 days
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground/70">
+        Systems have been running smoothly
+      </p>
     </div>
   );
 }
@@ -818,7 +967,7 @@ function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(next)}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className="rounded-md p-1.5 text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-95"
       title={`Theme: ${theme}`}
     >
       <Icon className="size-4" />
@@ -826,33 +975,16 @@ function ThemeToggle() {
   );
 }
 
-function barColor(uptime: number, totalChecks: number): string {
-  if (totalChecks === 0) return "bg-muted";
-  if (uptime >= 99.5) return "bg-emerald-500";
-  if (uptime >= 95) return "bg-emerald-400";
-  if (uptime >= 90) return "bg-yellow-400";
-  if (uptime >= 50) return "bg-orange-400";
-  if (uptime > 0) return "bg-red-500";
-  return "bg-muted";
-}
-
-// dotColor is now imported from @/lib/constants as getIncidentStatusColor
-
 function dotGlowColor(status: string): string {
-  switch (status) {
-    case "monitoring":
-      return "bg-blue-500/40";
-    case "identified":
-      return "bg-yellow-500/40";
-    default:
-      return "bg-red-500/40";
-  }
+  const config = getIncidentStatusConfig(status);
+  return config.glow;
 }
 
-function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
+function formatDateFull(date: Date): string {
+  return date.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
+    year: "numeric",
   });
 }
 

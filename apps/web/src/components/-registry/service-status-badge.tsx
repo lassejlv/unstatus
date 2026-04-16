@@ -1,23 +1,25 @@
-const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-  operational: { label: "Operational", color: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
-  degraded_performance: { label: "Degraded", color: "text-yellow-600 dark:text-yellow-400", dot: "bg-yellow-500" },
-  partial_outage: { label: "Partial Outage", color: "text-orange-600 dark:text-orange-400", dot: "bg-orange-500" },
-  major_outage: { label: "Major Outage", color: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
-  maintenance: { label: "Maintenance", color: "text-blue-600 dark:text-blue-400", dot: "bg-blue-500" },
-  unknown: { label: "Unknown", color: "text-muted-foreground", dot: "bg-muted-foreground" },
-};
+import { StatusDot } from "@/components/ui/status-dot"
+import { EXTERNAL_STATUS_CONFIG, getExternalStatusConfig } from "@/lib/constants"
 
+/**
+ * Status badge for external services (registry).
+ * Shows a status dot with label using Atlassian-style status values.
+ */
 export function ServiceStatusBadge({ status, size = "sm" }: { status: string | null; size?: "sm" | "md" }) {
-  const config = STATUS_CONFIG[status ?? "unknown"] ?? STATUS_CONFIG.unknown!;
-  const dotSize = size === "md" ? "size-2.5" : "size-2";
-  const textSize = size === "md" ? "text-sm" : "text-xs";
+  const config = getExternalStatusConfig(status)
+  const dotSize = size === "md" ? "default" : "sm"
+  const textSize = size === "md" ? "text-sm" : "text-xs"
 
   return (
-    <span className={`inline-flex items-center gap-1.5 ${config.color}`}>
-      <span className={`${dotSize} shrink-0 rounded-full ${config.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 ${config.text}`}>
+      <StatusDot
+        status={status as "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "maintenance" | "unknown" | null | undefined}
+        size={dotSize}
+      />
       <span className={textSize}>{config.label}</span>
     </span>
-  );
+  )
 }
 
-export { STATUS_CONFIG };
+/** @deprecated Import from @/lib/constants instead */
+export const STATUS_CONFIG = EXTERNAL_STATUS_CONFIG

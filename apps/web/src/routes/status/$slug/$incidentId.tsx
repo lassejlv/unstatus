@@ -4,6 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   CenteredMessage,
   PublicIncidentPageView,
+  IncidentPageSkeleton,
 } from "@/components/public-status-view";
 import { orpc } from "@/orpc/client";
 
@@ -20,7 +21,7 @@ function PublicIncidentPage() {
   );
 
   if (isLoading) {
-    return <CenteredMessage message="Loading…" />;
+    return <IncidentPageSkeleton />;
   }
 
   if (error || !data) {
@@ -34,9 +35,10 @@ function PublicIncidentPage() {
         <Link
           to="/status/$slug"
           params={{ slug }}
-          className="text-xs text-muted-foreground hover:underline"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground"
         >
-          ← {data.pageName}
+          <span className="transition-transform duration-150 group-hover:-translate-x-0.5">←</span>
+          {data.pageName}
         </Link>
       }
     />
