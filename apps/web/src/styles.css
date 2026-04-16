@@ -149,3 +149,118 @@
     transform: translateX(100%);
   }
 }
+
+/* Subtle pulse for live indicators */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+/* Success glow effect */
+@keyframes success-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.765 0.177 163.22 / 0); }
+  50% { box-shadow: 0 0 12px 2px oklch(0.765 0.177 163.22 / 0.4); }
+}
+
+.animate-success-glow {
+  animation: success-glow 0.6s ease-out;
+}
+
+/* Attention pulse for status changes */
+@keyframes attention-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.animate-attention-pulse {
+  animation: attention-pulse 0.3s ease-out;
+}
+
+/* Breathing animation for status orb */
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+.animate-breathing {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+/* Glow pulse for status orb */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px 4px var(--glow-color, oklch(0.765 0.177 163.22 / 0.3));
+  }
+  50% {
+    box-shadow: 0 0 30px 8px var(--glow-color, oklch(0.765 0.177 163.22 / 0.5));
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Number count-in animation */
+@keyframes number-count-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-number-in {
+  animation: number-count-in 0.3s ease-out both;
+}
+
+/* Slide in from top for new items */
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-top {
+  animation: slide-in-top 0.3s ease-out both;
+}
+
+/* Reduced motion: disable all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-subtle-pulse,
+  .animate-success-glow,
+  .animate-attention-pulse,
+  .animate-breathing,
+  .animate-glow-pulse,
+  .animate-number-in,
+  .animate-slide-in-top {
+    animation: none !important;
+  }
+
+  /* Also reduce motion for native animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
