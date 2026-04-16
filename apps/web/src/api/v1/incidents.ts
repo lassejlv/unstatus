@@ -2,12 +2,11 @@ import { Hono } from "hono";
 import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
+import { incidentStatusSchema, incidentSeveritySchema } from "@/types";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
-const incidentStatusSchema = z.enum(["investigating", "identified", "monitoring", "resolved"]);
-const incidentSeveritySchema = z.enum(["minor", "major", "critical"]);
 
 const createIncidentBodySchema = z.object({
   monitorIds: z.array(z.string()).min(1),
@@ -22,7 +21,6 @@ const updateIncidentBodySchema = z.object({
   message: z.string().trim().min(1),
 });
 
-// GET /incidents - List incidents
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const { limit, offset } = parsePagination(c);
@@ -46,7 +44,6 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// GET /incidents/:id - Get incident with updates
 app.get("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
   const id = c.req.param("id");
@@ -68,7 +65,6 @@ app.get("/:id", async (c) => {
   return success(c, rest);
 });
 
-// POST /incidents - Create incident
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const body = await parseJsonBody(c, createIncidentBodySchema);
@@ -110,7 +106,6 @@ app.post("/", async (c) => {
   return success(c, incident, 201);
 });
 
-// PATCH /incidents/:id - Update incident
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -155,7 +150,6 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /incidents/:id - Delete incident
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 

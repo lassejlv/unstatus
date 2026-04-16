@@ -41,7 +41,6 @@ const updateNotificationBodySchema = z.object({
   ...notificationSettingsSchema,
 });
 
-// GET /notifications - List notification channels
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const { limit, offset } = parsePagination(c);
@@ -60,7 +59,6 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// POST /notifications - Create notification channel
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const body = await parseJsonBody(c, createNotificationBodySchema);
@@ -87,7 +85,6 @@ app.post("/", async (c) => {
   return success(c, channel, 201);
 });
 
-// PATCH /notifications/:id - Update notification channel
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -117,7 +114,6 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /notifications/:id - Delete notification channel
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 

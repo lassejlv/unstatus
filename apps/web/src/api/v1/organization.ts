@@ -5,7 +5,6 @@ import { success } from "../helpers";
 
 const app = new Hono();
 
-// GET /organization - Get current organization info
 app.get("/", async (c) => {
   const { organizationId, tier } = getApiContext(c);
 

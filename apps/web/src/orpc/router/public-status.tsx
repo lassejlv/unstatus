@@ -6,100 +6,22 @@ import { email } from "@/lib/email";
 import { env } from "@/lib/env";
 import { publicProcedure } from "@/orpc/procedures";
 import { SubscriptionVerifyEmail } from "@unstatus/email";
-
-type ResolvedPublicPage = {
-  id: string;
-  name: string;
-  slug: string;
-  isPublic: boolean;
-  logoUrl: string | null;
-  brandColor: string | null;
-  headerText: string | null;
-  footerText: string | null;
-  showResponseTimes: boolean;
-  showDependencies: boolean;
-  customCss: string | null;
-  customJs: string | null;
-};
-
-type MonitorRow = {
-  monitorId: string;
-  monitorName: string;
-  displayName: string | null;
-  groupName: string | null;
-};
-
-type StatsRow = {
-  monitorId: string;
-  day: string;
-  total: bigint;
-  up: bigint;
-  avg_latency: number | null;
-};
-
-type LatestRow = {
-  monitorId: string;
-  status: string | null;
-};
-
-type IncidentRow = {
-  id: string;
-  monitorId: string;
-  title: string;
-  status: string;
-  severity: string;
-  startedAt: Date;
-  resolvedAt: Date | null;
-  lastMessage: string | null;
-};
-
-type HourlyRow = {
-  monitorId: string;
-  hour: Date;
-  avg_latency: number | null;
-  check_count: bigint;
-};
-
-type DependencyRow = {
-  monitorId: string;
-  serviceId: string;
-  serviceName: string;
-  serviceSlug: string;
-  serviceLogoUrl: string | null;
-  serviceStatus: string | null;
-  serviceStatusPageUrl: string | null;
-  serviceLastFetchedAt: Date | null;
-  componentName: string | null;
-  componentStatus: string | null;
-};
-
-function getLocalDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateKeyToLocalMs(dateKey: string) {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, (month ?? 1) - 1, day ?? 1).getTime();
-}
+import {
+  type ResolvedPublicPage,
+  type MonitorRow,
+  type StatsRow,
+  type LatestRow,
+  type IncidentRow,
+  type HourlyRow,
+  type DependencyRow,
+  getLocalDateKey,
+  parseDateKeyToLocalMs,
+} from "@/types";
 
 const subscribeRateLimiter = new Map<string, number[]>();
 const SUBSCRIBE_IP_LIMIT = { windowMs: 15 * 60 * 1000, maxRequests: 10 };
 const SUBSCRIBE_EMAIL_LIMIT = { windowMs: 60 * 60 * 1000, maxRequests: 3 };
 
-function isMissingMonitorPerfSchema(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return (
-    message.includes("monitor_check_hourly_rollup")
-    || message.includes("monitor_check_daily_rollup")
-    || message.includes("lastStatus")
-    || message.includes("does not exist")
-    || message.includes("42P01")
-    || message.includes("42703")
-  );
-}
 
 function getRequestIp(headers: Headers): string {
   const forwardedFor = headers.get("x-forwarded-for");
@@ -157,70 +79,7 @@ export async function resolvePublicPage(
   return page;
 }
 
-async function getLegacyPublicStatusRows(
-  page: ResolvedPublicPage,
-  ninetyDaysAgo: Date,
-  twentyFourHoursAgo: Date,
-) {
-  return Promise.all([
-    prisma.$queryRawUnsafe<MonitorRow[]>(
-      `SELECT spm."monitorId", m.name as "monitorName", spm."displayName", spm."groupName"
-      FROM status_page_monitor spm
-      JOIN monitor m ON m.id = spm."monitorId"
-      WHERE spm."statusPageId" = $1
-      ORDER BY spm."sortOrder" ASC`,
-      page.id,
-    ),
-    prisma.$queryRawUnsafe<StatsRow[]>(
-      `SELECT mc."monitorId", DATE(mc."checkedAt") as day, COUNT(*)::bigint as total,
-        COUNT(*) FILTER (WHERE mc.status = 'up')::bigint as up,
-        ROUND(AVG(mc.latency))::float as avg_latency
-      FROM monitor_check mc
-      JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
-      WHERE spm."statusPageId" = $1 AND mc."checkedAt" >= $2
-      GROUP BY mc."monitorId", DATE(mc."checkedAt")`,
-      page.id,
-      ninetyDaysAgo,
-    ),
-    prisma.$queryRawUnsafe<LatestRow[]>(
-      `SELECT DISTINCT ON (mc."monitorId") mc."monitorId", mc.status
-      FROM monitor_check mc
-      JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
-      WHERE spm."statusPageId" = $1
-      ORDER BY mc."monitorId", mc."checkedAt" DESC`,
-      page.id,
-    ),
-    prisma.$queryRawUnsafe<IncidentRow[]>(
-      `SELECT i.id, i."monitorId", i.title, i.status, i.severity,
-        i."startedAt", i."resolvedAt",
-        (SELECT iu.message FROM incident_update iu WHERE iu."incidentId" = i.id ORDER BY iu."createdAt" DESC LIMIT 1) as "lastMessage"
-      FROM incident i
-      JOIN status_page_monitor spm ON spm."monitorId" = i."monitorId"
-      WHERE spm."statusPageId" = $1 AND i."createdAt" >= $2
-      ORDER BY i."createdAt" DESC
-      LIMIT 10`,
-      page.id,
-      ninetyDaysAgo,
-    ),
-    page.showResponseTimes
-      ? prisma.$queryRawUnsafe<HourlyRow[]>(
-          `SELECT mc."monitorId",
-            date_trunc('hour', mc."checkedAt") as hour,
-            ROUND(AVG(mc.latency))::float as avg_latency,
-            COUNT(*)::bigint as check_count
-          FROM monitor_check mc
-          JOIN status_page_monitor spm ON spm."monitorId" = mc."monitorId"
-          WHERE spm."statusPageId" = $1 AND mc."checkedAt" >= $2
-          GROUP BY mc."monitorId", date_trunc('hour', mc."checkedAt")
-          ORDER BY hour ASC`,
-          page.id,
-          twentyFourHoursAgo,
-        )
-      : Promise.resolve([] as HourlyRow[]),
-  ]);
-}
-
-async function getRollupPublicStatusRows(
+async function getPublicStatusRows(
   page: ResolvedPublicPage,
   ninetyDaysAgo: Date,
   twentyFourHoursAgo: Date,
@@ -289,29 +148,11 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
 
-  let monitorRows: MonitorRow[];
-  let statsRows: StatsRow[];
-  let latestRows: LatestRow[];
-  let incidentRows: IncidentRow[];
-  let hourlyRows: HourlyRow[];
-
-  try {
-    [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await getRollupPublicStatusRows(
-      page,
-      ninetyDaysAgo,
-      twentyFourHoursAgo,
-    );
-  } catch (error) {
-    if (!isMissingMonitorPerfSchema(error)) {
-      throw error;
-    }
-
-    [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await getLegacyPublicStatusRows(
-      page,
-      ninetyDaysAgo,
-      twentyFourHoursAgo,
-    );
-  }
+  const [monitorRows, statsRows, latestRows, incidentRows, hourlyRows] = await getPublicStatusRows(
+    page,
+    ninetyDaysAgo,
+    twentyFourHoursAgo,
+  );
 
   const dailyByMonitor = new Map<
     string,
@@ -349,29 +190,25 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
   // Fetch dependency data if enabled
   let dependencyRows: DependencyRow[] = [];
   if (page.showDependencies) {
-    try {
-      dependencyRows = await prisma.$queryRawUnsafe<DependencyRow[]>(
-        `SELECT
-          md."monitorId",
-          es.id as "serviceId",
-          es.name as "serviceName",
-          es.slug as "serviceSlug",
-          es."logoUrl" as "serviceLogoUrl",
-          es."currentStatus" as "serviceStatus",
-          es."statusPageUrl" as "serviceStatusPageUrl",
-          es."lastFetchedAt" as "serviceLastFetchedAt",
-          esc.name as "componentName",
-          esc."currentStatus" as "componentStatus"
-        FROM monitor_dependency md
-        JOIN external_service es ON es.id = md."externalServiceId"
-        LEFT JOIN external_service_component esc ON esc.id = md."externalComponentId"
-        JOIN status_page_monitor spm ON spm."monitorId" = md."monitorId"
-        WHERE spm."statusPageId" = $1`,
-        page.id,
-      );
-    } catch {
-      // Table may not exist yet
-    }
+    dependencyRows = await prisma.$queryRawUnsafe<DependencyRow[]>(
+      `SELECT
+        md."monitorId",
+        es.id as "serviceId",
+        es.name as "serviceName",
+        es.slug as "serviceSlug",
+        es."logoUrl" as "serviceLogoUrl",
+        es."currentStatus" as "serviceStatus",
+        es."statusPageUrl" as "serviceStatusPageUrl",
+        es."lastFetchedAt" as "serviceLastFetchedAt",
+        esc.name as "componentName",
+        esc."currentStatus" as "componentStatus"
+      FROM monitor_dependency md
+      JOIN external_service es ON es.id = md."externalServiceId"
+      LEFT JOIN external_service_component esc ON esc.id = md."externalComponentId"
+      JOIN status_page_monitor spm ON spm."monitorId" = md."monitorId"
+      WHERE spm."statusPageId" = $1`,
+      page.id,
+    );
   }
 
   const depsByMonitor = new Map<string, DependencyRow[]>();

@@ -11,12 +11,10 @@ import { organizationRoutes } from "./organization";
 
 const app = new Hono().basePath("/api/v1");
 
-// Global middleware
 app.use("*", errorHandler);
 app.use("*", apiKeyAuth);
 app.use("*", rateLimit);
 
-// Mount resource routes
 app.route("/monitors", monitorsRoutes);
 app.route("/incidents", incidentsRoutes);
 app.route("/status-pages", statusPagesRoutes);

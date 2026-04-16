@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { output, ZodType } from "zod";
 
 export class ApiError extends Error {
@@ -15,13 +16,13 @@ export class ApiError extends Error {
   }
 }
 
-export function success(c: Context, data: unknown, status: number = 200) {
-  return c.json({ data }, status as any);
+export function success<T>(c: Context, data: T, status: ContentfulStatusCode = 200) {
+  return c.json({ data }, status);
 }
 
-export function paginated(
+export function paginated<T>(
   c: Context,
-  data: unknown[],
+  data: T[],
   total: number,
   limit: number,
   offset: number,

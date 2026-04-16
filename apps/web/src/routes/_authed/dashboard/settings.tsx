@@ -144,10 +144,11 @@ function OrgDetails({ orgId }: { orgId: string }) {
 
   const org = activeOrg;
   const userId = session?.user.id;
+  type MemberData = { id: string; userId: string; role: string; user: { name: string; email: string } };
   const { data: members } = authClient.useListMembers({ query: { organizationId: orgId } });
-  const memberList = Array.isArray(members) ? members : (members as any)?.data ?? [];
+  const memberList: MemberData[] = Array.isArray(members) ? members : (members as { data?: MemberData[] })?.data ?? [];
   const currentMember = userId
-    ? memberList.find((m: any) => m.userId === userId)
+    ? memberList.find((m) => m.userId === userId)
     : null;
   const isOwner = currentMember ? currentMember.role === "owner" : true;
   const isPersonalOrg = Boolean(
@@ -253,10 +254,9 @@ function OrgDetails({ orgId }: { orgId: string }) {
                         });
                         toast.success("Organization deleted");
                         window.location.href = "/dashboard?tab=overview";
-                      } catch (err: any) {
-                        toast.error(
-                          err.message || "Failed to delete organization",
-                        );
+                      } catch (err: unknown) {
+                        const message = err instanceof Error ? err.message : "Failed to delete organization";
+                        toast.error(message);
                       } finally {
                         setDeleting(false);
                       }
@@ -275,8 +275,9 @@ function OrgDetails({ orgId }: { orgId: string }) {
 }
 
 function MembersSection({ orgId }: { orgId: string }) {
+  type OrgMember = { id: string; role: string; user: { name: string; email: string } };
   const { data: activeOrgData } = authClient.useActiveOrganization();
-  const members = (activeOrgData as any)?.members ?? [];
+  const members: OrgMember[] = (activeOrgData as { members?: OrgMember[] })?.members ?? [];
 
   return (
     <Card>
@@ -291,7 +292,7 @@ function MembersSection({ orgId }: { orgId: string }) {
       </CardHeader>
       {members.length > 0 ? (
         <CardContent className="p-0">
-          {members.map((m: any, i: number) => (
+          {members.map((m, i) => (
             <div
               key={m.id}
               className={`flex items-center justify-between px-4 py-3 ${i < members.length - 1 ? "border-b" : ""}`}
@@ -633,7 +634,7 @@ function CreateApiKeyDialog({ orgId }: { orgId: string }) {
       qc.invalidateQueries({ queryKey: ["apiKeys", orgId] });
       setCreatedKey(data.key);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to create API key");
     },
   });
@@ -773,8 +774,9 @@ function CreateOrgDialog({ disabled = false }: { disabled?: boolean }) {
                 setOpen(false);
                 setName("");
                 setSlug("");
-              } catch (err: any) {
-                toast.error(err.message || "Failed to create organization");
+              } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Failed to create organization";
+                toast.error(message);
               } finally {
                 setLoading(false);
               }

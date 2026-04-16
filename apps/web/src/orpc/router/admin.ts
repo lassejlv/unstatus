@@ -208,7 +208,11 @@ export const adminRouter = {
       }),
     )
     .handler(async ({ input }) => {
-      const where: any = {};
+      type MonitorWhereInput = {
+        OR?: Array<{ name?: { contains: string; mode: "insensitive" } } | { url?: { contains: string; mode: "insensitive" } }>;
+        lastStatus?: string;
+      };
+      const where: MonitorWhereInput = {};
       if (input.search) {
         where.OR = [
           { name: { contains: input.search, mode: "insensitive" } },

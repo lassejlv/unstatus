@@ -3,12 +3,11 @@ import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { monitorTypeSchema, regionSchema } from "@/types";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
 
 const app = new Hono();
-const monitorTypeSchema = z.enum(["http", "tcp", "ping", "redis", "postgres"]);
-const regionSchema = z.enum(["eu", "us", "asia"]);
 const ruleSchema = z.object({
   type: z.string().trim().min(1),
   operator: z.string().trim().min(1),
@@ -100,7 +99,6 @@ const updateMonitorBodySchema = z.object({
   active: z.boolean().optional(),
 }).superRefine(validateMonitorFields);
 
-// GET /monitors - List monitors
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const { limit, offset } = parsePagination(c);
@@ -118,7 +116,6 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// GET /monitors/:id - Get monitor
 app.get("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
   const id = c.req.param("id");
@@ -131,7 +128,6 @@ app.get("/:id", async (c) => {
   return success(c, monitor);
 });
 
-// POST /monitors - Create monitor
 app.post("/", async (c) => {
   const { organizationId, tier } = getApiContext(c);
   const body = await parseJsonBody(c, createMonitorBodySchema);
@@ -171,7 +167,6 @@ app.post("/", async (c) => {
   return success(c, monitor, 201);
 });
 
-// PATCH /monitors/:id - Update monitor
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -203,7 +198,6 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /monitors/:id - Delete monitor
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -217,7 +211,6 @@ app.delete("/:id", async (c) => {
   return success(c, { deleted: true });
 });
 
-// GET /monitors/:id/checks - List checks
 app.get("/:id/checks", async (c) => {
   const { organizationId } = getApiContext(c);
   const id = c.req.param("id");
@@ -242,7 +235,6 @@ app.get("/:id/checks", async (c) => {
   return paginated(c, items, total, take, offset);
 });
 
-// POST /monitors/:id/run - Trigger manual check
 app.post("/:id/run", async (c) => {
   const { organizationId } = getApiContext(c);
 

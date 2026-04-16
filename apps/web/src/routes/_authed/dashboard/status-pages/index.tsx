@@ -381,8 +381,8 @@ function StatusPageSidecar({
             <AddMonitorOverlay
               statusPageId={page.id}
               organizationId={activeOrg.id}
-              existingMonitorIds={page.monitors.map((m: any) => m.monitorId)}
-              groupNames={[...new Set(page.monitors.map((m: any) => m.groupName).filter(Boolean))]}
+              existingMonitorIds={page.monitors.map((m) => m.monitorId)}
+              groupNames={[...new Set(page.monitors.map((m) => m.groupName).filter((g): g is string => g !== null))]}
               onBack={() => setView("main")}
               onSuccess={() => {
                 invalidate();
@@ -628,6 +628,26 @@ function DroppableGroup({
   );
 }
 
+type StatusPageData = {
+  id: string;
+  name: string;
+  slug: string;
+  isPublic: boolean;
+  brandColor: string | null;
+  headerText: string | null;
+  footerText: string | null;
+  customCss: string | null;
+  customJs: string | null;
+  customDomain: string | null;
+  monitors: MonitorItem[];
+};
+
+type OrgData = {
+  id: string;
+  name: string;
+  slug: string;
+} | null;
+
 function MonitorsTab({
   page,
   activeOrg,
@@ -635,8 +655,8 @@ function MonitorsTab({
   onRemoveMonitor,
   onInvalidate,
 }: {
-  page: any;
-  activeOrg: any;
+  page: StatusPageData;
+  activeOrg: OrgData;
   onAddMonitor: () => void;
   onRemoveMonitor: (id: string) => void;
   onInvalidate: () => void;
@@ -654,7 +674,7 @@ function MonitorsTab({
       onInvalidate();
       qc.invalidateQueries();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to update monitors");
     },
   });

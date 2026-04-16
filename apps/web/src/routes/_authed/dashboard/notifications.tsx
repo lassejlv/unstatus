@@ -101,7 +101,7 @@ function NotificationsList({ orgId }: { orgId: string }) {
   const toggleMut = useMutation<
     NotificationChannelRow,
     Error,
-    { id: string; [key: string]: any }
+    { id: string } & Partial<NotificationChannelRow>
   >({
     mutationFn: (params) => client.notifications.update(params),
     onSuccess: () => qc.invalidateQueries({ queryKey }),
@@ -316,8 +316,9 @@ function AddNotificationDialog({ orgId }: { orgId: string }) {
                 setName("");
                 setWebhookUrl("");
                 setRecipientEmail("");
-              } catch (err: any) {
-                toast.error(err.message || "Failed to add channel");
+              } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Failed to add channel";
+                toast.error(message);
               } finally {
                 setLoading(false);
               }

@@ -31,8 +31,9 @@ function AcceptInvitationPage() {
       .then(() => {
         navigate({ to: "/dashboard", search: { tab: "overview" } });
       })
-      .catch((err: any) => {
-        setError(err?.message || "Failed to accept invitation. It may have expired or already been used.");
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : "Failed to accept invitation. It may have expired or already been used.";
+        setError(message);
         setAccepting(false);
       });
   }, [invitationId, navigate]);

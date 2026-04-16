@@ -1,20 +1,13 @@
 import type { Context, Next } from "hono";
 import { prisma } from "@/lib/prisma";
 import { type PlanTier, resolvePlanTier } from "@/lib/plans";
+import { hashKey } from "@/lib/crypto";
 
 type ApiContext = {
   organizationId: string;
   tier: PlanTier;
   apiKeyId: string;
 };
-
-async function hashKey(key: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(key);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
 
 export async function apiKeyAuth(c: Context, next: Next) {
   const header = c.req.header("Authorization");

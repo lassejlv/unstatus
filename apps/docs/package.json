@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.18.0",
     "fumadocs-core": "^16.7.10",
     "fumadocs-mdx": "^14.2.11",
     "fumadocs-ui": "^16.7.10",
@@ -22,7 +21,6 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
-    "wrangler": "^4.80.0"
+    "typescript": "^6.0.2"
   }
 }

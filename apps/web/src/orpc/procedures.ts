@@ -27,7 +27,8 @@ export const authedProcedure = publicProcedure.use(
 
 export const adminProcedure = authedProcedure.use(
   async ({ context, next }) => {
-    if (!(context.session.user as any).isAdmin) {
+    const user = context.session.user as { isAdmin?: boolean };
+    if (!user.isAdmin) {
       throw new ORPCError("FORBIDDEN", { message: "Admin access required" });
     }
     return next();

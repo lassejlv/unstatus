@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { resolvePublicPage, getPublicStatusPage } from "@/orpc/router/public-status";
 import { buildAtlassianSummary } from "@/lib/atlassian-summary";
 
@@ -6,7 +6,7 @@ const APP_DOMAIN = process.env.APP_DOMAIN ?? "";
 
 const app = new Hono();
 
-function getCustomDomainHostname(c: { req: { header: (name: string) => string | undefined } }): string {
+function getCustomDomainHostname(c: Context): string {
   const forwardedHost = c.req.header("x-forwarded-host");
   const host = forwardedHost ?? c.req.header("host") ?? "";
   return host.split(":")[0];
@@ -58,7 +58,7 @@ app.get("/api/status/summary.json", async (c) => {
 });
 
 // Custom domain shorthand: /summary or /summary.json (mounted via routes/summary.ts)
-async function handleCustomDomainSummary(c: any) {
+async function handleCustomDomainSummary(c: Context) {
   try {
     const hostname = getCustomDomainHostname(c);
 

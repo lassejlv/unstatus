@@ -42,7 +42,7 @@ function AdminMonitorsPage() {
   const listOpts = orpc.admin.listAllMonitors.queryOptions({
     input: {
       search: search || undefined,
-      status: statusFilter as any,
+      status: statusFilter as "up" | "down" | "degraded" | undefined,
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
     },

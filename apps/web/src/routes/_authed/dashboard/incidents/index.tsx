@@ -48,8 +48,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { X, AlertTriangle } from "lucide-react";
-
-const STATUSES = ["investigating", "identified", "monitoring", "resolved"] as const;
+import { INCIDENT_STATUSES, getIncidentStatusColor } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authed/dashboard/incidents/")({
   component: IncidentsPage,
@@ -180,7 +179,7 @@ function IncidentsPage() {
                     <TableCell className="font-medium">{i.title}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {i.monitors?.length > 0
-                        ? i.monitors.map((m: any) => m.monitor.name).join(", ")
+                        ? i.monitors.map((m) => m.monitor.name).join(", ")
                         : i.monitor?.name ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -341,7 +340,7 @@ function IncidentSidecar({
                       {i < incident.updates.length - 1 && (
                         <div className="absolute left-[5px] top-3 bottom-0 w-px bg-border" />
                       )}
-                      <div className={`relative z-10 mt-0.5 size-[11px] shrink-0 rounded-full border-2 ${statusDotColor(u.status)}`} />
+                      <div className={`relative z-10 mt-0.5 size-[11px] shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
@@ -377,15 +376,6 @@ function IncidentSidecar({
   );
 }
 
-function statusDotColor(status: string): string {
-  switch (status) {
-    case "resolved": return "border-emerald-500 bg-emerald-500";
-    case "monitoring": return "border-blue-500 bg-blue-500";
-    case "identified": return "border-yellow-500 bg-yellow-500";
-    default: return "border-red-500 bg-red-500";
-  }
-}
-
 function PostUpdateForm({
   incidentId,
   currentStatus,
@@ -395,8 +385,8 @@ function PostUpdateForm({
   currentStatus: string;
   onSuccess: () => void;
 }) {
-  const nextStatus = STATUSES[Math.min(STATUSES.indexOf(currentStatus as typeof STATUSES[number]) + 1, STATUSES.length - 1)];
-  const [status, setStatus] = useState<typeof STATUSES[number]>(nextStatus);
+  const nextStatus = INCIDENT_STATUSES[Math.min(INCIDENT_STATUSES.indexOf(currentStatus as typeof INCIDENT_STATUSES[number]) + 1, INCIDENT_STATUSES.length - 1)];
+  const [status, setStatus] = useState<typeof INCIDENT_STATUSES[number]>(nextStatus);
   const [message, setMessage] = useState("");
 
   const update = useMutation({
@@ -415,12 +405,12 @@ function PostUpdateForm({
     <div className="rounded-lg border p-3">
       <span className="text-xs font-medium">Post update</span>
       <div className="flex flex-col gap-2.5 mt-2.5">
-        <Select value={status} onValueChange={(v) => setStatus(v as typeof STATUSES[number])}>
+        <Select value={status} onValueChange={(v) => setStatus(v as typeof INCIDENT_STATUSES[number])}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {STATUSES.map((s) => (
+            {INCIDENT_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
           </SelectContent>

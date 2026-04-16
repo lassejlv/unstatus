@@ -8,13 +8,14 @@ import {
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
 import { ORPCError } from "@orpc/server";
+import { incidentStatusSchema, incidentSeveritySchema } from "@/types";
 import z from "zod";
 
 const createInput = z.object({
   monitorIds: z.array(z.string()).min(1),
   title: z.string(),
-  status: z.enum(["investigating", "identified", "monitoring", "resolved"]).default("investigating"),
-  severity: z.enum(["maintenance", "minor", "degraded", "major", "critical"]).default("minor"),
+  status: incidentStatusSchema.default("investigating"),
+  severity: incidentSeveritySchema.default("minor"),
   message: z.string(),
 });
 
@@ -68,7 +69,7 @@ export const incidentsRouter = {
   ),
 
   create: authedProcedure.input(createInput).handler(async ({ input, context }) => {
-    // Primary monitor (first in the list) — used for backwards compat and auth
+    // Primary monitor (first in the list) — used for auth and incident relationship
     const primaryMonitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.monitorIds[0] } });
     await verifyOrgRole(context.session.user.id, primaryMonitor.organizationId, ORG_MANAGER_ROLES);
 
@@ -96,7 +97,7 @@ export const incidentsRouter = {
     });
 
     // Get all monitor names for notifications
-    const monitorNames = incident.monitors.map((m: any) => m.monitor.name);
+    const monitorNames = incident.monitors.map((m) => m.monitor.name);
 
     sendNotifications(primaryMonitor.organizationId, {
       type: "incident.created",
@@ -110,7 +111,7 @@ export const incidentsRouter = {
   }),
 
   update: authedProcedure
-    .input(z.object({ id: z.string(), status: z.enum(["investigating", "identified", "monitoring", "resolved"]), message: z.string() }))
+    .input(z.object({ id: z.string(), status: incidentStatusSchema, message: z.string() }))
     .handler(async ({ input, context }) => {
       const incident = await prisma.incident.findUniqueOrThrow({
         where: { id: input.id },
@@ -131,7 +132,7 @@ export const incidentsRouter = {
         include: { updates: { orderBy: { createdAt: "desc" } }, ...monitorInclude },
       });
 
-      const monitorNames = incident.monitors.map((m: any) => m.monitor.name);
+      const monitorNames = incident.monitors.map((m) => m.monitor.name);
       const displayName = monitorNames.length > 0 ? monitorNames.join(", ") : incident.monitor.name;
 
       const eventType = input.status === "resolved" ? "incident.resolved" as const : "incident.updated" as const;

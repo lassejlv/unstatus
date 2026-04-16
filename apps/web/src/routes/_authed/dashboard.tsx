@@ -106,7 +106,7 @@ function DashboardLayout() {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
-            {session?.user && (session.user as any).isAdmin && (
+            {session?.user && (session.user as { isAdmin?: boolean }).isAdmin && (
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>

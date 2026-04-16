@@ -29,7 +29,6 @@ const createStatusPageBodySchema = z.object({
 
 const updateStatusPageBodySchema = z.object(statusPageFields).partial();
 
-// GET /status-pages - List status pages
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const { limit, offset } = parsePagination(c);
@@ -54,7 +53,6 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// GET /status-pages/:id - Get status page
 app.get("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
   const id = c.req.param("id");
@@ -76,7 +74,6 @@ app.get("/:id", async (c) => {
   return success(c, statusPage);
 });
 
-// POST /status-pages - Create status page
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const body = await parseJsonBody(c, createStatusPageBodySchema);
@@ -104,7 +101,6 @@ app.post("/", async (c) => {
   return success(c, statusPage, 201);
 });
 
-// PATCH /status-pages/:id - Update status page
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -135,7 +131,6 @@ app.patch("/:id", async (c) => {
   return success(c, updated);
 });
 
-// DELETE /status-pages/:id - Delete status page
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 

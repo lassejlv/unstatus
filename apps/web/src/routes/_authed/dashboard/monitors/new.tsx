@@ -20,12 +20,7 @@ import { ChevronLeft } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge } from "@/components/upgrade-badge";
 import { PLAN_LIMITS } from "@/lib/plans";
-
-const REGIONS = [
-  { id: "eu", label: "\u{1F1EA}\u{1F1FA} Europe" },
-  { id: "us", label: "\u{1F1FA}\u{1F1F8} US" },
-  { id: "asia", label: "\u{1F1F8}\u{1F1EC} Singapore" },
-] as const;
+import { MONITOR_REGIONS } from "@/lib/constants";
 
 const STEPS = [
   { id: 0, label: "Basics" },
@@ -327,7 +322,7 @@ function NewMonitorPage() {
             <div className="flex flex-col gap-1.5">
               <Label>Regions</Label>
               <div className="flex gap-3">
-                {REGIONS.map((r) => {
+                {MONITOR_REGIONS.map((r) => {
                   const isExtraRegion = r.id === "us" || r.id === "asia";
                   return (
                     <label key={r.id} className="flex items-center gap-1.5 text-xs">

@@ -146,7 +146,10 @@ export const auth = betterAuth({
           secret: env.POLAR_WEBHOOK_SECRET,
           onSubscriptionActive: async (payload) => {
             const sub = payload.data;
-            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+            type SubscriptionMetadata = { referenceId?: string };
+            type SubscriptionProduct = { name?: string };
+            const metadata = sub.metadata as SubscriptionMetadata | undefined;
+            let orgId = metadata?.referenceId;
 
             if (!orgId && sub.customerId) {
               try {
@@ -165,20 +168,23 @@ export const auth = betterAuth({
             }
 
             if (!orgId) return;
+            const product = (sub as { product?: SubscriptionProduct }).product;
             await prisma.organization.update({
               where: { id: orgId },
               data: {
                 subscriptionId: sub.id,
                 subscriptionActive: true,
-                subscriptionPlanName: (sub as any).product?.name ?? "Pro",
+                subscriptionPlanName: product?.name ?? "Pro",
                 cancelAtPeriodEnd: false,
                 polarCustomerId: sub.customerId,
               },
-            }).catch((e) => console.error("[Polar] Failed to activate subscription:", e));
+            });
           },
           onSubscriptionUpdated: async (payload) => {
             const sub = payload.data;
-            let orgId = (sub.metadata as any)?.referenceId as string | undefined;
+            type SubscriptionMetadata = { referenceId?: string };
+            const metadata = sub.metadata as SubscriptionMetadata | undefined;
+            let orgId = metadata?.referenceId;
 
             if (!orgId) {
               const org = await prisma.organization.findFirst({
@@ -188,12 +194,13 @@ export const auth = betterAuth({
             }
 
             if (!orgId) return;
+            const cancelAtPeriodEnd = (sub as { cancelAtPeriodEnd?: boolean }).cancelAtPeriodEnd ?? false;
             await prisma.organization.update({
               where: { id: orgId },
               data: {
-                cancelAtPeriodEnd: (sub as any).cancelAtPeriodEnd ?? false,
+                cancelAtPeriodEnd,
               },
-            }).catch((e) => console.error("[Polar] Failed to update subscription:", e));
+            });
           },
           onSubscriptionCanceled: async (payload) => {
             const sub = payload.data;
@@ -204,7 +211,7 @@ export const auth = betterAuth({
             await prisma.organization.update({
               where: { id: org.id },
               data: { cancelAtPeriodEnd: true },
-            }).catch((e) => console.error("[Polar] Failed to mark cancellation:", e));
+            });
           },
           onSubscriptionRevoked: async (payload) => {
             const sub = payload.data;
@@ -218,7 +225,7 @@ export const auth = betterAuth({
                 subscriptionActive: false,
                 cancelAtPeriodEnd: false,
               },
-            }).catch((e) => console.error("[Polar] Failed to revoke subscription:", e));
+            });
           },
         }),
       ],

@@ -11,6 +11,7 @@ import { isAllowedDiscordWebhookUrl } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
+import { notificationChannelTypeSchema } from "@/types";
 import { NotificationEmail } from "@unstatus/email";
 import { ORPCError } from "@orpc/server";
 import z from "zod";
@@ -25,7 +26,7 @@ function parseEmails(value: string): string[] {
 const createInput = z.object({
   organizationId: z.string(),
   name: z.string(),
-  type: z.enum(["discord", "email"]),
+  type: notificationChannelTypeSchema,
   webhookUrl: z.string().url().optional(),
   recipientEmail: z.string().optional(),
   onIncidentCreated: z.boolean().default(true),

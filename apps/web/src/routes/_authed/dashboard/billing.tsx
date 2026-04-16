@@ -105,8 +105,9 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
                   setLoading(true);
                   try {
                     await openScaleCheckout(orgId, checkoutTheme);
-                  } catch (err: any) {
-                    toast.error(err.message || "Failed to open checkout");
+                  } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : "Failed to open checkout";
+                    toast.error(message);
                   } finally {
                     setLoading(false);
                   }
@@ -125,8 +126,9 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
                 setLoading(true);
                 try {
                   await openScaleCheckout(orgId, checkoutTheme);
-                } catch (err: any) {
-                  toast.error(err.message || "Failed to open checkout");
+                } catch (err: unknown) {
+                  const message = err instanceof Error ? err.message : "Failed to open checkout";
+                  toast.error(message);
                 } finally {
                   setLoading(false);
                 }

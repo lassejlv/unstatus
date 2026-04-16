@@ -14,14 +14,13 @@ import { ORPCError } from "@orpc/server";
 import { Prisma } from "@unstatus/db";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { monitorTypeSchema, regionSchema } from "@/types";
 import z from "zod";
-
-const REGIONS = ["eu", "us", "asia"] as const;
 
 const createInput = z.object({
   organizationId: z.string(),
   name: z.string(),
-  type: z.enum(["http", "tcp", "ping", "redis", "postgres"]),
+  type: monitorTypeSchema,
   interval: z.number().int().min(10).default(60),
   timeout: z.number().int().min(1).default(10),
   url: z.string().optional(),
@@ -33,7 +32,7 @@ const createInput = z.object({
   rules: z
     .array(z.object({ type: z.string(), operator: z.string(), value: z.string() }))
     .optional(),
-  regions: z.array(z.enum(REGIONS)).default(["eu"]),
+  regions: z.array(regionSchema).default(["eu"]),
   autoIncidents: z.boolean().default(false),
 });
 
@@ -62,29 +61,7 @@ type ResponseTimeSeriesRow = {
   check_count: bigint;
 };
 
-type RecentCheckRow = {
-  id: string;
-  monitorId: string;
-  status: string;
-  latency: number;
-  region: string | null;
-  checkedAt: Date;
-  monitor: {
-    name: string;
-  };
-};
 
-function isMissingMonitorPerfSchema(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return (
-    message.includes("monitor_check_hourly_rollup")
-    || message.includes("monitor_check_daily_rollup")
-    || message.includes("lastStatus")
-    || message.includes("does not exist")
-    || message.includes("42P01")
-    || message.includes("42703")
-  );
-}
 
 function toMonitorCreateData(input: z.infer<typeof createInput>): Prisma.MonitorUncheckedCreateInput {
   return {
@@ -125,53 +102,7 @@ function toMonitorUpdateData(input: Omit<z.infer<typeof updateInput>, "id" | "or
   return data;
 }
 
-async function getLegacyOverview(
-  monitorIds: string[],
-  twentyFourHoursAgo: Date,
-) {
-  return Promise.all([
-    prisma.$queryRawUnsafe<LatestMonitorStateRow[]>(
-      `SELECT DISTINCT ON (mc."monitorId") mc."monitorId", mc.status, mc.latency, mc."checkedAt"
-      FROM monitor_check mc
-      WHERE mc."monitorId" = ANY($1)
-      ORDER BY mc."monitorId", mc."checkedAt" DESC`,
-      monitorIds,
-    ),
-    prisma.$queryRawUnsafe<AvgLatencyRow[]>(
-      `SELECT mc."monitorId", ROUND(AVG(mc.latency))::float as avg_latency, COUNT(*)::bigint as check_count
-      FROM monitor_check mc
-      WHERE mc."monitorId" = ANY($1) AND mc."checkedAt" >= $2
-      GROUP BY mc."monitorId"`,
-      monitorIds,
-      twentyFourHoursAgo,
-    ),
-    prisma.$queryRawUnsafe<ResponseTimeSeriesRow[]>(
-      `SELECT date_trunc('hour', mc."checkedAt") as hour, ROUND(AVG(mc.latency))::float as avg_latency, COUNT(*)::bigint as check_count
-      FROM monitor_check mc
-      WHERE mc."monitorId" = ANY($1) AND mc."checkedAt" >= $2
-      GROUP BY date_trunc('hour', mc."checkedAt")
-      ORDER BY hour ASC`,
-      monitorIds,
-      twentyFourHoursAgo,
-    ),
-    prisma.monitorCheck.findMany({
-      where: { monitorId: { in: monitorIds } },
-      orderBy: { checkedAt: "desc" },
-      take: 10,
-      select: {
-        id: true,
-        monitorId: true,
-        status: true,
-        latency: true,
-        region: true,
-        checkedAt: true,
-        monitor: { select: { name: true } },
-      },
-    }),
-  ]);
-}
-
-async function getRollupOverview(
+async function getOverview(
   monitorIds: string[],
   twentyFourHoursAgo: Date,
 ) {
@@ -329,92 +260,72 @@ export const monitorsRouter = {
 
       const twentyFourHoursAgo = new Date(Date.now() - input.hours * 60 * 60 * 1000);
 
-      let latestChecks: LatestMonitorStateRow[];
-      let avgLatencies: AvgLatencyRow[];
-      let responseTimeSeries: ResponseTimeSeriesRow[];
-      let recentChecks: RecentCheckRow[];
-
-      try {
-        [latestChecks, avgLatencies, responseTimeSeries, recentChecks] = await getRollupOverview(
-          monitorIds,
-          twentyFourHoursAgo,
-        );
-      } catch (error) {
-        if (!isMissingMonitorPerfSchema(error)) {
-          throw error;
-        }
-
-        [latestChecks, avgLatencies, responseTimeSeries, recentChecks] = await getLegacyOverview(
-          monitorIds,
-          twentyFourHoursAgo,
-        );
-      }
+      const [latestChecks, avgLatencies, responseTimeSeries, recentChecks] = await getOverview(
+        monitorIds,
+        twentyFourHoursAgo,
+      );
 
       // Uptime % from daily rollups (last 30 days)
       let uptimePercent: number | null = null;
-      try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000);
-        const uptimeRows = await prisma.$queryRawUnsafe<{ total: bigint; up: bigint }[]>(
-          `SELECT COALESCE(SUM("totalChecks"), 0)::bigint as total,
-                  COALESCE(SUM("upChecks"), 0)::bigint as up
-           FROM monitor_check_daily_rollup
-           WHERE "monitorId" = ANY($1) AND "bucketDate" >= $2`,
-          monitorIds,
-          thirtyDaysAgo,
-        );
-        const row = uptimeRows[0];
-        if (row && Number(row.total) > 0) {
-          uptimePercent = Math.round((Number(row.up) / Number(row.total)) * 10000) / 100;
-        }
-      } catch {}
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000);
+      const uptimeRows = await prisma.$queryRawUnsafe<{ total: bigint; up: bigint }[]>(
+        `SELECT COALESCE(SUM("totalChecks"), 0)::bigint as total,
+                COALESCE(SUM("upChecks"), 0)::bigint as up
+         FROM monitor_check_daily_rollup
+         WHERE "monitorId" = ANY($1) AND "bucketDate" >= $2`,
+        monitorIds,
+        thirtyDaysAgo,
+      );
+      const uptimeRow = uptimeRows[0];
+      if (uptimeRow && Number(uptimeRow.total) > 0) {
+        uptimePercent = Math.round((Number(uptimeRow.up) / Number(uptimeRow.total)) * 10000) / 100;
+      }
 
       // Per-monitor daily uptime bars (last 45 days)
       const dailyByMonitor = new Map<string, { date: string; status: string }[]>();
-      try {
-        const fortyFiveDaysAgo = new Date(Date.now() - 45 * 86_400_000);
-        const dailyRollups = await prisma.monitorCheckDailyRollup.findMany({
-          where: {
-            monitorId: { in: monitorIds },
-            bucketDate: { gte: fortyFiveDaysAgo },
-          },
-          select: {
-            monitorId: true,
-            bucketDate: true,
-            totalChecks: true,
-            upChecks: true,
-            downChecks: true,
-            degradedChecks: true,
-          },
-        });
+      const fortyFiveDaysAgo = new Date(Date.now() - 45 * 86_400_000);
+      const dailyRollups = await prisma.monitorCheckDailyRollup.findMany({
+        where: {
+          monitorId: { in: monitorIds },
+          bucketDate: { gte: fortyFiveDaysAgo },
+        },
+        select: {
+          monitorId: true,
+          bucketDate: true,
+          totalChecks: true,
+          upChecks: true,
+          downChecks: true,
+          degradedChecks: true,
+        },
+      });
 
-        const byMonitor = new Map<string, typeof dailyRollups>();
-        for (const r of dailyRollups) {
-          const arr = byMonitor.get(r.monitorId) ?? [];
-          arr.push(r);
-          byMonitor.set(r.monitorId, arr);
-        }
+      const byMonitor = new Map<string, typeof dailyRollups>();
+      for (const r of dailyRollups) {
+        const arr = byMonitor.get(r.monitorId) ?? [];
+        arr.push(r);
+        byMonitor.set(r.monitorId, arr);
+      }
 
-        for (const mid of monitorIds) {
-          const rollups = byMonitor.get(mid) ?? [];
-          const dateMap = new Map(
-            rollups.map((d) => [d.bucketDate.toISOString().split("T")[0], d]),
-          );
-          const days: { date: string; status: string }[] = [];
-          for (let i = 44; i >= 0; i--) {
-            const date = new Date(Date.now() - i * 86_400_000);
-            const key = date.toISOString().split("T")[0];
-            const entry = dateMap.get(key);
-            let status = "empty";
-            if (entry && entry.totalChecks > 0) {
-              if (entry.downChecks > 0) status = "down";
-              else if (entry.degradedChecks > 0) status = "degraded";
-              else status = "up";
-            }
-            days.push({ date: key, status });
+      for (const mid of monitorIds) {
+        const rollups = byMonitor.get(mid) ?? [];
+        const dateMap = new Map(
+          rollups.map((d) => [d.bucketDate.toISOString().split("T")[0], d]),
+        );
+        const days: { date: string; status: string }[] = [];
+        for (let i = 44; i >= 0; i--) {
+          const date = new Date(Date.now() - i * 86_400_000);
+          const key = date.toISOString().split("T")[0];
+          const entry = dateMap.get(key);
+          let status = "empty";
+          if (entry && entry.totalChecks > 0) {
+            if (entry.downChecks > 0) status = "down";
+            else if (entry.degradedChecks > 0) status = "degraded";
+            else status = "up";
           }
-          dailyByMonitor.set(mid, days);
+          days.push({ date: key, status });
         }
-      } catch {}
+        dailyByMonitor.set(mid, days);
+      }
 
       const latestMap = new Map(latestChecks.map((c) => [c.monitorId, c]));
       const avgMap = new Map(avgLatencies.map((a) => [a.monitorId, a]));

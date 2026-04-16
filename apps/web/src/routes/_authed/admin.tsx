@@ -49,12 +49,14 @@ function AdminLayout() {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (session && !(session.user as any).isAdmin) {
+    const user = session?.user as { isAdmin?: boolean } | undefined;
+    if (session && !user?.isAdmin) {
       navigate({ to: "/dashboard" });
     }
   }, [session, navigate]);
 
-  if (!session || !(session.user as any).isAdmin) return null;
+  const user = session?.user as { isAdmin?: boolean } | undefined;
+  if (!session || !user?.isAdmin) return null;
 
   const currentPage = navItems.find((item) =>
     !!matchRoute({ to: item.to, fuzzy: item.to !== "/admin" }),

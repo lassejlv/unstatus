@@ -28,7 +28,6 @@ const includeMonitors = {
   },
 } as const;
 
-// GET /maintenance - List maintenance windows
 app.get("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const { limit, offset } = parsePagination(c);
@@ -48,7 +47,6 @@ app.get("/", async (c) => {
   return paginated(c, items, total, limit, offset);
 });
 
-// GET /maintenance/:id - Get maintenance window
 app.get("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
   const id = c.req.param("id");
@@ -65,7 +63,6 @@ app.get("/:id", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance - Create maintenance window
 app.post("/", async (c) => {
   const { organizationId } = getApiContext(c);
   const body = await parseJsonBody(c, createMaintenanceBodySchema);
@@ -110,7 +107,6 @@ app.post("/", async (c) => {
   return success(c, mw, 201);
 });
 
-// PATCH /maintenance/:id - Update maintenance window
 app.patch("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -164,7 +160,6 @@ app.patch("/:id", async (c) => {
   return success(c, mw);
 });
 
-// DELETE /maintenance/:id - Delete maintenance window
 app.delete("/:id", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -182,7 +177,6 @@ app.delete("/:id", async (c) => {
   return success(c, { deleted: true });
 });
 
-// POST /maintenance/:id/start - Begin maintenance
 app.post("/:id/start", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -214,7 +208,6 @@ app.post("/:id/start", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance/:id/complete - Complete maintenance
 app.post("/:id/complete", async (c) => {
   const { organizationId } = getApiContext(c);
 
@@ -246,7 +239,6 @@ app.post("/:id/complete", async (c) => {
   return success(c, mw);
 });
 
-// POST /maintenance/:id/cancel - Cancel maintenance
 app.post("/:id/cancel", async (c) => {
   const { organizationId } = getApiContext(c);
 

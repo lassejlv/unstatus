@@ -69,7 +69,7 @@ function DashboardIndex() {
     orgId,
     monitorCount: overview?.monitors?.length ?? 0,
     statusPageCount: pages?.length ?? 0,
-    notificationCount: (notifications as any[])?.length ?? 0,
+    notificationCount: (notifications as Array<{ id: string }> | undefined)?.length ?? 0,
   });
 
   if (overviewLoading || pagesLoading || incidentsLoading) {
@@ -210,7 +210,7 @@ function DashboardIndex() {
                 <div className="size-1.5 shrink-0 rounded-full bg-red-500" />
                 <span className="text-sm truncate flex-1">{inc.title}</span>
                 <span className="text-xs text-muted-foreground shrink-0">
-                  {(inc as any).monitor?.name} · {formatTimeAgo(new Date(inc.startedAt))}
+                  {inc.monitor?.name} · {formatTimeAgo(new Date(inc.startedAt))}
                 </span>
                 <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">
                   {inc.status}

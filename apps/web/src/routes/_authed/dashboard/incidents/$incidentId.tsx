@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-
-const STATUSES = ["investigating", "identified", "monitoring", "resolved"] as const;
+import { INCIDENT_STATUSES, getIncidentStatusColor } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authed/dashboard/incidents/$incidentId")({
   component: IncidentDetailPage,
@@ -93,7 +92,7 @@ function IncidentDetailPage() {
                 <div className="absolute left-[7px] top-4 bottom-0 w-px bg-border" />
               )}
               {/* Dot */}
-              <div className={`relative z-10 mt-1 h-[15px] w-[15px] shrink-0 rounded-full border-2 ${statusDotColor(u.status)}`} />
+              <div className={`relative z-10 mt-1 h-[15px] w-[15px] shrink-0 rounded-full border-2 ${getIncidentStatusColor(u.status)}`} />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-[11px]">{u.status}</Badge>
@@ -111,15 +110,6 @@ function IncidentDetailPage() {
   );
 }
 
-function statusDotColor(status: string): string {
-  switch (status) {
-    case "resolved": return "border-emerald-500 bg-emerald-500";
-    case "monitoring": return "border-blue-500 bg-blue-500";
-    case "identified": return "border-yellow-500 bg-yellow-500";
-    default: return "border-red-500 bg-red-500";
-  }
-}
-
 function PostUpdateForm({
   incidentId,
   currentStatus,
@@ -129,8 +119,8 @@ function PostUpdateForm({
   currentStatus: string;
   onSuccess: () => void;
 }) {
-  const nextStatus = STATUSES[Math.min(STATUSES.indexOf(currentStatus as typeof STATUSES[number]) + 1, STATUSES.length - 1)];
-  const [status, setStatus] = useState<typeof STATUSES[number]>(nextStatus);
+  const nextStatus = INCIDENT_STATUSES[Math.min(INCIDENT_STATUSES.indexOf(currentStatus as typeof INCIDENT_STATUSES[number]) + 1, INCIDENT_STATUSES.length - 1)];
+  const [status, setStatus] = useState<typeof INCIDENT_STATUSES[number]>(nextStatus);
   const [message, setMessage] = useState("");
 
   const update = useMutation({
@@ -151,12 +141,12 @@ function PostUpdateForm({
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <Label>Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as typeof STATUSES[number])}>
+          <Select value={status} onValueChange={(v) => setStatus(v as typeof INCIDENT_STATUSES[number])}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STATUSES.map((s) => (
+              {INCIDENT_STATUSES.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>

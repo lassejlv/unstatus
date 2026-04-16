@@ -43,12 +43,7 @@ import { X, ChevronLeft, Pencil, Copy, Check, Activity } from "lucide-react";
 import { useSubscription } from "@/hooks/use-subscription";
 import { ProBadge } from "@/components/upgrade-badge";
 import { PLAN_LIMITS } from "@/lib/plans";
-
-const REGIONS = [
-  { id: "eu", label: "🇪🇺 Europe" },
-  { id: "us", label: "🇺🇸 US" },
-  { id: "asia", label: "🇸🇬 Singapore" },
-] as const;
+import { MONITOR_REGIONS, EXTERNAL_STATUS_COLORS } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authed/dashboard/monitors/")({
   component: MonitorsPage,
@@ -81,8 +76,8 @@ function MonitorsPage() {
         return false;
       }
       if (statusFilter === "paused" && m.active) return false;
-      if (statusFilter === "up" && (m as any).lastStatus !== "up") return false;
-      if (statusFilter === "down" && (m as any).lastStatus !== "down") return false;
+      if (statusFilter === "up" && m.lastStatus !== "up") return false;
+      if (statusFilter === "down" && m.lastStatus !== "down") return false;
       return true;
     });
   }, [monitors, search, statusFilter]);
@@ -176,9 +171,9 @@ function MonitorsPage() {
                   <span
                     className={`size-1.5 shrink-0 rounded-full ${
                       !m.active ? "bg-muted-foreground"
-                      : (m as any).lastStatus === "up" ? "bg-emerald-500"
-                      : (m as any).lastStatus === "down" ? "bg-red-500"
-                      : (m as any).lastStatus === "degraded" ? "bg-yellow-500"
+                      : m.lastStatus === "up" ? "bg-emerald-500"
+                      : m.lastStatus === "down" ? "bg-red-500"
+                      : m.lastStatus === "degraded" ? "bg-yellow-500"
                       : "bg-muted-foreground"
                     }`}
                   />
@@ -189,7 +184,7 @@ function MonitorsPage() {
                     {((m.regions as string[]) ?? []).map((r) => r.toUpperCase()).join(", ") || "—"}
                   </span>
                   <span className="ml-auto">
-                    {(m as any).lastLatency != null ? `${(m as any).lastLatency}ms · ` : ""}
+                    {m.lastLatency != null ? `${m.lastLatency}ms · ` : ""}
                     {m.interval}s
                   </span>
                 </div>
@@ -317,8 +312,8 @@ function MonitorSidecar({
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`size-3 shrink-0 rounded-full mt-1 ${
                     !monitor.active ? "bg-muted-foreground"
-                    : (monitor as any).lastStatus === "up" ? "bg-emerald-500"
-                    : (monitor as any).lastStatus === "down" ? "bg-red-500"
+                    : monitor.lastStatus === "up" ? "bg-emerald-500"
+                    : monitor.lastStatus === "down" ? "bg-red-500"
                     : "bg-muted-foreground"
                   }`} />
                   <div className="min-w-0">
@@ -369,8 +364,8 @@ function MonitorSidecar({
                 <span>
                   {((monitor.regions as string[]) ?? []).map((r) => r.toUpperCase()).join(" · ")}
                 </span>
-                {(monitor as any).lastLatency != null && (
-                  <span className="font-mono">{(monitor as any).lastLatency}ms</span>
+                {monitor.lastLatency != null && (
+                  <span className="font-mono">{monitor.lastLatency}ms</span>
                 )}
                 <Badge variant={monitor.active ? "default" : "secondary"} className="text-[10px] px-2 py-0.5 ml-auto">
                   {monitor.active ? "Active" : "Paused"}
@@ -696,27 +691,29 @@ function MonitorSidecar({
   );
 }
 
+type MonitorEditData = {
+  id: string;
+  name: string;
+  type: string;
+  url: string | null;
+  method: string | null;
+  host: string | null;
+  port: number | null;
+  interval: number;
+  timeout: number;
+  regions: string[] | null;
+  headers: Record<string, string> | null;
+  body: string | null;
+  rules: Array<{ type: string; operator: string; value: string }> | null;
+  autoIncidents: boolean;
+};
+
 function EditMonitorOverlay({
   monitor,
   onBack,
   onSuccess,
 }: {
-  monitor: {
-    id: string;
-    name: string;
-    type: string;
-    url: string | null;
-    method: string | null;
-    host: string | null;
-    port: number | null;
-    interval: number;
-    timeout: number;
-    regions: unknown;
-    headers: unknown;
-    body: string | null;
-    rules: unknown;
-    autoIncidents: boolean;
-  };
+  monitor: MonitorEditData;
   onBack: () => void;
   onSuccess: () => void;
 }) {
@@ -728,13 +725,13 @@ function EditMonitorOverlay({
   const [port, setPort] = useState(monitor.port?.toString() ?? "");
   const [interval, setInterval_] = useState(monitor.interval.toString());
   const [timeout, setTimeout_] = useState(monitor.timeout.toString());
-  const [regions, setRegions] = useState<string[]>((monitor.regions as string[]) ?? []);
+  const [regions, setRegions] = useState<string[]>(monitor.regions ?? []);
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>(
-    Object.entries((monitor.headers as Record<string, string>) ?? {}).map(([key, value]) => ({ key, value })),
+    Object.entries(monitor.headers ?? {}).map(([key, value]) => ({ key, value })),
   );
   const [body, setBody] = useState(monitor.body ?? "");
   const [rules, setRules] = useState<{ type: string; operator: string; value: string }[]>(
-    (monitor.rules as { type: string; operator: string; value: string }[]) ?? [],
+    monitor.rules ?? [],
   );
   const [autoIncidents, setAutoIncidents] = useState(monitor.autoIncidents);
   const { tier } = useSubscription();
@@ -992,7 +989,7 @@ function EditMonitorOverlay({
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs">Regions</Label>
           <div className="flex gap-3">
-            {REGIONS.map((r) => (
+            {MONITOR_REGIONS.map((r) => (
               <label key={r.id} className="flex items-center gap-1.5 text-xs">
                 <Checkbox
                   checked={regions.includes(r.id)}
@@ -1106,8 +1103,9 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
       setAddOpen(false);
       resetDialog();
       toast.success(selectedComponentIds.size > 1 ? "Dependencies added" : "Dependency added");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to add dependency");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to add dependency";
+      toast.error(message);
     } finally {
       setIsAdding(false);
     }
@@ -1161,14 +1159,6 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
 
   const canAdd = addWholeService || selectedComponentIds.size > 0 || !components?.length;
   const addCount = addWholeService ? 1 : selectedComponentIds.size;
-
-  const DEP_COLORS: Record<string, string> = {
-    operational: "bg-emerald-500",
-    degraded_performance: "bg-yellow-500",
-    partial_outage: "bg-orange-500",
-    major_outage: "bg-red-500",
-    maintenance: "bg-blue-500",
-  };
 
   if (!hasDeps) {
     return (
@@ -1239,7 +1229,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
                         <span className="text-sm">{s.name}</span>
                         <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
                       </div>
-                      <span className={`size-2 rounded-full ${DEP_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                      <span className={`size-2 rounded-full ${EXTERNAL_STATUS_COLORS[s.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
                     </button>
                   ))}
                 </div>
@@ -1287,7 +1277,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
                               <div className="flex-1 min-w-0">
                                 <span className="text-sm">{c.name}</span>
                               </div>
-                              <span className={`size-2 rounded-full ${DEP_COLORS[c.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+                              <span className={`size-2 rounded-full ${EXTERNAL_STATUS_COLORS[c.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
                             </label>
                           );
                         })}
@@ -1319,7 +1309,7 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
         <div className="divide-y rounded-lg border">
           {deps.map((dep) => (
             <div key={dep.id} className="flex items-center gap-3 px-3 py-2">
-              <span className={`size-2 shrink-0 rounded-full ${DEP_COLORS[dep.externalService.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
+              <span className={`size-2 shrink-0 rounded-full ${EXTERNAL_STATUS_COLORS[dep.externalService.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
               <div className="flex-1 min-w-0">
                 <span className="text-xs font-medium">{dep.externalService.name}</span>
                 {dep.externalComponent && (

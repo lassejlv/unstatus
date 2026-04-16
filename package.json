@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
     "typescript": "^5.7.2"
   },
@@ -40,9 +39,5 @@
   },
   "overrides": {
     "@better-auth/core": "1.5.6"
-  },
-  "dependencies": {
-    "@react-email/components": "^1.0.10",
-    "inboundemail": "^0.20.0"
   }
 }

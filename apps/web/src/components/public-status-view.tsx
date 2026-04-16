@@ -21,9 +21,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useTheme } from "@/hooks/use-theme";
 import { DependencyList, DependencyImpactBanner } from "@/components/-dependency-chain";
+import { getIncidentStatusColor } from "@/lib/constants";
 import { Sun, Moon, Monitor, ChevronDown, ChevronRight, Check, Bell, MessageCircle, Wrench, Clock } from "lucide-react";
-
-// --- Types ---
 
 export type PublicStatusMonitorDependency = {
   serviceId: string;
@@ -115,8 +114,6 @@ export function CenteredMessage({ message }: { message: string }) {
     </div>
   );
 }
-
-// --- Main View ---
 
 export function PublicStatusPageView({
   data,
@@ -433,7 +430,7 @@ export function PublicIncidentPageView({
                 <div className="absolute top-5 bottom-0 left-[9px] w-px bg-border" />
               )}
               <div className="relative z-10 mt-1 flex items-center justify-center">
-                <div className={`size-[19px] rounded-full border-2 ${dotColor(update.status)}`} />
+                <div className={`size-[19px] rounded-full border-2 ${getIncidentStatusColor(update.status)}`} />
                 {isLatest && (
                   <div className={`absolute size-[19px] rounded-full ${dotGlowColor(update.status)} animate-ping`} />
                 )}
@@ -456,8 +453,6 @@ export function PublicIncidentPageView({
     </div>
   );
 }
-
-// --- Components ---
 
 const STATUS_CONFIG = {
   operational: {
@@ -831,8 +826,6 @@ function ThemeToggle() {
   );
 }
 
-// --- Utils ---
-
 function barColor(uptime: number, totalChecks: number): string {
   if (totalChecks === 0) return "bg-muted";
   if (uptime >= 99.5) return "bg-emerald-500";
@@ -843,18 +836,7 @@ function barColor(uptime: number, totalChecks: number): string {
   return "bg-muted";
 }
 
-function dotColor(status: string): string {
-  switch (status) {
-    case "resolved":
-      return "border-emerald-500 bg-emerald-500";
-    case "monitoring":
-      return "border-blue-500 bg-blue-500";
-    case "identified":
-      return "border-yellow-500 bg-yellow-500";
-    default:
-      return "border-red-500 bg-red-500";
-  }
-}
+// dotColor is now imported from @/lib/constants as getIncidentStatusColor
 
 function dotGlowColor(status: string): string {
   switch (status) {

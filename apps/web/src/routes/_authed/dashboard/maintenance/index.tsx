@@ -37,7 +37,6 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { X, Play, Square, Ban } from "lucide-react";
 
@@ -54,6 +53,12 @@ const STATUS_BADGE: Record<string, { variant: "default" | "secondary" | "destruc
   in_progress: { variant: "default", label: "In Progress" },
   completed: { variant: "secondary", label: "Completed" },
   cancelled: { variant: "secondary", label: "Cancelled" },
+};
+
+type Monitor = {
+  id: string;
+  name: string;
+  type: string;
 };
 
 function MaintenancePage() {
@@ -75,35 +80,35 @@ function MaintenancePage() {
     }),
   );
 
-  const filtered = windows?.filter((w: any) => {
+  const filtered = windows?.filter((w) => {
     if (filter === "all") return true;
     return w.status === filter;
   }) ?? [];
 
-  const selected = windows?.find((w: any) => w.id === selectedId) ?? null;
+  const selected = windows?.find((w) => w.id === selectedId) ?? null;
 
   const startMut = useMutation({
     ...orpc.maintenance.start.mutationOptions(),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Maintenance started"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const completeMut = useMutation({
     ...orpc.maintenance.complete.mutationOptions(),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Maintenance completed"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const cancelMut = useMutation({
     ...orpc.maintenance.cancel.mutationOptions(),
     onSuccess: () => { qc.invalidateQueries(); toast.success("Maintenance cancelled"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const deleteMut = useMutation({
     ...orpc.maintenance.delete.mutationOptions(),
     onSuccess: () => { qc.invalidateQueries(); setSelectedId(null); toast.success("Maintenance deleted"); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   if (!activeOrg) return null;
@@ -186,7 +191,7 @@ function MaintenancePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((w: any) => (
+                {filtered.map((w) => (
                   <TableRow
                     key={w.id}
                     className={`cursor-pointer ${selectedId === w.id ? "bg-accent" : ""}`}
@@ -258,7 +263,7 @@ function MaintenancePage() {
                 <div>
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Affected Monitors</span>
                   <div className="mt-1.5 space-y-1">
-                    {selected.monitors.map((m: any) => (
+                    {selected.monitors.map((m) => (
                       <div key={m.id} className="text-xs px-2 py-1 rounded bg-accent/50">{m.monitor.name}</div>
                     ))}
                   </div>
@@ -300,7 +305,7 @@ function CreateMaintenanceDialog({
   onSuccess,
 }: {
   organizationId: string;
-  monitors: any[];
+  monitors: Monitor[];
   onSuccess: () => void;
 }) {
   const [title, setTitle] = useState("");
@@ -315,7 +320,7 @@ function CreateMaintenanceDialog({
       toast.success("Maintenance scheduled");
       onSuccess();
     },
-    onError: (err: any) => toast.error(err.message || "Failed to create maintenance"),
+    onError: (err: Error) => toast.error(err.message || "Failed to create maintenance"),
   });
 
   const toggleMonitor = (id: string) => {
@@ -372,7 +377,7 @@ function CreateMaintenanceDialog({
             {monitors.length === 0 ? (
               <p className="p-3 text-xs text-muted-foreground">No monitors found.</p>
             ) : (
-              monitors.map((m: any) => (
+              monitors.map((m) => (
                 <label key={m.id} className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-accent/50 cursor-pointer">
                   <Checkbox
                     checked={selectedMonitors.has(m.id)}

@@ -20,9 +20,4 @@ export function ServiceStatusBadge({ status, size = "sm" }: { status: string | n
   );
 }
 
-export function ServiceStatusDot({ status }: { status: string | null }) {
-  const config = STATUS_CONFIG[status ?? "unknown"] ?? STATUS_CONFIG.unknown!;
-  return <span className={`size-2 shrink-0 rounded-full ${config.dot}`} />;
-}
-
 export { STATUS_CONFIG };

@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
 import { ApiError } from "../helpers";
 
@@ -26,7 +27,7 @@ export async function errorHandler(c: Context, next: Next) {
     if (isApiError(err)) {
       return c.json(
         { error: { code: err.code, message: err.message } },
-        err.status as any,
+        err.status as ContentfulStatusCode,
       );
     }
 

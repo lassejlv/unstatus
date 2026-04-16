@@ -1,10 +1,3 @@
-export interface UnstatusErrorPayload {
-  error?: {
-    code?: string;
-    message?: string;
-  };
-}
-
 export class UnstatusApiError extends Error {
   readonly name = "UnstatusApiError";
 
