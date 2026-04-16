@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { OnboardingChecklist } from "./-onboarding-checklist";
-import { useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
@@ -23,21 +23,18 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Activity, Clock, RefreshCw } from "lucide-react";
+import { Activity, Clock } from "lucide-react";
 import { StatusDot } from "@/components/ui/status-dot";
 import { SectionHeader } from "@/components/ui/section-header";
-import { AnimatedNumber, formatters } from "@/components/ui/animated-number";
-import { Sparkline, sparklineColors } from "@/components/ui/sparkline";
-import { LiveIndicator } from "@/components/ui/live-indicator";
-import { useLivePolling, formatRelativeTime } from "@/hooks/use-live-polling";
+
+export const Route = createFileRoute("/_authed/dashboard/")({
+  component: DashboardIndex,
+});
+
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 8 } as const,
   animate: { opacity: 1, y: 0 } as const,
   transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
-});
-
-export const Route = createFileRoute("/_authed/dashboard/")({
-  component: DashboardIndex,
 });
 
 const TIME_RANGES = [
@@ -75,16 +72,6 @@ function DashboardIndex() {
     monitorCount: overview?.monitors?.length ?? 0,
     statusPageCount: pages?.length ?? 0,
     notificationCount: (notifications as Array<{ id: string }> | undefined)?.length ?? 0,
-  });
-
-  // Live polling for real-time feel - must be before any early returns
-  const { isRefreshing, secondsSinceRefresh, refresh, isPolling } = useLivePolling({
-    interval: 30000,
-    enabled: !!orgId && !overviewLoading,
-    queryKeys: [
-      ["monitors", "overview", { organizationId: orgId, hours }],
-      ["incidents", "listByOrg", { organizationId: orgId }],
-    ],
   });
 
   if (overviewLoading || pagesLoading || incidentsLoading) {
@@ -129,64 +116,42 @@ function DashboardIndex() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
       {/* Status + key metrics */}
-      <motion.div {...fadeUp(0)} className="flex flex-col gap-5 sm:gap-6">
-        {/* Hero status section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <StatusDot status={overallStatus} pulse />
-            <span className="font-medium text-sm sm:text-base">
-              {downCount > 0
-                ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
-                : openIncidents.length > 0
-                  ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
-                  : "All systems operational"}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              · {isPolling ? formatRelativeTime(secondsSinceRefresh) : "paused"}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refresh()}
-            disabled={isRefreshing}
-            className="h-8 w-8 p-0"
-          >
-            <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          </Button>
+      <motion.div {...fadeUp(0)} className="flex flex-col gap-4 sm:gap-6">
+        <div className="flex items-center gap-3">
+          <StatusDot status={overallStatus} pulse />
+          <span className="font-medium text-sm sm:text-base">
+            {downCount > 0
+              ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
+              : openIncidents.length > 0
+                ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
+                : "All systems operational"}
+          </span>
         </div>
 
-        {/* Metrics grid */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4 md:gap-6">
-          <MetricCard
-            value={overview?.uptimePercent ?? 0}
-            format={formatters.percentPrecise}
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-8">
+          <Metric
+            value={overview?.uptimePercent != null ? `${overview.uptimePercent}%` : "—"}
             label="30-day uptime"
             accent={
               overview?.uptimePercent != null
-                ? overview.uptimePercent >= 99.5 ? "emerald"
-                : overview.uptimePercent >= 95 ? "yellow"
-                : "red"
+                ? overview.uptimePercent >= 99.5 ? "text-emerald-500"
+                : overview.uptimePercent >= 95 ? "text-yellow-500"
+                : "text-red-500"
                 : undefined
             }
-            sparklineData={overview?.uptimeTrend}
           />
-          <MetricCard
-            value={avgLatencyAll ?? 0}
-            format={formatters.ms}
+          <Metric
+            value={avgLatencyAll != null ? `${avgLatencyAll}ms` : "—"}
             label="avg response"
-            sparklineData={overview?.latencyTrend}
           />
-          <MetricCard
+          <Metric
             value={monitors.length}
-            format={formatters.integer}
             label={`${active} active${paused > 0 ? ` · ${paused} paused` : ""}`}
           />
-          <MetricCard
+          <Metric
             value={openIncidents.length}
-            format={formatters.integer}
             label="open incidents"
-            accent={openIncidents.length > 0 ? "yellow" : undefined}
+            accent={openIncidents.length > 0 ? "text-yellow-500" : undefined}
           />
         </div>
       </motion.div>
@@ -203,12 +168,7 @@ function DashboardIndex() {
       {/* Response time chart */}
       {(overview?.responseTimeSeries?.length ?? 0) > 0 && (
         <motion.div {...fadeUp(0.05)}>
-          <ResponseTimeChart
-            data={overview!.responseTimeSeries}
-            hours={hours}
-            onHoursChange={setHours}
-            isLive={isPolling}
-          />
+          <ResponseTimeChart data={overview!.responseTimeSeries} hours={hours} onHoursChange={setHours} />
         </motion.div>
       )}
 
@@ -303,46 +263,21 @@ function DashboardIndex() {
   );
 }
 
-function MetricCard({
+function Metric({
   value,
-  format,
   label,
   accent,
-  sparklineData,
 }: {
-  value: number;
-  format?: (v: number) => string;
+  value: number | string;
   label: string;
-  accent?: "emerald" | "yellow" | "red";
-  sparklineData?: number[];
+  accent?: string;
 }) {
-  const accentColor = accent === "emerald" ? "text-emerald-500" :
-    accent === "yellow" ? "text-yellow-500" :
-    accent === "red" ? "text-red-500" : "";
-
-  const sparklineColor = accent === "emerald" ? sparklineColors.up :
-    accent === "yellow" ? sparklineColors.degraded :
-    accent === "red" ? sparklineColors.down : sparklineColors.neutral;
-
   return (
-    <div className="group relative flex flex-col gap-2 rounded-lg border bg-card p-3 transition-colors hover:border-foreground/20">
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-0.5">
-          <span className={`text-2xl font-semibold tracking-tight tabular-nums ${accentColor}`}>
-            <AnimatedNumber value={value} format={format} />
-          </span>
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-        {sparklineData && sparklineData.length > 0 && (
-          <Sparkline
-            data={sparklineData}
-            width={64}
-            height={24}
-            color={sparklineColor}
-            className="opacity-60 group-hover:opacity-100 transition-opacity"
-          />
-        )}
-      </div>
+    <div className="flex flex-col gap-1">
+      <span className={`text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums ${accent ?? ""}`}>
+        {typeof value === "number" ? <AnimatedNumber value={value} /> : value}
+      </span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -394,6 +329,23 @@ function MonitorCard({ monitor: m }: { monitor: {
   );
 }
 
+function AnimatedNumber({ value }: { value: number }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.6, ease: "easeOut" });
+    const unsub = rounded.on("change", (v) => setDisplay(v));
+    return () => {
+      controls.stop();
+      unsub();
+    };
+  }, [value, count, rounded]);
+
+  return <>{display}</>;
+}
+
 const chartConfig = {
   avgLatency: {
     label: "Avg Latency",
@@ -405,12 +357,10 @@ function ResponseTimeChart({
   data,
   hours,
   onHoursChange,
-  isLive = false,
 }: {
   data: { hour: Date | string; avgLatency: number; checkCount: number }[];
   hours: number;
   onHoursChange: (h: number) => void;
-  isLive?: boolean;
 }) {
   if (data.length === 0) return null;
 
@@ -425,11 +375,8 @@ function ResponseTimeChart({
   return (
     <div className="rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-medium">Response Time</h2>
-            {isLive && <LiveIndicator size="sm" />}
-          </div>
+        <div className="flex items-baseline gap-4">
+          <h2 className="text-sm font-medium">Response Time</h2>
           <div className="flex items-baseline gap-3 text-xs text-muted-foreground">
             <span>
               avg{" "}
