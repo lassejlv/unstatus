@@ -8,15 +8,15 @@ import { EXTERNAL_STATUS_CONFIG, getExternalStatusConfig } from "@/lib/constants
 export function ServiceStatusBadge({ status, size = "sm" }: { status: string | null; size?: "sm" | "md" }) {
   const config = getExternalStatusConfig(status)
   const dotSize = size === "md" ? "default" : "sm"
-  const textSize = size === "md" ? "text-sm" : "text-xs"
+  const textClass = size === "md" ? "text-sm font-medium" : "text-xs font-medium"
 
   return (
-    <span className={`inline-flex items-center gap-1.5 ${config.text}`}>
+    <span className={`inline-flex shrink-0 items-center gap-1.5 ${config.text}`}>
       <StatusDot
         status={status as "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "maintenance" | "unknown" | null | undefined}
         size={dotSize}
       />
-      <span className={textSize}>{config.label}</span>
+      <span className={textClass}>{config.label}</span>
     </span>
   )
 }
