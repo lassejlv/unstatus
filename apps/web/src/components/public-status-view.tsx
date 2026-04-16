@@ -868,9 +868,9 @@ function ResponseTimeChart({
 
       {/* Chart container with subtle background */}
       {hasData ? (
-        <div className="rounded-lg bg-muted/15 ring-1 ring-border/20 p-2 sm:p-3">
-          <ChartContainer config={chartConfig} className="aspect-[2.5/1] sm:aspect-[4/1] w-full">
-            <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -16 }}>
+        <div className="rounded-lg bg-muted/10 p-2 sm:p-3">
+          <ChartContainer config={chartConfig} className="aspect-[4/1] sm:aspect-[5/1] w-full">
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.28} />
@@ -888,9 +888,9 @@ function ResponseTimeChart({
                 dataKey="hour"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={10}
+                tickMargin={8}
                 minTickGap={selectedRange <= 24 ? 50 : 70}
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }}
+                tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
                 tickFormatter={(v) => {
                   const date = new Date(v);
                   if (selectedRange <= 24) {
@@ -902,9 +902,9 @@ function ResponseTimeChart({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickMargin={6}
-                width={44}
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }}
+                tickMargin={4}
+                width={52}
+                tick={{ fontSize: 10, fill: "currentColor", className: "text-muted-foreground/60" }}
                 tickFormatter={(v) => `${Math.round(v)}ms`}
               />
               <ChartTooltip
