@@ -8,6 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { PageHeader } from "@/components/ui/page-header";
+import { SearchInput } from "@/components/ui/search-input";
+import { StatusDot } from "@/components/ui/status-dot";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -35,7 +47,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/admin/registry")({
   component: AdminRegistryPage,
@@ -44,14 +56,6 @@ export const Route = createFileRoute("/_authed/admin/registry")({
 const CATEGORIES = [
   "hosting", "cdn", "database", "api", "devtools", "cloud", "payments", "communication", "auth",
 ] as const;
-
-const STATUS_COLORS: Record<string, string> = {
-  operational: "bg-emerald-500",
-  degraded_performance: "bg-yellow-500",
-  partial_outage: "bg-orange-500",
-  major_outage: "bg-red-500",
-  maintenance: "bg-blue-500",
-};
 
 type ServiceForm = {
   name: string;
@@ -89,7 +93,7 @@ function AdminRegistryPage() {
   const listOpts = orpc.admin.listRegistryServices.queryOptions({
     input: { search: search || undefined },
   });
-  const { data: services } = useQuery(listOpts);
+  const { data: services, isLoading } = useQuery(listOpts);
 
   const createService = useMutation({
     mutationFn: (data: ServiceForm) =>
@@ -160,14 +164,13 @@ function AdminRegistryPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight">Registry Services</h1>
-          <p className="text-sm text-muted-foreground">{services?.length ?? 0} services</p>
-        </div>
+      <PageHeader
+        title="Registry Services"
+        description={`${services?.length ?? 0} services`}
+      >
         <Dialog open={createOpen} onOpenChange={(v) => { setCreateOpen(v); if (v) setForm(emptyForm); }}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="size-4 mr-1" />Add Service</Button>
+            <Button size="sm"><Plus className="mr-1 size-4" />Add Service</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Add Registry Service</DialogTitle></DialogHeader>
@@ -180,101 +183,113 @@ function AdminRegistryPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search services..."
-          className="pl-9"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onValueChange={setSearch}
+        placeholder="Search services..."
+      />
 
       <div className="rounded-md border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="px-4 py-2 text-left font-medium">Status</th>
-              <th className="px-4 py-2 text-left font-medium">Name</th>
-              <th className="px-4 py-2 text-left font-medium">Category</th>
-              <th className="px-4 py-2 text-left font-medium">Parser</th>
-              <th className="px-4 py-2 text-left font-medium">Active</th>
-              <th className="px-4 py-2 text-left font-medium">Last Fetched</th>
-              <th className="px-4 py-2 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services?.map((service) => (
-              <tr key={service.id} className="border-b hover:bg-muted/30">
-                <td className="px-4 py-2.5">
-                  <span className={`inline-block size-2 rounded-full ${STATUS_COLORS[service.currentStatus ?? ""] ?? "bg-muted-foreground"}`} />
-                </td>
-                <td className="px-4 py-2.5">
-                  <div className="flex flex-col">
-                    <span className="font-medium">{service.name}</span>
-                    <span className="text-xs text-muted-foreground font-mono">{service.slug}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-2.5">
-                  <Badge variant="outline" className="">{service.category}</Badge>
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground text-xs">{service.parserType}</td>
-                <td className="px-4 py-2.5">
-                  {service.active ? (
-                    <Badge variant="secondary" className="">Active</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground text-xs">
-                  {service.lastFetchedAt
-                    ? new Date(service.lastFetchedAt).toLocaleString()
-                    : "Never"}
-                  {service.lastFetchError && (
-                    <p className="text-destructive truncate max-w-[150px]" title={service.lastFetchError}>
-                      {service.lastFetchError}
-                    </p>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => openEdit(service)}>
-                      <Pencil className="size-3.5" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 px-2 text-destructive hover:text-destructive">
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete service?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete "{service.name}" and all its status history.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteService.mutate(service.id)}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {services?.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead>Status</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Parser</TableHead>
+              <TableHead>Active</TableHead>
+              <TableHead>Last Fetched</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell><Skeleton className="size-5 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-16" /></TableCell>
+                </TableRow>
+              ))
+            ) : services?.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   No services found.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
+            ) : (
+              services?.map((service) => (
+                <TableRow key={service.id}>
+                  <TableCell>
+                    <StatusDot
+                      status={service.currentStatus as "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "maintenance" | undefined}
+                      size="sm"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{service.name}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{service.slug}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{service.category}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{service.parserType}</TableCell>
+                  <TableCell>
+                    {service.active ? (
+                      <Badge variant="secondary">Active</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {service.lastFetchedAt
+                      ? new Date(service.lastFetchedAt).toLocaleString()
+                      : "Never"}
+                    {service.lastFetchError && (
+                      <p className="max-w-[150px] truncate text-destructive" title={service.lastFetchError}>
+                        {service.lastFetchError}
+                      </p>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => openEdit(service)}>
+                        <Pencil className="size-3.5" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-destructive hover:text-destructive">
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete service?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete "{service.name}" and all its status history.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteService.mutate(service.id)}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Edit dialog */}
