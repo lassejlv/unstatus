@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run --parallel dev:web dev:worker",
+    "dev": "cross-env bun run --parallel dev:web dev:worker",
     "dev:web": "bun run --filter web dev",
     "dev:worker": "bun run --filter worker dev",
     "dev:worker-rs": "cargo run --manifest-path apps/worker-rs/Cargo.toml",
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "cross-env": "^10.1.0",
     "oxlint": "^1.57.0",
     "typescript": "^5.7.2"
   },

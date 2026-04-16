@@ -26,7 +26,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Activity, Clock, RefreshCw } from "lucide-react";
 import { StatusDot } from "@/components/ui/status-dot";
 import { SectionHeader } from "@/components/ui/section-header";
-import { StatusOrb } from "@/components/ui/status-orb";
 import { AnimatedNumber, formatters } from "@/components/ui/animated-number";
 import { Sparkline, sparklineColors } from "@/components/ui/sparkline";
 import { LiveIndicator } from "@/components/ui/live-indicator";
@@ -129,24 +128,18 @@ function DashboardIndex() {
       <motion.div {...fadeUp(0)} className="flex flex-col gap-5 sm:gap-6">
         {/* Hero status section */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <StatusOrb status={overallStatus} size="default" />
-            <div className="flex flex-col gap-0.5">
-              <span className="font-semibold text-base sm:text-lg">
-                {downCount > 0
-                  ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
-                  : openIncidents.length > 0
-                    ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
-                    : "All systems operational"}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {isPolling ? (
-                  <>Updated {formatRelativeTime(secondsSinceRefresh)}</>
-                ) : (
-                  "Polling paused"
-                )}
-              </span>
-            </div>
+          <div className="flex items-center gap-3">
+            <StatusDot status={overallStatus} pulse />
+            <span className="font-medium text-sm sm:text-base">
+              {downCount > 0
+                ? `${downCount} monitor${downCount > 1 ? "s" : ""} down`
+                : openIncidents.length > 0
+                  ? `${openIncidents.length} open incident${openIncidents.length > 1 ? "s" : ""}`
+                  : "All systems operational"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              · {isPolling ? formatRelativeTime(secondsSinceRefresh) : "paused"}
+            </span>
           </div>
           <Button
             variant="ghost"
