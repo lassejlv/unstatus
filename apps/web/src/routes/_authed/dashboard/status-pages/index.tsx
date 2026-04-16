@@ -1032,6 +1032,7 @@ function EditPageInline({
     footerText: string | null;
     customCss: string | null;
     customJs: string | null;
+    showResponseTimes: boolean;
   };
   onSuccess: () => void;
 }) {
@@ -1045,6 +1046,7 @@ function EditPageInline({
   const [footerText, setFooterText] = useState(page.footerText ?? "");
   const [customCss, setCustomCss] = useState(page.customCss ?? "");
   const [customJs, setCustomJs] = useState(page.customJs ?? "");
+  const [showResponseTimes, setShowResponseTimes] = useState(page.showResponseTimes);
 
   const update = useMutation({
     ...orpc.statusPages.update.mutationOptions(),
@@ -1070,6 +1072,10 @@ function EditPageInline({
       <div className="flex items-center gap-2">
         <Switch checked={isPublic} onCheckedChange={setIsPublic} />
         <Label className="text-xs">Public</Label>
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch checked={showResponseTimes} onCheckedChange={setShowResponseTimes} />
+        <Label className="text-xs">Show response times</Label>
       </div>
       <div className="flex flex-col gap-1.5">
         <Label className="text-xs">Brand color</Label>
@@ -1140,6 +1146,7 @@ function EditPageInline({
             footerText: footerText || undefined,
             customCss: customCss || undefined,
             customJs: customJs || undefined,
+            showResponseTimes,
           })
         }
       >
