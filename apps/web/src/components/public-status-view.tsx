@@ -754,7 +754,7 @@ function ResponseTimeChart({
         </span>
       </div>
       <ChartContainer config={chartConfig} className="aspect-[3/1] sm:aspect-[4/1] w-full">
-        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
+        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.2} />
@@ -775,8 +775,8 @@ function ResponseTimeChart({
           <YAxis
             tickLine={false}
             axisLine={false}
-            tickMargin={4}
-            width={48}
+            tickMargin={8}
+            width={56}
             tickFormatter={(v) => `${Math.round(v)}ms`}
           />
           <ChartTooltip
