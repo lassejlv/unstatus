@@ -249,7 +249,6 @@ export function PublicStatusPageView({
   subscribeError?: string;
 }) {
   const accent = data.brandColor || undefined;
-  const [expandedMonitor, setExpandedMonitor] = useState<string | null>(null);
 
   // Collapsed groups persisted to localStorage, keyed by page slug
   const storageKey = `unstatus:collapsed-groups:${data.slug}`;
@@ -381,8 +380,6 @@ export function PublicStatusPageView({
                   <MonitorCard
                     monitor={monitor}
                     showResponseTimes={data.showResponseTimes !== false}
-                    expanded={expandedMonitor === monitor.id}
-                    onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
                   />
                 </div>
               ));
@@ -430,8 +427,6 @@ export function PublicStatusPageView({
                             <MonitorCard
                               monitor={monitor}
                               showResponseTimes={data.showResponseTimes !== false}
-                              expanded={expandedMonitor === monitor.id}
-                              onToggle={() => setExpandedMonitor(expandedMonitor === monitor.id ? null : monitor.id)}
                             />
                           </div>
                         );
@@ -634,13 +629,9 @@ function OverallBanner({ status, accent }: { status: string; accent?: string }) 
 function MonitorCard({
   monitor,
   showResponseTimes,
-  expanded,
-  onToggle,
 }: {
   monitor: PublicStatusMonitorData;
   showResponseTimes: boolean;
-  expanded: boolean;
-  onToggle: () => void;
 }) {
 
   const uptimeColor =
@@ -653,13 +644,9 @@ function MonitorCard({
   const hasChart = showResponseTimes && (monitor.responseTimeSeries?.length ?? 0) > 0;
 
   return (
-    <div className={`rounded-lg border bg-card ring-1 ring-foreground/5 transition-all duration-150 ${hasChart ? "hover:ring-foreground/15 hover:shadow-sm" : ""}`}>
+    <div className="rounded-lg border bg-card ring-1 ring-foreground/5">
       {/* Top row */}
-      <button
-        type="button"
-        className={`flex w-full items-center justify-between px-4 pt-4 pb-2 transition-colors duration-150 ${hasChart ? "cursor-pointer hover:bg-muted/30" : "cursor-default"}`}
-        onClick={hasChart ? onToggle : undefined}
-      >
+      <div className="flex w-full items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2.5">
           <StatusDot status={monitor.currentStatus as "up" | "down" | "degraded" | "paused" | "unknown"} size="sm" />
           <span className="text-sm font-medium">{monitor.name}</span>
@@ -683,13 +670,8 @@ function MonitorCard({
               <p>90-day uptime</p>
             </TooltipContent>
           </Tooltip>
-          {hasChart && (
-            <ChevronDown
-              className={`size-4 text-muted-foreground/60 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-            />
-          )}
         </div>
-      </button>
+      </div>
 
       {/* Uptime bar */}
       <div className="px-4 pb-4">
@@ -711,19 +693,12 @@ function MonitorCard({
         )}
       </div>
 
-      {/* Expandable chart */}
-      <div
-        className="grid transition-[grid-template-rows] duration-300 ease-in-out"
-        style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
-      >
-        <div className="overflow-hidden">
-          {expanded && monitor.responseTimeSeries && monitor.responseTimeSeries.length > 0 && (
-            <div className="border-t border-border/50 px-4 pt-5 pb-4">
-              <ResponseTimeChart data={monitor.responseTimeSeries} />
-            </div>
-          )}
+      {/* Response time chart - visible by default when data available */}
+      {hasChart && monitor.responseTimeSeries && monitor.responseTimeSeries.length > 0 && (
+        <div className="border-t border-border/50 px-4 pt-4 pb-4">
+          <ResponseTimeChart data={monitor.responseTimeSeries} />
         </div>
-      </div>
+      )}
     </div>
   );
 }
