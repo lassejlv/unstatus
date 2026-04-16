@@ -22,7 +22,7 @@ export function PublicNav({ active }: { active?: string }) {
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/Logo.png" alt="unstatus" className="size-7" />
+          <img src="/unstatus.svg" alt="unstatus" className="size-7" />
           <span className="text-sm font-semibold tracking-tight">unstatus</span>
         </Link>
 
@@ -61,7 +61,7 @@ export function PublicNav({ active }: { active?: string }) {
             <SheetHeader>
               <SheetTitle>
                 <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                  <img src="/Logo.png" alt="unstatus" className="size-6" />
+                  <img src="/unstatus.svg" alt="unstatus" className="size-6" />
                   <span className="text-sm font-semibold">unstatus</span>
                 </Link>
               </SheetTitle>
