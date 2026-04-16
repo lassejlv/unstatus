@@ -30,7 +30,11 @@ import { AnimatedNumber, formatters } from "@/components/ui/animated-number";
 import { Sparkline, sparklineColors } from "@/components/ui/sparkline";
 import { LiveIndicator } from "@/components/ui/live-indicator";
 import { useLivePolling, formatRelativeTime } from "@/hooks/use-live-polling";
-import { fadeUp } from "@/lib/motion";
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 8 } as const,
+  animate: { opacity: 1, y: 0 } as const,
+  transition: { duration: 0.35, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
+});
 
 export const Route = createFileRoute("/_authed/dashboard/")({
   component: DashboardIndex,
