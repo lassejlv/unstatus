@@ -1,60 +1,41 @@
-import { useEffect, useMemo, useState } from "react";
 import { MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 
 function Hero() {
-  const [titleNumber, setTitleNumber] = useState(0);
-  const titles = useMemo(
-    () => ["reliable", "fast", "simple", "transparent", "beautiful"],
-    []
-  );
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setTitleNumber((current) => (current + 1) % titles.length);
-    }, 2000);
-
-    return () => window.clearInterval(intervalId);
-  }, [titles]);
-
   return (
-    <div className="w-full">
-      <div className="container mx-auto">
-        <div className="flex gap-8 py-20 lg:py-40 items-center justify-center flex-col">
-          <div className="flex gap-4 flex-col">
-            <h1 className="max-w-2xl text-center text-5xl tracking-tighter font-normal md:text-7xl">
-              <span className="block">Monitoring that&apos;s</span>
-              <span className="mt-2 block h-[1.1em] text-center leading-none md:mt-3">
-                <span
-                  key={titles[titleNumber]}
-                  className="inline-flex min-w-[11ch] justify-center whitespace-nowrap animate-fade-in font-semibold"
-                >
-                  {titles[titleNumber]}
-                </span>
-              </span>
+    <section className="w-full">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="flex flex-col items-center justify-center gap-8 py-16 sm:py-20 lg:py-28">
+          <div className="flex flex-col gap-5">
+            <h1 className="mx-auto max-w-2xl text-center text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+              Uptime monitoring and status pages
             </h1>
 
-            <p className="text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
-              Know when your services go down. Tell your users what&apos;s happening.
-              Uptime checks, status pages, and alerts — all in one place.
+            <p className="mx-auto max-w-lg text-center text-base leading-relaxed text-muted-foreground sm:text-lg md:text-xl">
+              Know the moment your services go down. Keep users informed with beautiful status pages. Get alerts via email, Discord, or webhooks.
             </p>
           </div>
-          <div className="flex flex-row gap-3">
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/pricing">
-                Pricing <MoveRight className="w-4 h-4" />
-              </Link>
-            </Button>
-            <Button size="lg" asChild>
-              <Link to="/login">
-                Get started <MoveRight className="w-4 h-4" />
-              </Link>
-            </Button>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button size="lg" asChild>
+                <Link to="/login">
+                  Start for free <MoveRight className="size-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/pricing">
+                  See pricing
+                </Link>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Free forever. No credit card required.
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
