@@ -718,7 +718,7 @@ function MonitorCard({
       >
         <div className="overflow-hidden">
           {expanded && monitor.responseTimeSeries && monitor.responseTimeSeries.length > 0 && (
-            <div className="border-t px-4 py-4">
+            <div className="border-t border-border/50 px-4 pt-5 pb-4">
               <ResponseTimeChart data={monitor.responseTimeSeries} />
             </div>
           )}
@@ -758,27 +758,28 @@ function ResponseTimeTooltip({
   const isSlow = diffPercent >= 20;
 
   return (
-    <div className="rounded-lg border border-border/60 bg-popover px-3 py-2.5 shadow-lg">
+    <div className="rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm px-3.5 py-3 shadow-xl shadow-black/10 dark:shadow-black/30 ring-1 ring-white/10 dark:ring-white/5 min-w-[160px]">
       {/* Date/time header */}
-      <div className="mb-2 text-xs text-muted-foreground">
+      <div className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">
         {date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
-        {" · "}
+        <span className="mx-1.5 text-border/50">·</span>
         {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </div>
 
       {/* Primary metric: Response time */}
-      <div className="flex items-baseline gap-2">
-        <span className="text-lg font-semibold tabular-nums tracking-tight">
-          {latency}ms
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
+          {latency}
+          <span className="text-sm font-medium text-muted-foreground ml-0.5">ms</span>
         </span>
         {diffPercent !== 0 && (
           <span
-            className={`text-xs font-medium tabular-nums ${
+            className={`inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md ${
               isGood
-                ? "text-emerald-500"
+                ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
                 : isSlow
-                  ? "text-amber-500"
-                  : "text-muted-foreground"
+                  ? "text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                  : "text-muted-foreground bg-muted/50"
             }`}
           >
             {diff > 0 ? "+" : ""}
@@ -787,11 +788,44 @@ function ResponseTimeTooltip({
         )}
       </div>
 
+      {/* Divider */}
+      <div className="my-2.5 h-px bg-border/50" />
+
       {/* Secondary info */}
-      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{data.checkCount.toLocaleString()} checks</span>
-        <span className="text-border">·</span>
-        <span>avg {overallAvg}ms</span>
+      <div className="flex items-center justify-between gap-4 text-[11px]">
+        <div className="flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-emerald-500/60" />
+          <span className="text-muted-foreground">
+            <span className="font-medium text-foreground/80">{data.checkCount.toLocaleString()}</span> checks
+          </span>
+        </div>
+        <span className="text-muted-foreground/70 tabular-nums">
+          avg <span className="font-medium text-muted-foreground">{overallAvg}ms</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const TIME_RANGES = [
+  { label: "24h", hours: 24 },
+  { label: "7d", hours: 24 * 7 },
+  { label: "30d", hours: 24 * 30 },
+  { label: "90d", hours: 24 * 90 },
+] as const;
+
+/** Empty state for response time chart */
+function ChartEmptyState({ selectedRange }: { selectedRange: number }) {
+  const rangeLabel = TIME_RANGES.find((r) => r.hours === selectedRange)?.label ?? "selected period";
+  return (
+    <div className="flex aspect-[2.5/1] sm:aspect-[4/1] w-full items-center justify-center rounded-lg bg-muted/15 ring-1 ring-border/20">
+      <div className="text-center px-4">
+        <p className="text-sm text-muted-foreground">
+          No response data for the last {rangeLabel}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground/60">
+          Try selecting a longer time range
+        </p>
       </div>
     </div>
   );
@@ -802,60 +836,126 @@ function ResponseTimeChart({
 }: {
   data: { hour: string; avgLatency: number; checkCount: number }[];
 }) {
-  const chartData = data.map((d) => ({
+  const [selectedRange, setSelectedRange] = useState<number>(24);
+
+  // Filter data based on selected time range
+  const now = Date.now();
+  const cutoff = now - selectedRange * 60 * 60 * 1000;
+  const filteredData = data.filter((d) => new Date(d.hour).getTime() >= cutoff);
+
+  const chartData = filteredData.map((d) => ({
     ...d,
     hour: new Date(d.hour).getTime(),
   }));
 
-  const overallAvg = Math.round(data.reduce((s, d) => s + d.avgLatency, 0) / data.length);
+  const overallAvg = filteredData.length > 0
+    ? Math.round(filteredData.reduce((s, d) => s + d.avgLatency, 0) / filteredData.length)
+    : 0;
+
+  const hasData = chartData.length > 0;
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">Response time (24h)</span>
-        <span className="text-xs text-muted-foreground font-mono">
-          avg {overallAvg}ms
-        </span>
+    <div className="space-y-4">
+      {/* Header with time range selector and avg display */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+            Response time
+          </span>
+          <div className="flex items-center gap-0.5 rounded-md border border-border/40 bg-muted/25 p-0.5">
+            {TIME_RANGES.map((range) => {
+              const isSelected = selectedRange === range.hours;
+              return (
+                <button
+                  key={range.hours}
+                  onClick={() => setSelectedRange(range.hours)}
+                  className={`rounded px-2.5 py-1 text-[11px] font-medium transition-all duration-150 ${
+                    isSelected
+                      ? "bg-background text-foreground shadow-sm ring-1 ring-border/40"
+                      : "text-muted-foreground/70 hover:text-foreground hover:bg-background/40"
+                  }`}
+                >
+                  {range.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {hasData && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/50">avg</span>
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              {overallAvg}ms
+            </span>
+          </div>
+        )}
       </div>
-      <ChartContainer config={chartConfig} className="aspect-[3/1] sm:aspect-[4/1] w-full">
-        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-          <defs>
-            <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="var(--color-avgLatency)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="hour"
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            minTickGap={60}
-            tickFormatter={(v) =>
-              new Date(v).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            }
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            width={56}
-            tickFormatter={(v) => `${Math.round(v)}ms`}
-          />
-          <ChartTooltip
-            content={<ResponseTimeTooltip overallAvg={overallAvg} />}
-            cursor={{ stroke: "var(--color-avgLatency)", strokeWidth: 1, strokeDasharray: "4 4" }}
-          />
-          <Area
-            type="monotone"
-            dataKey="avgLatency"
-            stroke="var(--color-avgLatency)"
-            strokeWidth={2}
-            fill="url(#latencyGradientPublic)"
-          />
-        </AreaChart>
-      </ChartContainer>
+
+      {/* Chart container with subtle background */}
+      {hasData ? (
+        <div className="rounded-lg bg-muted/15 ring-1 ring-border/20 p-2 sm:p-3">
+          <ChartContainer config={chartConfig} className="aspect-[2.5/1] sm:aspect-[4/1] w-full">
+            <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -16 }}>
+              <defs>
+                <linearGradient id="latencyGradientPublic" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-avgLatency)" stopOpacity={0.28} />
+                  <stop offset="40%" stopColor="var(--color-avgLatency)" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="var(--color-avgLatency)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="2 6"
+                vertical={false}
+                stroke="currentColor"
+                className="text-border/30"
+              />
+              <XAxis
+                dataKey="hour"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                minTickGap={selectedRange <= 24 ? 50 : 70}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }}
+                tickFormatter={(v) => {
+                  const date = new Date(v);
+                  if (selectedRange <= 24) {
+                    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  }
+                  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={6}
+                width={44}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }}
+                tickFormatter={(v) => `${Math.round(v)}ms`}
+              />
+              <ChartTooltip
+                content={<ResponseTimeTooltip overallAvg={overallAvg} />}
+                cursor={{
+                  stroke: "var(--color-avgLatency)",
+                  strokeWidth: 1,
+                  strokeDasharray: "3 3",
+                  strokeOpacity: 0.4,
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="avgLatency"
+                stroke="var(--color-avgLatency)"
+                strokeWidth={1.5}
+                fill="url(#latencyGradientPublic)"
+                animationDuration={400}
+                animationEasing="ease-out"
+              />
+            </AreaChart>
+          </ChartContainer>
+        </div>
+      ) : (
+        <ChartEmptyState selectedRange={selectedRange} />
+      )}
     </div>
   );
 }
