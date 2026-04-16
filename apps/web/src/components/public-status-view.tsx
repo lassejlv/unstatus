@@ -1,6 +1,6 @@
 import { type ReactNode, Fragment, useState, useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -735,6 +735,68 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+// Custom tooltip for the response time chart
+function ResponseTimeTooltip({
+  active,
+  payload,
+  overallAvg,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: { hour: number; avgLatency: number; checkCount: number } }>;
+  overallAvg: number;
+}) {
+  if (!active || !payload?.length) return null;
+
+  const data = payload[0].payload;
+  const date = new Date(data.hour);
+  const latency = Math.round(data.avgLatency);
+  const diff = latency - overallAvg;
+  const diffPercent = overallAvg > 0 ? Math.round((diff / overallAvg) * 100) : 0;
+
+  // Determine if latency is good, normal, or slow
+  const isGood = diffPercent <= -10;
+  const isSlow = diffPercent >= 20;
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-popover px-3 py-2.5 shadow-lg">
+      {/* Date/time header */}
+      <div className="mb-2 text-xs text-muted-foreground">
+        {date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
+        {" · "}
+        {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+      </div>
+
+      {/* Primary metric: Response time */}
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-semibold tabular-nums tracking-tight">
+          {latency}ms
+        </span>
+        {diffPercent !== 0 && (
+          <span
+            className={`text-xs font-medium tabular-nums ${
+              isGood
+                ? "text-emerald-500"
+                : isSlow
+                  ? "text-amber-500"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {diff > 0 ? "+" : ""}
+            {diffPercent}%
+          </span>
+        )}
+      </div>
+
+      {/* Secondary info */}
+      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
+        <span>{data.checkCount.toLocaleString()} checks</span>
+        <span className="text-border">·</span>
+        <span>avg {overallAvg}ms</span>
+      </div>
+    </div>
+  );
+}
+
 function ResponseTimeChart({
   data,
 }: {
@@ -745,12 +807,14 @@ function ResponseTimeChart({
     hour: new Date(d.hour).getTime(),
   }));
 
+  const overallAvg = Math.round(data.reduce((s, d) => s + d.avgLatency, 0) / data.length);
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground">Response time (24h)</span>
         <span className="text-xs text-muted-foreground font-mono">
-          avg {Math.round(data.reduce((s, d) => s + d.avgLatency, 0) / data.length)}ms
+          avg {overallAvg}ms
         </span>
       </div>
       <ChartContainer config={chartConfig} className="aspect-[3/1] sm:aspect-[4/1] w-full">
@@ -780,17 +844,8 @@ function ResponseTimeChart({
             tickFormatter={(v) => `${Math.round(v)}ms`}
           />
           <ChartTooltip
-            content={
-              <ChartTooltipContent
-                labelFormatter={(_, payload) => {
-                  if (!payload?.[0]?.payload) return "";
-                  const d = payload[0].payload;
-                  const time = new Date(d.hour).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                  return `${time} · ${d.checkCount} checks`;
-                }}
-                formatter={(value) => [`${Math.round(Number(value))}ms`, "Latency"]}
-              />
-            }
+            content={<ResponseTimeTooltip overallAvg={overallAvg} />}
+            cursor={{ stroke: "var(--color-avgLatency)", strokeWidth: 1, strokeDasharray: "4 4" }}
           />
           <Area
             type="monotone"
