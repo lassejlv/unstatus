@@ -166,3 +166,8 @@ export type MonitorDependency = Prisma.MonitorDependencyModel
  * 
  */
 export type ApiKey = Prisma.ApiKeyModel
+/**
+ * Model OssApplication
+ * 
+ */
+export type OssApplication = Prisma.OssApplicationModel

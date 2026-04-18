@@ -1,6 +1,26 @@
 import z from "zod";
+import { ORPCError } from "@orpc/server";
 import { prisma } from "@/lib/prisma";
 import { adminProcedure } from "@/orpc/procedures";
+import { polarClient } from "@/lib/auth";
+import { email } from "@/lib/email";
+import { env } from "@/lib/env";
+import { OssApplicationApprovedEmail } from "@unstatus/email";
+
+function generateOssDiscountCode(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let code = "";
+  for (const b of bytes) code += alphabet[b % alphabet.length];
+  return `OSS-${code}`;
+}
+
+function appDomainUrl(): string {
+  return env.APP_DOMAIN === "localhost"
+    ? "http://localhost:3000"
+    : `https://${env.APP_DOMAIN}`;
+}
 
 const paginationInput = z.object({
   search: z.string().optional(),
@@ -857,5 +877,188 @@ export const adminRouter = {
         growthTrend,
         periodTotal: monitors.filter((m) => m.createdAt >= startDate).length,
       };
+    }),
+
+  listOssApplications: adminProcedure
+    .input(
+      paginationInput.extend({
+        status: z.enum(["pending", "approved", "rejected", "all"]).default("all"),
+      }),
+    )
+    .handler(async ({ input }) => {
+      type ApplicationWhere = {
+        status?: string;
+        OR?: Array<
+          | { githubRepo: { contains: string; mode: "insensitive" } }
+          | { organization: { name: { contains: string; mode: "insensitive" } } }
+          | { user: { email: { contains: string; mode: "insensitive" } } }
+          | { user: { name: { contains: string; mode: "insensitive" } } }
+        >;
+      };
+      const where: ApplicationWhere = {};
+      if (input.status !== "all") {
+        where.status = input.status;
+      }
+      if (input.search) {
+        where.OR = [
+          { githubRepo: { contains: input.search, mode: "insensitive" } },
+          { organization: { name: { contains: input.search, mode: "insensitive" } } },
+          { user: { email: { contains: input.search, mode: "insensitive" } } },
+          { user: { name: { contains: input.search, mode: "insensitive" } } },
+        ];
+      }
+
+      const [items, total] = await Promise.all([
+        prisma.ossApplication.findMany({
+          where,
+          include: {
+            organization: { select: { id: true, name: true, slug: true } },
+            user: { select: { id: true, name: true, email: true, image: true } },
+          },
+          orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+          take: input.limit,
+          skip: input.offset,
+        }),
+        prisma.ossApplication.count({ where }),
+      ]);
+
+      return { items, total };
+    }),
+
+  getOssApplication: adminProcedure
+    .input(z.object({ applicationId: z.string() }))
+    .handler(async ({ input }) => {
+      return prisma.ossApplication.findUniqueOrThrow({
+        where: { id: input.applicationId },
+        include: {
+          organization: true,
+          user: { select: { id: true, name: true, email: true, image: true } },
+          reviewer: { select: { id: true, name: true, email: true } },
+        },
+      });
+    }),
+
+  approveOssApplication: adminProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+        reviewNotes: z.string().max(2000).optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const application = await prisma.ossApplication.findUniqueOrThrow({
+        where: { id: input.applicationId },
+        include: {
+          organization: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      if (application.status !== "pending") {
+        throw new ORPCError("BAD_REQUEST", {
+          message: `Application is already ${application.status}.`,
+        });
+      }
+
+      const code = generateOssDiscountCode();
+      const endsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      let discountId: string;
+      try {
+        const discount = await polarClient.discounts.create({
+          duration: "repeating",
+          durationInMonths: 6,
+          type: "percentage",
+          basisPoints: 10000,
+          name: `OSS Grant — ${application.organization.name}`,
+          code,
+          endsAt,
+          maxRedemptions: 1,
+          products: [env.POLAR_SCALE_ID],
+          metadata: {
+            type: "oss_grant",
+            applicationId: application.id,
+            organizationId: application.organization.id,
+            approvedBy: context.session.user.id,
+          },
+        });
+        discountId = discount.id;
+      } catch (err) {
+        console.error("[OSS] Polar discount creation failed:", err);
+        throw new ORPCError("INTERNAL_SERVER_ERROR", {
+          message: "Could not create discount code in Polar. Please retry.",
+        });
+      }
+
+      const updated = await prisma.ossApplication.update({
+        where: { id: application.id },
+        data: {
+          status: "approved",
+          reviewedAt: new Date(),
+          reviewerId: context.session.user.id,
+          reviewNotes: input.reviewNotes,
+          discountId,
+          discountCode: code,
+          discountExpiresAt: endsAt,
+        },
+        include: {
+          organization: { select: { id: true, name: true, slug: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      try {
+        await email.emails.send({
+          from: env.INBOUND_FROM,
+          to: application.user.email,
+          subject: "Your Unstatus OSS application is approved",
+          react: (
+            <OssApplicationApprovedEmail
+              organizationName={application.organization.name}
+              githubRepo={application.githubRepo}
+              discountCode={code}
+              expiresAt={endsAt}
+              redeemUrl={`${appDomainUrl()}/dashboard/billing`}
+            />
+          ),
+        });
+      } catch (err) {
+        console.error("[OSS] Approval email failed:", err);
+      }
+
+      return updated;
+    }),
+
+  rejectOssApplication: adminProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+        reviewNotes: z.string().trim().min(1).max(2000),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const application = await prisma.ossApplication.findUniqueOrThrow({
+        where: { id: input.applicationId },
+        select: { id: true, status: true },
+      });
+      if (application.status !== "pending") {
+        throw new ORPCError("BAD_REQUEST", {
+          message: `Application is already ${application.status}.`,
+        });
+      }
+
+      return prisma.ossApplication.update({
+        where: { id: application.id },
+        data: {
+          status: "rejected",
+          reviewedAt: new Date(),
+          reviewerId: context.session.user.id,
+          reviewNotes: input.reviewNotes,
+        },
+        include: {
+          organization: { select: { id: true, name: true, slug: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
     }),
 };

@@ -24,6 +24,9 @@ model User {
   invitations Invitation[]
   apiKeys     ApiKey[]
 
+  ossApplications       OssApplication[] @relation("OssApplicationApplicant")
+  ossApplicationReviews OssApplication[] @relation("OssApplicationReviewer")
+
   @@unique([email])
   @@map("user")
 }
@@ -100,6 +103,7 @@ model Organization {
   notificationChannels NotificationChannel[]
   maintenanceWindows   MaintenanceWindow[]
   apiKeys              ApiKey[]
+  ossApplications      OssApplication[]
 
   @@unique([slug])
   @@map("organization")
@@ -524,4 +528,36 @@ model ApiKey {
   @@index([organizationId])
   @@index([keyHash])
   @@map("api_key")
+}
+
+// --- OSS Applications ---
+
+model OssApplication {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation("OssApplicationApplicant", fields: [userId], references: [id], onDelete: Cascade)
+
+  githubRepo     String
+  reason         String
+  website        String?
+
+  status         String       @default("pending") // pending | approved | rejected
+  reviewedAt     DateTime?
+  reviewerId     String?
+  reviewer       User?        @relation("OssApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewNotes    String?
+
+  discountId        String?
+  discountCode      String?
+  discountExpiresAt DateTime?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@map("oss_application")
 }
