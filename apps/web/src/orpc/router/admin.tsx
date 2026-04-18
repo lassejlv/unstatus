@@ -9,11 +9,11 @@ import { OssApplicationApprovedEmail } from "@unstatus/email";
 
 function generateOssDiscountCode(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = new Uint8Array(8);
+  const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
   let code = "";
   for (const b of bytes) code += alphabet[b % alphabet.length];
-  return `OSS-${code}`;
+  return `OSS${code}`;
 }
 
 function appDomainUrl(): string {
@@ -985,8 +985,17 @@ export const adminRouter = {
         discountId = discount.id;
       } catch (err) {
         console.error("[OSS] Polar discount creation failed:", err);
+        const detail =
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "Unknown error";
+        const body =
+          (err as { body$?: unknown } | null)?.body$
+          ?? (err as { rawResponse?: { body?: unknown } } | null)?.rawResponse?.body;
         throw new ORPCError("INTERNAL_SERVER_ERROR", {
-          message: "Could not create discount code in Polar. Please retry.",
+          message: `Polar discount creation failed: ${detail}${body ? ` — ${JSON.stringify(body)}` : ""}`,
         });
       }
 
