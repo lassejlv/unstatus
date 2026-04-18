@@ -221,25 +221,42 @@ async function getPublicStatusPage(page: ResolvedPublicPage) {
       const dayStart = parseDateKeyToLocalMs(date);
       const dayEnd = dayStart + 86_400_000;
 
+      // Time-based incident impact: weight incident duration by severity
+      // and subtract proportional downtime from the day's uptime.
+      // Matches industry standard (Statuspage, UptimeRobot, BetterStack).
+      let incidentDowntimeMs = 0;
       for (const incident of monitorIncidents) {
         const incidentStart = new Date(incident.startedAt).getTime();
         const incidentEnd = incident.resolvedAt
           ? new Date(incident.resolvedAt).getTime()
           : now.getTime();
 
-        if (incidentStart < dayEnd && incidentEnd > dayStart) {
-          const cap =
-            incident.severity === "critical"
-              ? 0
-              : incident.severity === "major"
-                ? 50
+        const overlapStart = Math.max(incidentStart, dayStart);
+        const overlapEnd = Math.min(incidentEnd, dayEnd);
+        if (overlapEnd <= overlapStart) continue;
+
+        const weight =
+          incident.severity === "critical"
+            ? 1.0
+            : incident.severity === "major"
+              ? 0.5
+              : incident.severity === "minor"
+                ? 0.1
                 : incident.severity === "degraded"
-                  ? 75
+                  ? 0.3
                   : incident.severity === "maintenance"
-                    ? 100
-                    : 75;
-          uptime = Math.min(uptime, cap);
-        }
+                    ? 0
+                    : 0.3;
+
+        incidentDowntimeMs += (overlapEnd - overlapStart) * weight;
+      }
+
+      if (incidentDowntimeMs > 0) {
+        const incidentUptime = Math.max(
+          0,
+          ((86_400_000 - incidentDowntimeMs) / 86_400_000) * 100,
+        );
+        uptime = Math.min(uptime, incidentUptime);
       }
 
       daily.push({ date, uptime, totalChecks: total });
