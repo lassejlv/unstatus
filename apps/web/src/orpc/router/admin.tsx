@@ -985,8 +985,17 @@ export const adminRouter = {
         discountId = discount.id;
       } catch (err) {
         console.error("[OSS] Polar discount creation failed:", err);
+        const detail =
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "Unknown error";
+        const body =
+          (err as { body$?: unknown } | null)?.body$
+          ?? (err as { rawResponse?: { body?: unknown } } | null)?.rawResponse?.body;
         throw new ORPCError("INTERNAL_SERVER_ERROR", {
-          message: "Could not create discount code in Polar. Please retry.",
+          message: `Polar discount creation failed: ${detail}${body ? ` — ${JSON.stringify(body)}` : ""}`,
         });
       }
 
