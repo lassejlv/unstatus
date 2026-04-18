@@ -9,11 +9,11 @@ import { OssApplicationApprovedEmail } from "@unstatus/email";
 
 function generateOssDiscountCode(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = new Uint8Array(8);
+  const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
   let code = "";
   for (const b of bytes) code += alphabet[b % alphabet.length];
-  return `OSS-${code}`;
+  return `OSS${code}`;
 }
 
 function appDomainUrl(): string {
