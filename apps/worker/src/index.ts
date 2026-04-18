@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { runChecks, runSingleCheck } from "./runner.js";
 import { runExternalServiceChecks } from "./external-service-runner.js";
-import { startSchedulers } from "./scheduler.js";
+import { getSchedulerHealth, startSchedulers } from "./scheduler.js";
 
 const app = new Hono();
 
-app.get("/health", (c) => c.json({ status: "ok" }));
+app.get("/health", (c) => c.json(getSchedulerHealth()));
 
 app.post("/run", async (c) => {
   const secret = c.req.header("x-worker-secret");
