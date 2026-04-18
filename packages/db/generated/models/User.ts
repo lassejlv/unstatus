@@ -211,6 +211,8 @@ export type UserWhereInput = {
   members?: Prisma.MemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   apiKeys?: Prisma.ApiKeyListRelationFilter
+  ossApplications?: Prisma.OssApplicationListRelationFilter
+  ossApplicationReviews?: Prisma.OssApplicationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -227,6 +229,8 @@ export type UserOrderByWithRelationInput = {
   members?: Prisma.MemberOrderByRelationAggregateInput
   invitations?: Prisma.InvitationOrderByRelationAggregateInput
   apiKeys?: Prisma.ApiKeyOrderByRelationAggregateInput
+  ossApplications?: Prisma.OssApplicationOrderByRelationAggregateInput
+  ossApplicationReviews?: Prisma.OssApplicationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -246,6 +250,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   members?: Prisma.MemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   apiKeys?: Prisma.ApiKeyListRelationFilter
+  ossApplications?: Prisma.OssApplicationListRelationFilter
+  ossApplicationReviews?: Prisma.OssApplicationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -290,6 +296,8 @@ export type UserCreateInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -306,6 +314,8 @@ export type UserUncheckedCreateInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUpdateInput = {
@@ -322,6 +332,8 @@ export type UserUpdateInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -338,6 +350,8 @@ export type UserUncheckedUpdateInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -409,6 +423,11 @@ export type UserMinOrderByAggregateInput = {
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -497,6 +516,36 @@ export type UserUpdateOneRequiredWithoutApiKeysNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApiKeysInput, Prisma.UserUpdateWithoutApiKeysInput>, Prisma.UserUncheckedUpdateWithoutApiKeysInput>
 }
 
+export type UserCreateNestedOneWithoutOssApplicationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationsInput, Prisma.UserUncheckedCreateWithoutOssApplicationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOssApplicationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutOssApplicationReviewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedCreateWithoutOssApplicationReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOssApplicationReviewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutOssApplicationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationsInput, Prisma.UserUncheckedCreateWithoutOssApplicationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOssApplicationsInput
+  upsert?: Prisma.UserUpsertWithoutOssApplicationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOssApplicationsInput, Prisma.UserUpdateWithoutOssApplicationsInput>, Prisma.UserUncheckedUpdateWithoutOssApplicationsInput>
+}
+
+export type UserUpdateOneWithoutOssApplicationReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedCreateWithoutOssApplicationReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOssApplicationReviewsInput
+  upsert?: Prisma.UserUpsertWithoutOssApplicationReviewsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOssApplicationReviewsInput, Prisma.UserUpdateWithoutOssApplicationReviewsInput>, Prisma.UserUncheckedUpdateWithoutOssApplicationReviewsInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -510,6 +559,8 @@ export type UserCreateWithoutSessionsInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -525,6 +576,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -556,6 +609,8 @@ export type UserUpdateWithoutSessionsInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -571,6 +626,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -586,6 +643,8 @@ export type UserCreateWithoutAccountsInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -601,6 +660,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -632,6 +693,8 @@ export type UserUpdateWithoutAccountsInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -647,6 +710,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserCreateWithoutMembersInput = {
@@ -662,6 +727,8 @@ export type UserCreateWithoutMembersInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateWithoutMembersInput = {
@@ -677,6 +744,8 @@ export type UserUncheckedCreateWithoutMembersInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserCreateOrConnectWithoutMembersInput = {
@@ -708,6 +777,8 @@ export type UserUpdateWithoutMembersInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembersInput = {
@@ -723,6 +794,8 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserCreateWithoutInvitationsInput = {
@@ -738,6 +811,8 @@ export type UserCreateWithoutInvitationsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateWithoutInvitationsInput = {
@@ -753,6 +828,8 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserCreateOrConnectWithoutInvitationsInput = {
@@ -784,6 +861,8 @@ export type UserUpdateWithoutInvitationsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvitationsInput = {
@@ -799,6 +878,8 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserCreateWithoutApiKeysInput = {
@@ -814,6 +895,8 @@ export type UserCreateWithoutApiKeysInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
 }
 
 export type UserUncheckedCreateWithoutApiKeysInput = {
@@ -829,6 +912,8 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
 }
 
 export type UserCreateOrConnectWithoutApiKeysInput = {
@@ -860,6 +945,8 @@ export type UserUpdateWithoutApiKeysInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApiKeysInput = {
@@ -875,6 +962,176 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+}
+
+export type UserCreateWithoutOssApplicationsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isAdmin?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplicationReviews?: Prisma.OssApplicationCreateNestedManyWithoutReviewerInput
+}
+
+export type UserUncheckedCreateWithoutOssApplicationsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isAdmin?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutReviewerInput
+}
+
+export type UserCreateOrConnectWithoutOssApplicationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationsInput, Prisma.UserUncheckedCreateWithoutOssApplicationsInput>
+}
+
+export type UserCreateWithoutOssApplicationReviewsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isAdmin?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutOssApplicationReviewsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isAdmin?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  ossApplications?: Prisma.OssApplicationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutOssApplicationReviewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedCreateWithoutOssApplicationReviewsInput>
+}
+
+export type UserUpsertWithoutOssApplicationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOssApplicationsInput, Prisma.UserUncheckedUpdateWithoutOssApplicationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationsInput, Prisma.UserUncheckedCreateWithoutOssApplicationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOssApplicationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOssApplicationsInput, Prisma.UserUncheckedUpdateWithoutOssApplicationsInput>
+}
+
+export type UserUpdateWithoutOssApplicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUpdateManyWithoutReviewerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOssApplicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplicationReviews?: Prisma.OssApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+}
+
+export type UserUpsertWithoutOssApplicationReviewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedUpdateWithoutOssApplicationReviewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedCreateWithoutOssApplicationReviewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOssApplicationReviewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOssApplicationReviewsInput, Prisma.UserUncheckedUpdateWithoutOssApplicationReviewsInput>
+}
+
+export type UserUpdateWithoutOssApplicationReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOssApplicationReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  ossApplications?: Prisma.OssApplicationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -888,6 +1145,8 @@ export type UserCountOutputType = {
   members: number
   invitations: number
   apiKeys: number
+  ossApplications: number
+  ossApplicationReviews: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -896,6 +1155,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   members?: boolean | UserCountOutputTypeCountMembersArgs
   invitations?: boolean | UserCountOutputTypeCountInvitationsArgs
   apiKeys?: boolean | UserCountOutputTypeCountApiKeysArgs
+  ossApplications?: boolean | UserCountOutputTypeCountOssApplicationsArgs
+  ossApplicationReviews?: boolean | UserCountOutputTypeCountOssApplicationReviewsArgs
 }
 
 /**
@@ -943,6 +1204,20 @@ export type UserCountOutputTypeCountApiKeysArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.ApiKeyWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountOssApplicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OssApplicationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountOssApplicationReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OssApplicationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -958,6 +1233,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   members?: boolean | Prisma.User$membersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   apiKeys?: boolean | Prisma.User$apiKeysArgs<ExtArgs>
+  ossApplications?: boolean | Prisma.User$ossApplicationsArgs<ExtArgs>
+  ossApplicationReviews?: boolean | Prisma.User$ossApplicationReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1001,6 +1278,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   members?: boolean | Prisma.User$membersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   apiKeys?: boolean | Prisma.User$apiKeysArgs<ExtArgs>
+  ossApplications?: boolean | Prisma.User$ossApplicationsArgs<ExtArgs>
+  ossApplicationReviews?: boolean | Prisma.User$ossApplicationReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1014,6 +1293,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     members: Prisma.$MemberPayload<ExtArgs>[]
     invitations: Prisma.$InvitationPayload<ExtArgs>[]
     apiKeys: Prisma.$ApiKeyPayload<ExtArgs>[]
+    ossApplications: Prisma.$OssApplicationPayload<ExtArgs>[]
+    ossApplicationReviews: Prisma.$OssApplicationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1423,6 +1704,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   members<T extends Prisma.User$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitations<T extends Prisma.User$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   apiKeys<T extends Prisma.User$apiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ossApplications<T extends Prisma.User$ossApplicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ossApplicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OssApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ossApplicationReviews<T extends Prisma.User$ossApplicationReviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ossApplicationReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OssApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1970,6 +2253,54 @@ export type User$apiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.ApiKeyScalarFieldEnum | Prisma.ApiKeyScalarFieldEnum[]
+}
+
+/**
+ * User.ossApplications
+ */
+export type User$ossApplicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OssApplication
+   */
+  select?: Prisma.OssApplicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OssApplication
+   */
+  omit?: Prisma.OssApplicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OssApplicationInclude<ExtArgs> | null
+  where?: Prisma.OssApplicationWhereInput
+  orderBy?: Prisma.OssApplicationOrderByWithRelationInput | Prisma.OssApplicationOrderByWithRelationInput[]
+  cursor?: Prisma.OssApplicationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OssApplicationScalarFieldEnum | Prisma.OssApplicationScalarFieldEnum[]
+}
+
+/**
+ * User.ossApplicationReviews
+ */
+export type User$ossApplicationReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OssApplication
+   */
+  select?: Prisma.OssApplicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OssApplication
+   */
+  omit?: Prisma.OssApplicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OssApplicationInclude<ExtArgs> | null
+  where?: Prisma.OssApplicationWhereInput
+  orderBy?: Prisma.OssApplicationOrderByWithRelationInput | Prisma.OssApplicationOrderByWithRelationInput[]
+  cursor?: Prisma.OssApplicationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OssApplicationScalarFieldEnum | Prisma.OssApplicationScalarFieldEnum[]
 }
 
 /**

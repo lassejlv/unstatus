@@ -75,7 +75,8 @@ export const ModelName = {
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
   MonitorDependency: 'MonitorDependency',
-  ApiKey: 'ApiKey'
+  ApiKey: 'ApiKey',
+  OssApplication: 'OssApplication'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -479,6 +480,27 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const OssApplicationScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  githubRepo: 'githubRepo',
+  reason: 'reason',
+  website: 'website',
+  status: 'status',
+  reviewedAt: 'reviewedAt',
+  reviewerId: 'reviewerId',
+  reviewNotes: 'reviewNotes',
+  discountId: 'discountId',
+  discountCode: 'discountCode',
+  discountExpiresAt: 'discountExpiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OssApplicationScalarFieldEnum = (typeof OssApplicationScalarFieldEnum)[keyof typeof OssApplicationScalarFieldEnum]
 
 
 export const SortOrder = {

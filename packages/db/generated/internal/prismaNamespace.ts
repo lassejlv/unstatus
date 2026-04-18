@@ -408,7 +408,8 @@ export const ModelName = {
   ExternalServiceComponent: 'ExternalServiceComponent',
   ExternalServiceStatus: 'ExternalServiceStatus',
   MonitorDependency: 'MonitorDependency',
-  ApiKey: 'ApiKey'
+  ApiKey: 'ApiKey',
+  OssApplication: 'OssApplication'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentMonitor" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency" | "apiKey"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentMonitor" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency" | "apiKey" | "ossApplication"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2278,6 +2279,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OssApplication: {
+      payload: Prisma.$OssApplicationPayload<ExtArgs>
+      fields: Prisma.OssApplicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OssApplicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OssApplicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        findFirst: {
+          args: Prisma.OssApplicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OssApplicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        findMany: {
+          args: Prisma.OssApplicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>[]
+        }
+        create: {
+          args: Prisma.OssApplicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        createMany: {
+          args: Prisma.OssApplicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OssApplicationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>[]
+        }
+        delete: {
+          args: Prisma.OssApplicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        update: {
+          args: Prisma.OssApplicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.OssApplicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OssApplicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OssApplicationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>[]
+        }
+        upsert: {
+          args: Prisma.OssApplicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OssApplicationPayload>
+        }
+        aggregate: {
+          args: Prisma.OssApplicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOssApplication>
+        }
+        groupBy: {
+          args: Prisma.OssApplicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OssApplicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OssApplicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OssApplicationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2704,6 +2779,27 @@ export const ApiKeyScalarFieldEnum = {
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
+export const OssApplicationScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  githubRepo: 'githubRepo',
+  reason: 'reason',
+  website: 'website',
+  status: 'status',
+  reviewedAt: 'reviewedAt',
+  reviewerId: 'reviewerId',
+  reviewNotes: 'reviewNotes',
+  discountId: 'discountId',
+  discountCode: 'discountCode',
+  discountExpiresAt: 'discountExpiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OssApplicationScalarFieldEnum = (typeof OssApplicationScalarFieldEnum)[keyof typeof OssApplicationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2954,6 +3050,7 @@ export type GlobalOmitConfig = {
   externalServiceStatus?: Prisma.ExternalServiceStatusOmit
   monitorDependency?: Prisma.MonitorDependencyOmit
   apiKey?: Prisma.ApiKeyOmit
+  ossApplication?: Prisma.OssApplicationOmit
 }
 
 /* Types for Logging */

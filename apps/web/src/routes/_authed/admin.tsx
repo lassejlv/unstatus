@@ -25,6 +25,7 @@ import {
   ArrowLeft,
   Sun,
   Moon,
+  Heart,
 } from "lucide-react";
 import { Canvas } from "@/components/canvas";
 import { useTheme } from "@/hooks/use-theme";
@@ -40,6 +41,7 @@ const navItems = [
   { label: "Organizations", to: "/admin/organizations", icon: Building2 },
   { label: "Monitors", to: "/admin/monitors", icon: Activity },
   { label: "Registry", to: "/admin/registry", icon: BookOpen },
+  { label: "OSS", to: "/admin/oss-applications", icon: Heart },
 ] as const;
 
 function AdminLayout() {

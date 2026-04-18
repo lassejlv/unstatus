@@ -10,6 +10,7 @@ import { dependenciesRouter } from "./dependencies";
 import { maintenanceRouter } from "./maintenance";
 import { apiKeysRouter } from "./api-keys";
 import { adminRouter } from "./admin";
+import { ossRouter } from "./oss";
 
 const router = {
   monitors: monitorsRouter,
@@ -24,6 +25,7 @@ const router = {
   maintenance: maintenanceRouter,
   apiKeys: apiKeysRouter,
   admin: adminRouter,
+  oss: ossRouter,
 };
 
 export default router;
