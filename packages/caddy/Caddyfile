@@ -1,6 +1,6 @@
 {
 	on_demand_tls {
-		ask http://localhost:{$API_PORT:3456}/ask
+		ask http://localhost:{$API_PORT:3456}/ask?secret={$ASK_SECRET}
 	}
 }
 
