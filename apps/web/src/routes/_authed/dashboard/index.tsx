@@ -63,7 +63,7 @@ function DashboardIndex() {
 
   const { data: overview, isLoading: overviewLoading } = useQuery(overviewQuery);
   const { data: pages, isLoading: pagesLoading } = useQuery(pagesQuery);
-  const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
+  const { data: incidents } = useQuery(incidentsQuery);
   const { data: notifications, isLoading: notificationsLoading } = useQuery(notificationsQuery);
 
   const dataReady = !overviewLoading && !pagesLoading && !notificationsLoading;
@@ -74,7 +74,7 @@ function DashboardIndex() {
     notificationCount: (notifications as Array<{ id: string }> | undefined)?.length ?? 0,
   });
 
-  if (overviewLoading || pagesLoading || incidentsLoading) {
+  if (overviewLoading) {
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 sm:gap-8">
         <div className="flex flex-col gap-5">
