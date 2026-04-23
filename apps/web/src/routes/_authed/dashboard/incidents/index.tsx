@@ -2,10 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   skipToken,
   useQuery,
-  useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
+import { useLiveQuery } from "@tanstack/react-db";
+import { orpc, client } from "@/orpc/client";
+import { getMonitorsCollection } from "@/collections/monitors";
+import { getIncidentsCollection } from "@/collections/incidents";
 import { useOrg } from "@/components/org-context";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -57,15 +59,14 @@ export const Route = createFileRoute("/_authed/dashboard/incidents/")({
 function IncidentsPage() {
   const { activeOrg } = useOrg();
   const orgId = activeOrg?.id;
-  const monitorsQuery = orpc.monitors.list.queryOptions({
-    input: orgId ? { organizationId: orgId } : skipToken,
-  });
-  const incidentsQuery = orpc.incidents.listByOrg.queryOptions({
-    input: orgId ? { organizationId: orgId } : skipToken,
-  });
-
-  const { data: monitors, isLoading: monitorsLoading } = useQuery(monitorsQuery);
-  const { data: incidents, isLoading: incidentsLoading } = useQuery(incidentsQuery);
+  const { data: monitors, isLoading: monitorsLoading } = useLiveQuery(
+    (q) => (orgId ? q.from({ monitor: getMonitorsCollection(orgId) }) : null),
+    [orgId],
+  );
+  const { data: incidents, isLoading: incidentsLoading } = useLiveQuery(
+    (q) => (orgId ? q.from({ incident: getIncidentsCollection(orgId) }) : null),
+    [orgId],
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -247,6 +248,8 @@ function IncidentSidecar({
   incidentId: string | null;
   onClose: () => void;
 }) {
+  const { activeOrg } = useOrg();
+  const orgId = activeOrg?.id;
   const qc = useQueryClient();
   const opts = orpc.incidents.get.queryOptions({
     input: incidentId ? { id: incidentId } : skipToken,
@@ -255,16 +258,19 @@ function IncidentSidecar({
 
   const invalidate = () => qc.invalidateQueries({ queryKey: opts.queryKey });
 
-  const del = useMutation({
-    ...orpc.incidents.delete.mutationOptions(),
-    onSuccess: () => {
-      toast.success("Incident deleted");
-      onClose();
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to delete");
-    },
-  });
+  const deleteIncident = (id: string) => {
+    if (!orgId) return;
+    const collection = getIncidentsCollection(orgId);
+    const tx = collection.delete(id);
+    onClose();
+    tx.isPersisted.promise
+      .then(() => {
+        toast.success("Incident deleted");
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to delete");
+      });
+  };
 
   const isOpen = incidentId !== null;
 
@@ -374,7 +380,7 @@ function IncidentSidecar({
                 variant="destructive"
                 size="sm"
                 className="w-full"
-                onClick={() => del.mutate({ id: incident.id })}
+                onClick={() => deleteIncident(incident.id)}
               >
                 Delete incident
               </Button>
@@ -396,21 +402,42 @@ function PostUpdateForm({
   currentStatus: string;
   onSuccess: () => void;
 }) {
+  const { activeOrg } = useOrg();
+  const orgId = activeOrg?.id;
   const nextStatus = INCIDENT_STATUSES[Math.min(INCIDENT_STATUSES.indexOf(currentStatus as typeof INCIDENT_STATUSES[number]) + 1, INCIDENT_STATUSES.length - 1)];
   const [status, setStatus] = useState<typeof INCIDENT_STATUSES[number]>(nextStatus);
   const [message, setMessage] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
 
-  const update = useMutation({
-    ...orpc.incidents.update.mutationOptions(),
-    onSuccess: () => {
-      onSuccess();
-      setMessage("");
-      toast.success("Update posted");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to post update");
-    },
-  });
+  const postUpdate = () => {
+    if (!orgId) return;
+    const collection = getIncidentsCollection(orgId);
+    const now = new Date();
+    setIsPosting(true);
+    const tx = collection.update(incidentId, (draft) => {
+      draft.status = status;
+      if (status === "resolved") draft.resolvedAt = now;
+      draft.updates.unshift({
+        id: crypto.randomUUID(),
+        incidentId,
+        status,
+        message,
+        createdAt: now,
+      } as never);
+    });
+    tx.isPersisted.promise
+      .then(() => {
+        onSuccess();
+        setMessage("");
+        toast.success("Update posted");
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to post update");
+      })
+      .finally(() => {
+        setIsPosting(false);
+      });
+  };
 
   return (
     <div className="rounded-lg border p-3">
@@ -435,8 +462,8 @@ function PostUpdateForm({
         <Button
           size="sm"
           className="self-end h-7 text-xs"
-          disabled={!message || update.isPending}
-          onClick={() => update.mutate({ id: incidentId, status, message })}
+          disabled={!message || isPosting}
+          onClick={postUpdate}
         >
           Post
         </Button>
@@ -452,12 +479,12 @@ function CreateIncidentDialog({
   monitors: Array<{ id: string; name: string }>;
   orgId: string;
 }) {
-  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedMonitors, setSelectedMonitors] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState("");
   const [severity, setSeverity] = useState<"maintenance" | "minor" | "degraded" | "major" | "critical">("minor");
   const [message, setMessage] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const toggleMonitor = (id: string) => {
     setSelectedMonitors((prev) => {
@@ -468,23 +495,27 @@ function CreateIncidentDialog({
     });
   };
 
-  const create = useMutation({
-    ...orpc.incidents.create.mutationOptions(),
-    onSuccess: () => {
-      qc.invalidateQueries({
-        queryKey: orpc.incidents.listByOrg.queryOptions({
-          input: { organizationId: orgId },
-        }).queryKey,
+  const createIncident = async () => {
+    setIsCreating(true);
+    try {
+      await client.incidents.create({
+        monitorIds: [...selectedMonitors],
+        title,
+        severity,
+        message,
       });
+      await getIncidentsCollection(orgId).utils.refetch();
       setOpen(false);
       setTitle("");
       setMessage("");
       toast.success("Incident reported");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to report incident");
-    },
-  });
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : "Failed to report incident";
+      toast.error(errMessage);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -553,10 +584,8 @@ function CreateIncidentDialog({
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
-            disabled={!title || !message || selectedMonitors.size === 0 || create.isPending}
-            onClick={() =>
-              create.mutate({ monitorIds: [...selectedMonitors], title, severity, message })
-            }
+            disabled={!title || !message || selectedMonitors.size === 0 || isCreating}
+            onClick={createIncident}
           >
             Report
           </Button>

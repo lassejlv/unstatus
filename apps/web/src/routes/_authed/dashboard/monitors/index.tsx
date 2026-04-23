@@ -5,7 +5,9 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useLiveQuery } from "@tanstack/react-db";
 import { orpc, client } from "@/orpc/client";
+import { getMonitorsCollection } from "@/collections/monitors";
 import { useOrg } from "@/components/org-context";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -52,10 +54,10 @@ export const Route = createFileRoute("/_authed/dashboard/monitors/")({
 function MonitorsPage() {
   const { activeOrg } = useOrg();
   const orgId = activeOrg?.id;
-  const monitorsQuery = orpc.monitors.list.queryOptions({
-    input: orgId ? { organizationId: orgId } : skipToken,
-  });
-  const { data: monitors, isLoading } = useQuery(monitorsQuery);
+  const { data: monitors, isLoading } = useLiveQuery(
+    (q) => (orgId ? q.from({ monitor: getMonitorsCollection(orgId) }) : null),
+    [orgId],
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -229,6 +231,8 @@ function MonitorSidecar({
   monitorId: string | null;
   onClose: () => void;
 }) {
+  const { activeOrg } = useOrg();
+  const orgId = activeOrg?.id;
   const qc = useQueryClient();
   const monitorOpts = orpc.monitors.get.queryOptions({
     input: monitorId ? { id: monitorId } : skipToken,
@@ -267,28 +271,35 @@ function MonitorSidecar({
     },
   });
 
-  const toggle = useMutation({
-    ...orpc.monitors.update.mutationOptions(),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: monitorOpts.queryKey });
-      toast.success("Monitor updated");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to update");
-    },
-  });
+  const togglePaused = (m: { id: string; active: boolean }) => {
+    if (!orgId) return;
+    const collection = getMonitorsCollection(orgId);
+    const tx = collection.update(m.id, (draft) => {
+      draft.active = !m.active;
+    });
+    tx.isPersisted.promise
+      .then(() => {
+        qc.invalidateQueries({ queryKey: monitorOpts.queryKey });
+        toast.success("Monitor updated");
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to update");
+      });
+  };
 
-  const del = useMutation({
-    ...orpc.monitors.delete.mutationOptions(),
-    onSuccess: () => {
-      toast.success("Monitor deleted");
-      qc.invalidateQueries();
-      onClose();
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to delete");
-    },
-  });
+  const deleteMonitor = (id: string) => {
+    if (!orgId) return;
+    const collection = getMonitorsCollection(orgId);
+    const tx = collection.delete(id);
+    onClose();
+    tx.isPersisted.promise
+      .then(() => {
+        toast.success("Monitor deleted");
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to delete");
+      });
+  };
 
   const isOpen = monitorId !== null;
   const [tab, setTab] = useState<"overview" | "checks" | "settings">("overview");
@@ -419,7 +430,7 @@ function MonitorSidecar({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        toggle.mutate({ id: monitor.id, active: !monitor.active })
+                        togglePaused({ id: monitor.id, active: monitor.active })
                       }
                     >
                       {monitor.active ? "Pause" : "Resume"}
@@ -686,10 +697,9 @@ function MonitorSidecar({
                     variant="destructive"
                     size="sm"
                     className="flex-1"
-                    disabled={del.isPending}
-                    onClick={() => del.mutate({ id: monitor.id })}
+                    onClick={() => deleteMonitor(monitor.id)}
                   >
-                    {del.isPending ? "Deleting..." : "Delete"}
+                    Delete
                   </Button>
                 </div>
               </div>
@@ -728,6 +738,8 @@ function EditMonitorOverlay({
   onBack: () => void;
   onSuccess: () => void;
 }) {
+  const { activeOrg } = useOrg();
+  const orgId = activeOrg?.id;
   const [type, setType] = useState(monitor.type as "http" | "tcp" | "ping" | "redis" | "postgres");
   const [name, setName] = useState(monitor.name);
   const [url, setUrl] = useState(monitor.url ?? "");
@@ -748,16 +760,29 @@ function EditMonitorOverlay({
   const { tier } = useSubscription();
   const limits = PLAN_LIMITS[tier];
 
-  const update = useMutation({
-    ...orpc.monitors.update.mutationOptions(),
-    onSuccess: () => {
-      onSuccess();
-      toast.success("Monitor updated");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to update");
-    },
-  });
+  const [isSaving, setIsSaving] = useState(false);
+  const saveEdit = (
+    payload: Parameters<typeof client.monitors.update>[0],
+  ) => {
+    if (!orgId) return;
+    const { id, ...changes } = payload;
+    const collection = getMonitorsCollection(orgId);
+    setIsSaving(true);
+    const tx = collection.update(id, (draft) => {
+      Object.assign(draft, changes);
+    });
+    tx.isPersisted.promise
+      .then(() => {
+        onSuccess();
+        toast.success("Monitor updated");
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to update");
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
+  };
 
   return (
     <>
@@ -1022,9 +1047,9 @@ function EditMonitorOverlay({
           <Button
             size="sm"
             className="flex-1"
-            disabled={!name || update.isPending}
+            disabled={!name || isSaving}
             onClick={() =>
-              update.mutate({
+              saveEdit({
                 id: monitor.id,
                 name,
                 type,
@@ -1048,7 +1073,7 @@ function EditMonitorOverlay({
               })
             }
           >
-            {update.isPending ? "Saving..." : "Save"}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

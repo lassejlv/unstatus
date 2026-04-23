@@ -21,6 +21,10 @@ export function getContext() {
   return context
 }
 
+export function getQueryClient() {
+  return getContext().queryClient
+}
+
 export default function TanStackQueryProvider({
   children,
 }: {

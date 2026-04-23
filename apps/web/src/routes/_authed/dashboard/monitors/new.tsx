@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { orpc } from "@/orpc/client";
+import { getMonitorsCollection } from "@/collections/monitors";
 import { useOrg } from "@/components/org-context";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -39,7 +38,6 @@ function NewMonitorPage() {
   const { tier } = useSubscription();
   const limits = PLAN_LIMITS[tier];
   const navigate = useNavigate();
-  const qc = useQueryClient();
 
   const [step, setStep] = useState(0);
   const [type, setType] = useState<"http" | "tcp" | "ping" | "redis" | "postgres">("http");
@@ -56,23 +54,57 @@ function NewMonitorPage() {
   const [intervalSelect, setIntervalSelect] = useState(interval);
   const [autoIncidents, setAutoIncidents] = useState(false);
 
-  const create = useMutation({
-    ...orpc.monitors.create.mutationOptions(),
-    onSuccess: () => {
-      if (orgId) {
-        qc.invalidateQueries({
-          queryKey: orpc.monitors.list.queryOptions({
-            input: { organizationId: orgId },
-          }).queryKey,
-        });
-      }
-      toast.success("Monitor created");
-      navigate({ to: "/dashboard/monitors" });
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to create monitor");
-    },
-  });
+  const [isCreating, setIsCreating] = useState(false);
+  type CreatePayload = {
+    organizationId: string;
+    name: string;
+    type: string;
+    interval: number;
+    regions: string[];
+    autoIncidents: boolean;
+    url?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    body?: string;
+    host?: string;
+    port?: number;
+    rules?: Array<{ type: string; operator: string; value: string }>;
+  };
+  const createMonitor = (payload: CreatePayload) => {
+    if (!orgId) return;
+    const collection = getMonitorsCollection(orgId);
+    setIsCreating(true);
+    const now = new Date();
+    const tx = collection.insert({
+      id: crypto.randomUUID(),
+      ...payload,
+      timeout: 10,
+      url: payload.url ?? null,
+      method: payload.method ?? "GET",
+      headers: payload.headers ?? null,
+      body: payload.body ?? null,
+      host: payload.host ?? null,
+      port: payload.port ?? null,
+      rules: payload.rules ?? null,
+      active: true,
+      lastStatus: null,
+      lastLatency: null,
+      lastCheckedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    } as never);
+    tx.isPersisted.promise
+      .then(() => {
+        toast.success("Monitor created");
+        navigate({ to: "/dashboard/monitors" });
+      })
+      .catch((err: Error) => {
+        toast.error(err.message || "Failed to create monitor");
+      })
+      .finally(() => {
+        setIsCreating(false);
+      });
+  };
 
   const canAdvance =
     step === 0 ? !!name :
@@ -83,7 +115,7 @@ function NewMonitorPage() {
 
   function handleNext() {
     if (isLastStep) {
-      create.mutate({
+      createMonitor({
         organizationId: orgId!,
         name,
         type,
@@ -362,10 +394,10 @@ function NewMonitorPage() {
         <div className="flex-1" />
         <Button
           size="sm"
-          disabled={!canAdvance || !orgId || (isLastStep && create.isPending)}
+          disabled={!canAdvance || !orgId || (isLastStep && isCreating)}
           onClick={handleNext}
         >
-          {isLastStep ? (create.isPending ? "Creating..." : "Create") : "Next"}
+          {isLastStep ? (isCreating ? "Creating..." : "Create") : "Next"}
         </Button>
       </div>
     </div>

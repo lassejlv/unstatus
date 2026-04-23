@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegistryIndexRouteImport } from './routes/registry/index'
 import { Route as RegistrySlugRouteImport } from './routes/registry/$slug'
 import { Route as AcceptInvitationInvitationIdRouteImport } from './routes/accept-invitation.$invitationId'
+import { Route as AuthedOssRouteImport } from './routes/_authed/oss'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as AuthedAdminRouteImport } from './routes/_authed/admin'
 import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
@@ -39,6 +40,7 @@ import { Route as AuthedDashboardNotificationsRouteImport } from './routes/_auth
 import { Route as AuthedDashboardBillingRouteImport } from './routes/_authed/dashboard/billing'
 import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
 import { Route as AuthedAdminRegistryRouteImport } from './routes/_authed/admin/registry'
+import { Route as AuthedAdminOssApplicationsRouteImport } from './routes/_authed/admin/oss-applications'
 import { Route as AuthedAdminOrganizationsRouteImport } from './routes/_authed/admin/organizations'
 import { Route as AuthedAdminMonitorsRouteImport } from './routes/_authed/admin/monitors'
 import { Route as AuthedDashboardStatusPagesIndexRouteImport } from './routes/_authed/dashboard/status-pages/index'
@@ -104,6 +106,11 @@ const AcceptInvitationInvitationIdRoute =
     path: '/accept-invitation/$invitationId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthedOssRoute = AuthedOssRouteImport.update({
+  id: '/oss',
+  path: '/oss',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -201,6 +208,12 @@ const AuthedAdminRegistryRoute = AuthedAdminRegistryRouteImport.update({
   path: '/registry',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedAdminOssApplicationsRoute =
+  AuthedAdminOssApplicationsRouteImport.update({
+    id: '/oss-applications',
+    path: '/oss-applications',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
 const AuthedAdminOrganizationsRoute =
   AuthedAdminOrganizationsRouteImport.update({
     id: '/organizations',
@@ -266,11 +279,13 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthedAccountRoute
   '/admin': typeof AuthedAdminRouteWithChildren
   '/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/oss': typeof AuthedOssRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
   '/admin/monitors': typeof AuthedAdminMonitorsRoute
   '/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/admin/oss-applications': typeof AuthedAdminOssApplicationsRoute
   '/admin/registry': typeof AuthedAdminRegistryRoute
   '/admin/users': typeof AuthedAdminUsersRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
@@ -304,11 +319,13 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthedAccountRoute
+  '/oss': typeof AuthedOssRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry': typeof RegistryIndexRoute
   '/admin/monitors': typeof AuthedAdminMonitorsRoute
   '/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/admin/oss-applications': typeof AuthedAdminOssApplicationsRoute
   '/admin/registry': typeof AuthedAdminRegistryRoute
   '/admin/users': typeof AuthedAdminUsersRoute
   '/dashboard/billing': typeof AuthedDashboardBillingRoute
@@ -346,11 +363,13 @@ export interface FileRoutesById {
   '/_authed/account': typeof AuthedAccountRoute
   '/_authed/admin': typeof AuthedAdminRouteWithChildren
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/_authed/oss': typeof AuthedOssRoute
   '/accept-invitation/$invitationId': typeof AcceptInvitationInvitationIdRoute
   '/registry/$slug': typeof RegistrySlugRoute
   '/registry/': typeof RegistryIndexRoute
   '/_authed/admin/monitors': typeof AuthedAdminMonitorsRoute
   '/_authed/admin/organizations': typeof AuthedAdminOrganizationsRoute
+  '/_authed/admin/oss-applications': typeof AuthedAdminOssApplicationsRoute
   '/_authed/admin/registry': typeof AuthedAdminRegistryRoute
   '/_authed/admin/users': typeof AuthedAdminUsersRoute
   '/_authed/dashboard/billing': typeof AuthedDashboardBillingRoute
@@ -388,11 +407,13 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/dashboard'
+    | '/oss'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
     | '/admin/monitors'
     | '/admin/organizations'
+    | '/admin/oss-applications'
     | '/admin/registry'
     | '/admin/users'
     | '/dashboard/billing'
@@ -426,11 +447,13 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/account'
+    | '/oss'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry'
     | '/admin/monitors'
     | '/admin/organizations'
+    | '/admin/oss-applications'
     | '/admin/registry'
     | '/admin/users'
     | '/dashboard/billing'
@@ -467,11 +490,13 @@ export interface FileRouteTypes {
     | '/_authed/account'
     | '/_authed/admin'
     | '/_authed/dashboard'
+    | '/_authed/oss'
     | '/accept-invitation/$invitationId'
     | '/registry/$slug'
     | '/registry/'
     | '/_authed/admin/monitors'
     | '/_authed/admin/organizations'
+    | '/_authed/admin/oss-applications'
     | '/_authed/admin/registry'
     | '/_authed/admin/users'
     | '/_authed/dashboard/billing'
@@ -596,6 +621,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/accept-invitation/$invitationId'
       preLoaderRoute: typeof AcceptInvitationInvitationIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authed/oss': {
+      id: '/_authed/oss'
+      path: '/oss'
+      fullPath: '/oss'
+      preLoaderRoute: typeof AuthedOssRouteImport
+      parentRoute: typeof AuthedRoute
     }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
@@ -730,6 +762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminRegistryRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/admin/oss-applications': {
+      id: '/_authed/admin/oss-applications'
+      path: '/oss-applications'
+      fullPath: '/admin/oss-applications'
+      preLoaderRoute: typeof AuthedAdminOssApplicationsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
     '/_authed/admin/organizations': {
       id: '/_authed/admin/organizations'
       path: '/organizations'
@@ -799,6 +838,7 @@ declare module '@tanstack/react-router' {
 interface AuthedAdminRouteChildren {
   AuthedAdminMonitorsRoute: typeof AuthedAdminMonitorsRoute
   AuthedAdminOrganizationsRoute: typeof AuthedAdminOrganizationsRoute
+  AuthedAdminOssApplicationsRoute: typeof AuthedAdminOssApplicationsRoute
   AuthedAdminRegistryRoute: typeof AuthedAdminRegistryRoute
   AuthedAdminUsersRoute: typeof AuthedAdminUsersRoute
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
@@ -807,6 +847,7 @@ interface AuthedAdminRouteChildren {
 const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
   AuthedAdminMonitorsRoute: AuthedAdminMonitorsRoute,
   AuthedAdminOrganizationsRoute: AuthedAdminOrganizationsRoute,
+  AuthedAdminOssApplicationsRoute: AuthedAdminOssApplicationsRoute,
   AuthedAdminRegistryRoute: AuthedAdminRegistryRoute,
   AuthedAdminUsersRoute: AuthedAdminUsersRoute,
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
@@ -857,12 +898,14 @@ interface AuthedRouteChildren {
   AuthedAccountRoute: typeof AuthedAccountRoute
   AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
   AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
+  AuthedOssRoute: typeof AuthedOssRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAccountRoute: AuthedAccountRoute,
   AuthedAdminRoute: AuthedAdminRouteWithChildren,
   AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
+  AuthedOssRoute: AuthedOssRoute,
 }
 
 const AuthedRouteWithChildren =
