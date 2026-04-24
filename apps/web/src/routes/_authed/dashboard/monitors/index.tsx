@@ -247,6 +247,10 @@ function MonitorSidecar({
   const checksTotal = checksData?.total ?? 0;
   const checksHasMore = checksData?.hasMore ?? false;
   const [selectedCheck, setSelectedCheck] = useState<NonNullable<typeof checks>[0] | null>(null);
+  const checkDetailOpts = orpc.monitors.checkDetail.queryOptions({
+    input: selectedCheck ? { checkId: selectedCheck.id } : skipToken,
+  });
+  const { data: selectedCheckDetail, isLoading: checkDetailLoading } = useQuery(checkDetailOpts);
   const [view, setView] = useState<"main" | "edit" | "confirmDelete">("main");
   const [copied, setCopied] = useState(false);
 
@@ -609,29 +613,31 @@ function MonitorSidecar({
                     </div>
                   )}
                 </div>
-                {selectedCheck.responseHeaders && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-medium">Response headers</span>
-                    <div className="rounded-lg border">
-                      {Object.entries(
-                        selectedCheck.responseHeaders as Record<string, string>,
-                      ).map(([key, value], i, arr) => (
-                        <div
-                          key={key}
-                          className={`flex gap-3 px-3 py-2 text-xs ${i < arr.length - 1 ? "border-b" : ""}`}
-                        >
-                          <span className="shrink-0 font-mono font-medium text-muted-foreground">{key}</span>
-                          <span className="font-mono break-all text-right ml-auto">{value}</span>
-                        </div>
-                      ))}
-                    </div>
+
+                {checkDetailLoading && (
+                  <div className="rounded-lg border px-3 py-2.5 text-xs text-muted-foreground">
+                    Loading response details...
                   </div>
                 )}
-                {selectedCheck.responseBody && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-medium">Response body</span>
-                    <pre className="rounded-lg border bg-muted/50 p-3 text-xs font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-all max-h-64">
-                      {formatBody(selectedCheck.responseBody)}
+
+                {selectedCheckDetail?.responseHeaders && (
+                  <div className="rounded-lg border">
+                    <div className="border-b px-3 py-2.5">
+                      <span className="text-xs text-muted-foreground">Response headers</span>
+                    </div>
+                    <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words p-3 text-xs text-muted-foreground">
+                      {formatBody(selectedCheckDetail.responseHeaders)}
+                    </pre>
+                  </div>
+                )}
+
+                {selectedCheckDetail?.responseBody && (
+                  <div className="rounded-lg border">
+                    <div className="border-b px-3 py-2.5">
+                      <span className="text-xs text-muted-foreground">Response body</span>
+                    </div>
+                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words p-3 text-xs text-muted-foreground">
+                      {formatBody(selectedCheckDetail.responseBody)}
                     </pre>
                   </div>
                 )}
@@ -1081,12 +1087,18 @@ function EditMonitorOverlay({
   );
 }
 
-function formatBody(body: string): string {
-  try {
-    return JSON.stringify(JSON.parse(body), null, 2);
-  } catch {
-    return body;
+function formatBody(value: unknown) {
+  if (value == null) return "";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    try {
+      return JSON.stringify(JSON.parse(trimmed), null, 2);
+    } catch {
+      return value;
+    }
   }
+  return JSON.stringify(value, null, 2) ?? "";
 }
 
 function MonitorDependencies({ monitorId }: { monitorId: string }) {
@@ -1373,4 +1385,3 @@ function MonitorDependencies({ monitorId }: { monitorId: string }) {
     </div>
   );
 }
-

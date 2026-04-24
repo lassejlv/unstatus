@@ -245,6 +245,16 @@ app.get("/:id/checks", async (c) => {
   const [items, total] = await Promise.all([
     prisma.monitorCheck.findMany({
       where: { monitorId: id },
+      select: {
+        id: true,
+        monitorId: true,
+        status: true,
+        latency: true,
+        statusCode: true,
+        message: true,
+        region: true,
+        checkedAt: true,
+      },
       orderBy: { checkedAt: "desc" },
       take,
       skip: offset,

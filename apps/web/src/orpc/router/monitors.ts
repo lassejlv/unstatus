@@ -232,6 +232,16 @@ export const monitorsRouter = {
       const [items, total] = await Promise.all([
         prisma.monitorCheck.findMany({
           where: { monitorId: input.monitorId },
+          select: {
+            id: true,
+            monitorId: true,
+            status: true,
+            latency: true,
+            statusCode: true,
+            message: true,
+            region: true,
+            checkedAt: true,
+          },
           orderBy: { checkedAt: "desc" },
           take: take + 1,
           skip: input.offset,
@@ -245,6 +255,30 @@ export const monitorsRouter = {
         hasMore,
       };
     }),
+
+  checkDetail: authedProcedure.input(z.object({ checkId: z.string() })).handler(async ({ input, context }) => {
+    const check = await prisma.monitorCheck.findUniqueOrThrow({
+      where: { id: input.checkId },
+      select: {
+        id: true,
+        monitorId: true,
+        status: true,
+        latency: true,
+        statusCode: true,
+        message: true,
+        region: true,
+        checkedAt: true,
+        responseHeaders: true,
+        responseBody: true,
+        monitor: { select: { organizationId: true } },
+      },
+    });
+
+    await verifyOrgMembership(context.session.user.id, check.monitor.organizationId);
+
+    const { monitor: _monitor, ...detail } = check;
+    return detail;
+  }),
 
   overview: orgProcedure(z.object({ organizationId: z.string(), hours: z.number().min(1).max(720).default(24) })).handler(
     async ({ input }) => {
