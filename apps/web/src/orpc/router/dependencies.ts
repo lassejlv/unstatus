@@ -1,5 +1,6 @@
 import z from "zod";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 import {
   authedProcedure,
   verifyOrgMembership,
@@ -89,7 +90,7 @@ export const dependenciesRouter = {
         where: { id: input.externalServiceId },
       });
 
-      return prisma.monitorDependency.create({
+      const dependency = await prisma.monitorDependency.create({
         data: {
           monitorId: input.monitorId,
           externalServiceId: input.externalServiceId,
@@ -118,6 +119,21 @@ export const dependenciesRouter = {
           },
         },
       });
+      logAudit({
+        context,
+        action: "dependency.add",
+        result: "success",
+        organizationId: monitor.organizationId,
+        resourceType: "monitor_dependency",
+        resourceId: dependency.id,
+        message: "Monitor dependency added",
+        metadata: {
+          monitorId: input.monitorId,
+          externalServiceId: input.externalServiceId,
+          hasComponent: Boolean(input.externalComponentId),
+        },
+      });
+      return dependency;
     }),
 
   remove: authedProcedure
@@ -129,5 +145,14 @@ export const dependenciesRouter = {
       });
       await verifyOrgRole(context.session.user.id, dep.monitor.organizationId, ORG_MANAGER_ROLES);
       await prisma.monitorDependency.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "dependency.remove",
+        result: "success",
+        organizationId: dep.monitor.organizationId,
+        resourceType: "monitor_dependency",
+        resourceId: input.id,
+        message: "Monitor dependency removed",
+      });
     }),
 };

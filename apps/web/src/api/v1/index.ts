@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { errorHandler } from "../middleware/error-handler";
 import { apiKeyAuth } from "../middleware/auth";
+import { apiAudit } from "../middleware/audit";
 import { rateLimit } from "../middleware/rate-limit";
 import { monitorsRoutes } from "./monitors";
 import { incidentsRoutes } from "./incidents";
@@ -14,6 +15,7 @@ const app = new Hono().basePath("/api/v1");
 app.use("*", errorHandler);
 app.use("*", apiKeyAuth);
 app.use("*", rateLimit);
+app.use("*", apiAudit);
 
 app.route("/monitors", monitorsRoutes);
 app.route("/incidents", incidentsRoutes);

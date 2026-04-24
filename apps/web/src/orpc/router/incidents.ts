@@ -7,6 +7,7 @@ import {
 } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
+import { logAudit } from "@/lib/audit";
 import { ORPCError } from "@orpc/server";
 import { incidentStatusSchema, incidentSeveritySchema } from "@/types";
 import z from "zod";
@@ -107,6 +108,16 @@ export const incidentsRouter = {
       severity: input.severity,
       message,
     }).catch((e) => console.error("Notification failed:", e));
+    logAudit({
+      context,
+      action: "incident.create",
+      result: "success",
+      organizationId: primaryMonitor.organizationId,
+      resourceType: "incident",
+      resourceId: incident.id,
+      message: "Incident created",
+      metadata: { status: incident.status, severity: incident.severity, monitorCount: monitorIds.length },
+    });
     return incident;
   }),
 
@@ -141,6 +152,16 @@ export const incidentsRouter = {
         : { type: eventType, monitorId: incident.monitor.id, monitorName: displayName, title: incident.title, status: input.status, message: input.message };
       sendNotifications(incident.monitor.organizationId, event)
         .catch((e) => console.error("Notification failed:", e));
+      logAudit({
+        context,
+        action: input.status === "resolved" ? "incident.resolve" : "incident.update",
+        result: "success",
+        organizationId: incident.monitor.organizationId,
+        resourceType: "incident",
+        resourceId: input.id,
+        message: input.status === "resolved" ? "Incident resolved" : "Incident updated",
+        metadata: { status: input.status },
+      });
       return updated;
     }),
 
@@ -152,6 +173,15 @@ export const incidentsRouter = {
       });
       await verifyOrgRole(context.session.user.id, incident.monitor.organizationId, ORG_MANAGER_ROLES);
       await prisma.incident.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "incident.delete",
+        result: "success",
+        organizationId: incident.monitor.organizationId,
+        resourceType: "incident",
+        resourceId: input.id,
+        message: "Incident deleted",
+      });
     },
   ),
 };

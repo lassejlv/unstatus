@@ -2,6 +2,7 @@ import { authedProcedure, orgProcedure, orgAdminProcedure, ORG_MANAGER_ROLES, ve
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
+import { logAudit } from "@/lib/audit";
 import { SubscriptionVerifyEmail } from "@unstatus/email";
 import { ORPCError } from "@orpc/server";
 import z from "zod";
@@ -37,7 +38,7 @@ export const subscribersRouter = {
       statusPageId: z.string(),
       email: z.string().email(),
     }),
-  ).handler(async ({ input }) => {
+  ).handler(async ({ input, context }) => {
     // Verify the status page belongs to this org
     const page = await prisma.statusPage.findUnique({
       where: { id: input.statusPageId },
@@ -74,6 +75,16 @@ export const subscribersRouter = {
       react: <SubscriptionVerifyEmail pageName={page.name} verifyUrl={verifyUrl} unsubscribeUrl={unsubscribeUrl} />,
     });
 
+    logAudit({
+      context,
+      action: "subscriber.add",
+      result: "success",
+      organizationId: input.organizationId,
+      resourceType: "status_page_subscriber",
+      resourceId: subscriber.id,
+      message: "Subscriber added",
+      metadata: { statusPageId: page.id },
+    });
     return { success: true };
   }),
 
@@ -120,6 +131,15 @@ export const subscribersRouter = {
         react: <SubscriptionVerifyEmail pageName={subscriber.statusPage.name} verifyUrl={verifyUrl} unsubscribeUrl={unsubscribeUrl} />,
       });
 
+      logAudit({
+        context,
+        action: "subscriber.resend_verification",
+        result: "success",
+        organizationId: subscriber.statusPage.organizationId,
+        resourceType: "status_page_subscriber",
+        resourceId: input.id,
+        message: "Subscriber verification email resent",
+      });
       return { success: true };
     }),
 
@@ -145,6 +165,15 @@ export const subscribersRouter = {
         where: { id: input.id },
       });
 
+      logAudit({
+        context,
+        action: "subscriber.delete",
+        result: "success",
+        organizationId: subscriber.statusPage.organizationId,
+        resourceType: "status_page_subscriber",
+        resourceId: input.id,
+        message: "Subscriber deleted",
+      });
       return { success: true };
     }),
 };

@@ -11,6 +11,7 @@ import { isAllowedDiscordWebhookUrl } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { email } from "@/lib/email";
 import { env } from "@/lib/env";
+import { logAudit } from "@/lib/audit";
 import { notificationChannelTypeSchema } from "@/types";
 import { NotificationEmail } from "@unstatus/email";
 import { ORPCError } from "@orpc/server";
@@ -63,7 +64,7 @@ export const notificationsRouter = {
     },
   ),
 
-  create: orgAdminProcedure(createInput).handler(async ({ input }) => {
+  create: orgAdminProcedure(createInput).handler(async ({ input, context }) => {
     if (input.type === "discord") {
       if (!input.webhookUrl || !isAllowedDiscordWebhookUrl(input.webhookUrl)) {
         throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
@@ -71,7 +72,18 @@ export const notificationsRouter = {
       const { tier } = await getOrgSubscription(input.organizationId);
       requireFeature(tier, "discordAlerts", "Discord notifications");
     }
-    return prisma.notificationChannel.create({ data: input });
+    const channel = await prisma.notificationChannel.create({ data: input });
+    logAudit({
+      context,
+      action: "notification.create",
+      result: "success",
+      organizationId: input.organizationId,
+      resourceType: "notification_channel",
+      resourceId: channel.id,
+      message: "Notification channel created",
+      metadata: { type: channel.type },
+    });
+    return channel;
   }),
 
   update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
@@ -81,7 +93,18 @@ export const notificationsRouter = {
     if (channel.type === "discord" && data.webhookUrl && !isAllowedDiscordWebhookUrl(data.webhookUrl)) {
       throw new ORPCError("BAD_REQUEST", { message: "Discord webhook URL must be a valid Discord webhook." });
     }
-    return prisma.notificationChannel.update({ where: { id }, data });
+    const updated = await prisma.notificationChannel.update({ where: { id }, data });
+    logAudit({
+      context,
+      action: "notification.update",
+      result: "success",
+      organizationId: channel.organizationId,
+      resourceType: "notification_channel",
+      resourceId: id,
+      message: "Notification channel updated",
+      metadata: { type: updated.type, enabled: updated.enabled },
+    });
+    return updated;
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
@@ -89,6 +112,16 @@ export const notificationsRouter = {
       const channel = await prisma.notificationChannel.findUniqueOrThrow({ where: { id: input.id } });
       await verifyOrgRole(context.session.user.id, channel.organizationId, ORG_MANAGER_ROLES);
       await prisma.notificationChannel.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "notification.delete",
+        result: "success",
+        organizationId: channel.organizationId,
+        resourceType: "notification_channel",
+        resourceId: input.id,
+        message: "Notification channel deleted",
+        metadata: { type: channel.type },
+      });
     },
   ),
 
@@ -140,6 +173,16 @@ export const notificationsRouter = {
         });
       }
 
+      logAudit({
+        context,
+        action: "notification.test",
+        result: "success",
+        organizationId: channel.organizationId,
+        resourceType: "notification_channel",
+        resourceId: input.id,
+        message: "Notification channel test sent",
+        metadata: { type: channel.type },
+      });
       return { success: true };
     },
   ),

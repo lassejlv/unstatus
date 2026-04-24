@@ -55,6 +55,7 @@
         "@tanstack/react-start": "latest",
         "@unstatus/db": "workspace:*",
         "@unstatus/email": "workspace:*",
+        "@unstatus/observability": "workspace:*",
         "better-auth": "^1.5.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -93,6 +94,7 @@
       "dependencies": {
         "@unstatus/db": "workspace:*",
         "@unstatus/email": "workspace:*",
+        "@unstatus/observability": "workspace:*",
         "hono": "^4.7.0",
         "react": "^19.0.0",
       },
@@ -131,6 +133,9 @@
         "typescript": "^5.7.2",
         "vitest": "^3.0.5",
       },
+    },
+    "packages/observability": {
+      "name": "@unstatus/observability",
     },
   },
   "overrides": {
@@ -1106,6 +1111,8 @@
     "@unstatus/email": ["@unstatus/email@workspace:packages/email"],
 
     "@unstatus/node-sdk": ["@unstatus/node-sdk@workspace:packages/node-sdk"],
+
+    "@unstatus/observability": ["@unstatus/observability@workspace:packages/observability"],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@5.2.0", "", { "dependencies": { "@babel/core": "^7.29.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-rc.3", "@types/babel__core": "^7.20.5", "react-refresh": "^0.18.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw=="],
 

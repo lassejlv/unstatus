@@ -31,6 +31,7 @@
     "@tanstack/react-start": "latest",
     "@unstatus/db": "workspace:*",
     "@unstatus/email": "workspace:*",
+    "@unstatus/observability": "workspace:*",
     "better-auth": "^1.5.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -4,6 +4,7 @@ import { Prisma } from "@unstatus/db";
 
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { logAudit } from "@/lib/audit";
 import {
   authedProcedure,
   orgAdminProcedure,
@@ -82,7 +83,7 @@ export const statusPagesRouter = {
     },
   ),
 
-  create: orgAdminProcedure(createInput).handler(async ({ input }) => {
+  create: orgAdminProcedure(createInput).handler(async ({ input, context }) => {
     const { tier } = await getOrgSubscription(input.organizationId);
     const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
     requireLimit(tier, "statusPages", count);
@@ -90,7 +91,18 @@ export const statusPagesRouter = {
     if (input.customCss) requireFeature(tier, "customCss", "Custom CSS");
     if (input.customJs) requireFeature(tier, "customJs", "Custom JavaScript");
     if (input.showDependencies) requireFeature(tier, "dependencies", "Dependency chain");
-    return prisma.statusPage.create({ data: input });
+    const statusPage = await prisma.statusPage.create({ data: input });
+    logAudit({
+      context,
+      action: "status_page.create",
+      result: "success",
+      organizationId: input.organizationId,
+      resourceType: "status_page",
+      resourceId: statusPage.id,
+      message: "Status page created",
+      metadata: { isPublic: statusPage.isPublic },
+    });
+    return statusPage;
   }),
 
   update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
@@ -106,7 +118,18 @@ export const statusPagesRouter = {
     if (data.showDependencies) requireFeature(tier, "dependencies", "Dependency chain");
 
     try {
-      return await prisma.statusPage.update({ where: { id }, data });
+      const updated = await prisma.statusPage.update({ where: { id }, data });
+      logAudit({
+        context,
+        action: "status_page.update",
+        result: "success",
+        organizationId: orgId,
+        resourceType: "status_page",
+        resourceId: id,
+        message: "Status page updated",
+        metadata: { isPublic: updated.isPublic },
+      });
+      return updated;
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         throw new ORPCError("CONFLICT", { message: "This custom domain is already in use" });
@@ -120,6 +143,15 @@ export const statusPagesRouter = {
       const statusPage = await prisma.statusPage.findUniqueOrThrow({ where: { id: input.id } });
       await verifyOrgRole(context.session.user.id, statusPage.organizationId, ORG_MANAGER_ROLES);
       await prisma.statusPage.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "status_page.delete",
+        result: "success",
+        organizationId: statusPage.organizationId,
+        resourceType: "status_page",
+        resourceId: input.id,
+        message: "Status page deleted",
+      });
     },
   ),
 
@@ -140,7 +172,18 @@ export const statusPagesRouter = {
       if (monitor.organizationId !== statusPage.organizationId) {
         throw new ORPCError("FORBIDDEN", { message: "Monitor does not belong to this organization" });
       }
-      return prisma.statusPageMonitor.create({ data: input });
+      const statusPageMonitor = await prisma.statusPageMonitor.create({ data: input });
+      logAudit({
+        context,
+        action: "status_page.add_monitor",
+        result: "success",
+        organizationId: statusPage.organizationId,
+        resourceType: "status_page",
+        resourceId: input.statusPageId,
+        message: "Monitor added to status page",
+        metadata: { monitorId: input.monitorId },
+      });
+      return statusPageMonitor;
     }),
 
   updateMonitors: authedProcedure
@@ -182,6 +225,16 @@ export const statusPagesRouter = {
           }),
         ),
       );
+      logAudit({
+        context,
+        action: "status_page.update_monitors",
+        result: "success",
+        organizationId: statusPage.organizationId,
+        resourceType: "status_page",
+        resourceId: input.statusPageId,
+        message: "Status page monitors updated",
+        metadata: { monitorCount: input.monitors.length },
+      });
       return { success: true };
     }),
 
@@ -194,5 +247,14 @@ export const statusPagesRouter = {
       });
       await verifyOrgRole(context.session.user.id, spm.statusPage.organizationId, ORG_MANAGER_ROLES);
       await prisma.statusPageMonitor.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "status_page.remove_monitor",
+        result: "success",
+        organizationId: spm.statusPage.organizationId,
+        resourceType: "status_page_monitor",
+        resourceId: input.id,
+        message: "Monitor removed from status page",
+      });
     }),
 };

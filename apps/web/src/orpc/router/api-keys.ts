@@ -6,6 +6,7 @@ import {
 import { ORPCError } from "@orpc/server";
 import { prisma } from "@/lib/prisma";
 import { hashKey } from "@/lib/crypto";
+import { logAudit } from "@/lib/audit";
 import z from "zod";
 
 function generateApiKey(): string {
@@ -50,7 +51,7 @@ const create = orgAdminProcedure(
     const keyHash = await hashKey(plainKey);
     const keyPrefix = plainKey.slice(0, 12);
 
-    await prisma.apiKey.create({
+    const apiKey = await prisma.apiKey.create({
       data: {
         organizationId: context.organizationId,
         createdById: context.session.user.id,
@@ -61,6 +62,16 @@ const create = orgAdminProcedure(
       },
     });
 
+    logAudit({
+      context,
+      action: "api_key.create",
+      result: "success",
+      organizationId: context.organizationId,
+      resourceType: "api_key",
+      resourceId: apiKey.id,
+      message: "API key created",
+      metadata: { expires: Boolean(input.expiresAt) },
+    });
     return { key: plainKey, keyPrefix };
   });
 
@@ -84,6 +95,15 @@ const revoke = orgAdminProcedure(
       where: { id: input.id },
       data: { revokedAt: new Date() },
     });
+    logAudit({
+      context,
+      action: "api_key.revoke",
+      result: "success",
+      organizationId: context.organizationId,
+      resourceType: "api_key",
+      resourceId: input.id,
+      message: "API key revoked",
+    });
     return { success: true };
   });
 
@@ -101,6 +121,15 @@ const deleteKey = orgOwnerProcedure(
       throw new ORPCError("NOT_FOUND", { message: "API key not found" });
     }
     await prisma.apiKey.delete({ where: { id: input.id } });
+    logAudit({
+      context,
+      action: "api_key.delete",
+      result: "success",
+      organizationId: context.organizationId,
+      resourceType: "api_key",
+      resourceId: input.id,
+      message: "API key deleted",
+    });
     return { success: true };
   });
 

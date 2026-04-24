@@ -1,6 +1,7 @@
 import { authedProcedure, orgProcedure, orgAdminProcedure, ORG_MANAGER_ROLES, verifyOrgRole } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
 import { sendNotifications } from "@/lib/notifications";
+import { logAudit } from "@/lib/audit";
 import { ORPCError } from "@orpc/server";
 import z from "zod";
 
@@ -42,7 +43,7 @@ export const maintenanceRouter = {
       scheduledEnd: z.coerce.date(),
       monitorIds: z.array(z.string()).min(1),
     }),
-  ).handler(async ({ input }) => {
+  ).handler(async ({ input, context }) => {
     if (input.scheduledEnd <= input.scheduledStart) {
       throw new ORPCError("BAD_REQUEST", { message: "End time must be after start time" });
     }
@@ -82,6 +83,16 @@ export const maintenanceRouter = {
       monitorNames: monitors.map((m) => m.name),
     }).catch(console.error);
 
+    logAudit({
+      context,
+      action: "maintenance.create",
+      result: "success",
+      organizationId: input.organizationId,
+      resourceType: "maintenance_window",
+      resourceId: mw.id,
+      message: "Maintenance window created",
+      metadata: { monitorCount: input.monitorIds.length },
+    });
     return mw;
   }),
 
@@ -123,7 +134,7 @@ export const maintenanceRouter = {
         }
       }
 
-      return prisma.$transaction(async (tx) => {
+      const updated = await prisma.$transaction(async (tx) => {
         if (input.monitorIds) {
           await tx.maintenanceWindowMonitor.deleteMany({
             where: { maintenanceWindowId: input.id },
@@ -151,6 +162,17 @@ export const maintenanceRouter = {
           },
         });
       });
+      logAudit({
+        context,
+        action: "maintenance.update",
+        result: "success",
+        organizationId: existing.organizationId,
+        resourceType: "maintenance_window",
+        resourceId: input.id,
+        message: "Maintenance window updated",
+        metadata: { monitorCount: updated.monitors.length },
+      });
+      return updated;
     }),
 
   delete: authedProcedure
@@ -166,6 +188,15 @@ export const maintenanceRouter = {
       }
 
       await prisma.maintenanceWindow.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "maintenance.delete",
+        result: "success",
+        organizationId: existing.organizationId,
+        resourceType: "maintenance_window",
+        resourceId: input.id,
+        message: "Maintenance window deleted",
+      });
       return { success: true };
     }),
 
@@ -197,6 +228,15 @@ export const maintenanceRouter = {
         monitorNames: existing.monitors.map((m) => m.monitor.name),
       }).catch(console.error);
 
+      logAudit({
+        context,
+        action: "maintenance.start",
+        result: "success",
+        organizationId: existing.organizationId,
+        resourceType: "maintenance_window",
+        resourceId: input.id,
+        message: "Maintenance window started",
+      });
       return mw;
     }),
 
@@ -228,6 +268,15 @@ export const maintenanceRouter = {
         monitorNames: existing.monitors.map((m) => m.monitor.name),
       }).catch(console.error);
 
+      logAudit({
+        context,
+        action: "maintenance.complete",
+        result: "success",
+        organizationId: existing.organizationId,
+        resourceType: "maintenance_window",
+        resourceId: input.id,
+        message: "Maintenance window completed",
+      });
       return mw;
     }),
 
@@ -243,9 +292,19 @@ export const maintenanceRouter = {
         throw new ORPCError("BAD_REQUEST", { message: "Can only cancel scheduled maintenance windows" });
       }
 
-      return prisma.maintenanceWindow.update({
+      const mw = await prisma.maintenanceWindow.update({
         where: { id: input.id },
         data: { status: "cancelled" },
       });
+      logAudit({
+        context,
+        action: "maintenance.cancel",
+        result: "success",
+        organizationId: existing.organizationId,
+        resourceType: "maintenance_window",
+        resourceId: input.id,
+        message: "Maintenance window cancelled",
+      });
+      return mw;
     }),
 };

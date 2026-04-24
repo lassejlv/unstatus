@@ -10,6 +10,7 @@ import {
   requireLimit,
 } from "@/orpc/procedures";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { logAudit } from "@/lib/audit";
 import { ORPCError } from "@orpc/server";
 import { Prisma } from "@unstatus/db";
 import { prisma } from "@/lib/prisma";
@@ -172,7 +173,7 @@ export const monitorsRouter = {
     },
   ),
 
-  create: orgAdminProcedure(createInput).handler(async ({ input }) => {
+  create: orgAdminProcedure(createInput).handler(async ({ input, context }) => {
     const orgId = input.organizationId;
     const { tier } = await getOrgSubscription(orgId);
 
@@ -190,7 +191,18 @@ export const monitorsRouter = {
       });
     }
 
-    return prisma.monitor.create({ data: toMonitorCreateData(input) });
+    const monitor = await prisma.monitor.create({ data: toMonitorCreateData(input) });
+    logAudit({
+      context,
+      action: "monitor.create",
+      result: "success",
+      organizationId: orgId,
+      resourceType: "monitor",
+      resourceId: monitor.id,
+      message: "Monitor created",
+      metadata: { type: monitor.type, interval: monitor.interval },
+    });
+    return monitor;
   }),
 
   update: authedProcedure.input(updateInput).handler(async ({ input, context }) => {
@@ -212,7 +224,18 @@ export const monitorsRouter = {
       });
     }
 
-    return prisma.monitor.update({ where: { id }, data: toMonitorUpdateData(data) });
+    const updated = await prisma.monitor.update({ where: { id }, data: toMonitorUpdateData(data) });
+    logAudit({
+      context,
+      action: "monitor.update",
+      result: "success",
+      organizationId: orgId,
+      resourceType: "monitor",
+      resourceId: id,
+      message: "Monitor updated",
+      metadata: { type: updated.type, active: updated.active },
+    });
+    return updated;
   }),
 
   delete: authedProcedure.input(z.object({ id: z.string() })).handler(
@@ -220,6 +243,16 @@ export const monitorsRouter = {
       const monitor = await prisma.monitor.findUniqueOrThrow({ where: { id: input.id } });
       await verifyOrgRole(context.session.user.id, monitor.organizationId, ORG_MANAGER_ROLES);
       await prisma.monitor.delete({ where: { id: input.id } });
+      logAudit({
+        context,
+        action: "monitor.delete",
+        result: "success",
+        organizationId: monitor.organizationId,
+        resourceType: "monitor",
+        resourceId: input.id,
+        message: "Monitor deleted",
+        metadata: { type: monitor.type },
+      });
     },
   ),
 
@@ -424,6 +457,15 @@ export const monitorsRouter = {
       };
       const workerUrl = workerUrlMap[primaryRegion] ?? env.WORKER_EU_URL ?? env.WORKER_URL;
       if (!workerUrl || !env.WORKER_SECRET) {
+        logAudit({
+          context,
+          action: "monitor.run_check",
+          result: "failure",
+          organizationId: monitor.organizationId,
+          resourceType: "monitor",
+          resourceId: input.monitorId,
+          message: "Worker not configured",
+        });
         throw new ORPCError("SERVICE_UNAVAILABLE", { message: "Worker not configured" });
       }
       const res = await fetch(`${workerUrl}/run/${input.monitorId}`, {
@@ -435,8 +477,29 @@ export const monitorsRouter = {
         const body = await res.json().catch(() => null) as { error?: string } | null;
         const detail = body?.error ?? `Worker returned ${res.status}`;
         console.error(`Worker check failed: ${detail}`);
+        logAudit({
+          context,
+          action: "monitor.run_check",
+          result: "failure",
+          organizationId: monitor.organizationId,
+          resourceType: "monitor",
+          resourceId: input.monitorId,
+          message: detail,
+          metadata: { region: primaryRegion, status: res.status },
+        });
         throw new ORPCError("BAD_GATEWAY", { message: detail });
       }
-      return res.json();
+      const result = await res.json();
+      logAudit({
+        context,
+        action: "monitor.run_check",
+        result: "success",
+        organizationId: monitor.organizationId,
+        resourceType: "monitor",
+        resourceId: input.monitorId,
+        message: "Manual monitor check run",
+        metadata: { region: primaryRegion },
+      });
+      return result;
     }),
 };
