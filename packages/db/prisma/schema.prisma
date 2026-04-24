@@ -157,7 +157,6 @@ model Monitor {
   maintenanceMonitors MaintenanceWindowMonitor[]
 
   @@index([organizationId])
-  @@index([active])
   @@index([active, nextCheckAt])
   @@index([regions(ops: JsonbPathOps)], type: Gin)
   @@map("monitor")
@@ -286,7 +285,6 @@ model StatusPageSubscriber {
   createdAt    DateTime   @default(now())
 
   @@unique([statusPageId, email])
-  @@index([statusPageId])
   @@map("status_page_subscriber")
 }
 
@@ -301,7 +299,6 @@ model StatusPageMonitor {
   groupName    String?
 
   @@unique([statusPageId, monitorId])
-  @@index([statusPageId])
   @@map("status_page_monitor")
 }
 
@@ -399,7 +396,6 @@ model MaintenanceWindow {
   monitors       MaintenanceWindowMonitor[]
 
   @@index([organizationId])
-  @@index([status])
   @@index([status, scheduledStart])
   @@map("maintenance_window")
 }
@@ -471,7 +467,6 @@ model ExternalServiceComponent {
   dependencies  MonitorDependency[]
 
   @@unique([externalServiceId, externalId])
-  @@index([externalServiceId])
   @@map("external_service_component")
 }
 
@@ -504,7 +499,6 @@ model MonitorDependency {
   createdAt           DateTime @default(now())
 
   @@unique([monitorId, externalServiceId, externalComponentId])
-  @@index([monitorId])
   @@index([externalServiceId])
   @@map("monitor_dependency")
 }
@@ -528,7 +522,6 @@ model ApiKey {
   createdAt      DateTime     @default(now())
 
   @@index([organizationId])
-  @@index([keyHash])
   @@map("api_key")
 }
 
