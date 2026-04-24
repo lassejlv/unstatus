@@ -175,11 +175,7 @@ function PricingHeader() {
         }}
       />
       <div className="relative mx-auto max-w-6xl px-5 pb-10 pt-16 text-center md:pt-20">
-        <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
-          <StatusDot size={6} />
-          <span>Transparent pricing · cancel anytime</span>
-        </div>
-        <h1 className="mt-5 text-[2.5rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+        <h1 className="text-[2.5rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
           Monitor more.
           <br />
           <span className="text-muted-foreground">Pay less as you grow.</span>
