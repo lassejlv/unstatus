@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -85,7 +84,7 @@ function PlanCard({
       className={cn(
         "relative flex flex-col rounded-lg p-6 md:p-7",
         highlight
-          ? "bg-foreground text-background shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]"
+          ? "bg-zinc-900 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]"
           : "border bg-card"
       )}
     >
@@ -97,34 +96,34 @@ function PlanCard({
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h3 className={cn("text-sm font-medium", highlight ? "text-background" : "text-foreground")}>
+        <h3 className={cn("text-sm font-medium", highlight ? "text-white" : "text-foreground")}>
           {name}
         </h3>
-        {savings && (
-          <span
-            className={cn(
-              "rounded px-1.5 py-0.5 text-[10px] font-mono",
-              highlight ? "bg-white/15 text-background" : "bg-muted text-muted-foreground"
-            )}
-          >
-            {savings}
-          </span>
-        )}
+          {savings && (
+            <span
+              className={cn(
+                "rounded px-1.5 py-0.5 text-[10px] font-mono",
+                highlight ? "bg-white/15 text-white" : "bg-muted text-muted-foreground"
+              )}
+            >
+              {savings}
+            </span>
+          )}
       </div>
-      <p className={cn("mt-1 text-xs", highlight ? "text-background/70" : "text-muted-foreground")}>
+      <p className={cn("mt-1 text-xs", highlight ? "text-white/70" : "text-muted-foreground")}>
         {desc}
       </p>
       <div className="mt-6 flex items-baseline gap-1.5">
         <span
           className={cn(
             "text-4xl font-semibold tracking-tight tabular-nums",
-            highlight ? "text-background" : "text-foreground"
+            highlight ? "text-white" : "text-foreground"
           )}
         >
           {price}
         </span>
         {priceSuffix && (
-          <span className={cn("text-xs", highlight ? "text-background/60" : "text-muted-foreground")}>
+          <span className={cn("text-xs", highlight ? "text-white/60" : "text-muted-foreground")}>
             {priceSuffix}
           </span>
         )}
@@ -133,7 +132,7 @@ function PlanCard({
         className={cn(
           "mt-6 w-full rounded-md text-sm",
           ctaVariant === "default" && !highlight && "hover:opacity-90",
-          highlight && "bg-background text-foreground hover:opacity-90"
+          highlight && "bg-white text-zinc-900 hover:opacity-90"
         )}
         variant={highlight ? "outline" : ctaVariant}
         onClick={onAction}
@@ -146,9 +145,9 @@ function PlanCard({
           <li key={i} className="flex items-start gap-2.5">
             <CustomCheck className="mt-0.5 size-4 shrink-0" muted={!!highlight} />
             <div>
-              <div className={highlight ? "text-background" : "text-foreground"}>{f.text}</div>
+              <div className={highlight ? "text-white" : "text-foreground"}>{f.text}</div>
               {f.detail && (
-                <div className={cn("mt-0.5 text-xs", highlight ? "text-background/60" : "text-muted-foreground")}>
+                <div className={cn("mt-0.5 text-xs", highlight ? "text-white/60" : "text-muted-foreground")}>
                   {f.detail}
                 </div>
               )}
@@ -161,7 +160,7 @@ function PlanCard({
 }
 
 // -------- Header --------
-function PricingHeader({ billing, setBilling }: { billing: string; setBilling: (v: "monthly" | "yearly") => void }) {
+function PricingHeader() {
   return (
     <section className="relative">
       <div
@@ -189,34 +188,6 @@ function PricingHeader({ billing, setBilling }: { billing: string; setBilling: (
           Start free, upgrade when you need faster checks or more monitors. No seat tax, no overage
           surprises.
         </p>
-
-        {/* Billing toggle */}
-        <div className="mt-8 inline-flex items-center gap-1 rounded-full border bg-card p-1 text-sm">
-          {(["monthly", "yearly"] as const).map((b) => (
-            <button
-              key={b}
-              onClick={() => setBilling(b)}
-              className={cn(
-                "rounded-full px-4 py-1.5 capitalize transition",
-                billing === b
-                  ? "bg-foreground font-medium text-background"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {b}
-              {b === "yearly" && (
-                <span
-                  className={cn(
-                    "ml-1.5 rounded px-1 py-0.5 text-[10px] font-mono",
-                    billing === "yearly" ? "bg-white/15" : "text-[oklch(0.765_0.177_163.22)]"
-                  )}
-                >
-                  −20%
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -224,17 +195,10 @@ function PricingHeader({ billing, setBilling }: { billing: string; setBilling: (
 
 // -------- Plans --------
 function Plans({
-  billing,
   handleAction,
 }: {
-  billing: string;
   handleAction: (plan: "free" | "hobby" | "scale") => void;
 }) {
-  const monthly = { free: 0, hobby: 15, scale: 49 };
-  const yearly = { free: 0, hobby: 12, scale: 39 };
-  const prices = billing === "yearly" ? yearly : monthly;
-  const suffix = billing === "yearly" ? "/ mo, billed annually" : "/ month";
-
   return (
     <section className="mx-auto max-w-6xl px-5 pb-12 md:pb-16">
       <div className="grid gap-4 md:grid-cols-3">
@@ -254,11 +218,10 @@ function Plans({
         />
         <PlanCard
           name="Hobby"
-          price={`$${prices.hobby}`}
-          priceSuffix={suffix}
+          price="$15"
+          priceSuffix="/ month"
           desc="Production apps that need faster detection."
           cta="Get Hobby"
-          savings={billing === "yearly" ? "−$36/yr" : null}
           onAction={() => handleAction("hobby")}
           features={[
             { text: "10 monitors", detail: "Monitor all your services" },
@@ -271,14 +234,13 @@ function Plans({
         />
         <PlanCard
           name="Scale"
-          price={`$${prices.scale}`}
-          priceSuffix={suffix}
+          price="$49"
+          priceSuffix="/ month"
           desc="Teams running critical infrastructure."
           cta="Get Scale"
           ctaVariant="default"
           highlight
           badge="Most popular"
-          savings={billing === "yearly" ? "−$120/yr" : null}
           onAction={() => handleAction("scale")}
           features={[
             { text: "50 monitors", detail: "Enterprise-grade capacity" },
@@ -581,7 +543,6 @@ function ClosingCTA() {
 function PricingPage() {
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   const handleAction = (plan: "free" | "hobby" | "scale") => {
     if (plan === "free") {
@@ -600,8 +561,8 @@ function PricingPage() {
       <PublicNav active="/pricing" />
 
       <main className="flex-1">
-        <PricingHeader billing={billing} setBilling={setBilling} />
-        <Plans billing={billing} handleAction={handleAction} />
+        <PricingHeader />
+        <Plans handleAction={handleAction} />
         <Comparison />
         <Faq />
         <ClosingCTA />
