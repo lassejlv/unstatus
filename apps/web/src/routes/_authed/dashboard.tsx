@@ -65,7 +65,7 @@ function DashboardLayout() {
   return (
     <OrgProvider>
       <SidebarProvider>
-        <Sidebar variant="floating">
+        <Sidebar variant="inset">
           <SidebarHeader>
             <OrgSwitcher />
           </SidebarHeader>
