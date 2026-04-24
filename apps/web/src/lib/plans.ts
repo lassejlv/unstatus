@@ -1,6 +1,12 @@
 import { ORPCError } from "@orpc/server";
 
-export type PlanTier = "free" | "hobby" | "scale";
+export type PlanTier = "free" | "hobby" | "pro" | "scale";
+
+export type PlanProductIds = {
+  hobby?: string | null;
+  pro?: string | null;
+  scale?: string | null;
+};
 
 export const PLAN_LIMITS = {
   free: {
@@ -37,6 +43,23 @@ export const PLAN_LIMITS = {
     postgresMonitor: false,
     dependencies: false,
   },
+  pro: {
+    monitors: Infinity,
+    statusPages: Infinity,
+    minInterval: 60,
+    multiRegion: false,
+    autoIncidents: false,
+    customDomain: true,
+    customCss: false,
+    customJs: false,
+    discordAlerts: true,
+    apiAccess: true,
+    removeBranding: false,
+    pingMonitor: false,
+    redisMonitor: false,
+    postgresMonitor: false,
+    dependencies: false,
+  },
   scale: {
     monitors: 50,
     statusPages: Infinity,
@@ -56,6 +79,13 @@ export const PLAN_LIMITS = {
   },
 } as const satisfies Record<PlanTier, Record<string, number | boolean>>;
 
+export const PLAN_METERED_INCLUDES = {
+  pro: {
+    monitors: 5,
+    customDomains: 1,
+  },
+} as const;
+
 export type PlanFeature = {
   [K in keyof (typeof PLAN_LIMITS)["free"]]: (typeof PLAN_LIMITS)["free"][K] extends boolean ? K : never;
 }[keyof (typeof PLAN_LIMITS)["free"]];
@@ -66,23 +96,35 @@ export type PlanLimit = {
 
 /**
  * Resolve the plan tier from subscription state.
- * Existing "Pro" subscribers are grandfathered into Scale.
+ * Existing stored "Pro" subscribers without a matching new Pro product ID are
+ * grandfathered into Scale.
  */
 export function resolvePlanTier(
   subscriptionActive: boolean,
   subscriptionPlanName: string | null | undefined,
+  subscriptionProductId?: string | null | undefined,
+  productIds: PlanProductIds = {},
 ): PlanTier {
   if (!subscriptionActive) return "free";
-  const name = subscriptionPlanName?.toLowerCase();
+
+  if (subscriptionProductId) {
+    if (productIds.pro && subscriptionProductId === productIds.pro) return "pro";
+    if (productIds.scale && subscriptionProductId === productIds.scale) return "scale";
+    if (productIds.hobby && subscriptionProductId === productIds.hobby) return "hobby";
+  }
+
+  const name = subscriptionPlanName?.trim().toLowerCase();
+  if (name === "hobby") return "hobby";
   if (name === "scale") return "scale";
-  // Grandfather: existing "Pro" subscribers get Scale access
+  // Grandfather: existing "Pro" subscribers get Scale access unless the
+  // product ID identifies the new Pro plan above.
   if (name === "pro") return "scale";
   return "hobby";
 }
 
 export function requireFeature(tier: PlanTier, feature: PlanFeature, label: string) {
   if (!PLAN_LIMITS[tier][feature]) {
-    const requiredTier = PLAN_LIMITS.hobby[feature] ? "Hobby" : "Scale";
+    const requiredTier = PLAN_LIMITS.pro[feature] ? "Pro" : PLAN_LIMITS.hobby[feature] ? "Hobby" : "Scale";
     throw new ORPCError("FORBIDDEN", {
       message: `${label} is available on the ${requiredTier} plan. Upgrade to unlock this feature.`,
     });

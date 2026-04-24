@@ -66,7 +66,7 @@ Web app runs at `http://localhost:3000`
 
 **Workers:**
 1. Create service, set root to `apps/worker`
-2. Add `DATABASE_URL`, `WORKER_SECRET`, `REGION`
+2. Add `DATABASE_URL`, `WORKER_SECRET`, `REGION`, `POLAR_MODE`, `POLAR_ACCESS_TOKEN`, `POLAR_PRO_ID`
 3. Deploy
 
 For multiple regions, deploy workers with different `REGION` values (`eu`, `us`, `asia`) and configure URLs in web app.
@@ -96,6 +96,9 @@ For multiple regions, deploy workers with different `REGION` values (`eu`, `us`,
 | `WORKER_SECRET` | Must match web |
 | `REGION` | `eu`, `us`, `asia`, etc. |
 | `POLL_INTERVAL` | Seconds between checks (default: 10) |
+| `POLAR_MODE` | `sandbox` or `production` |
+| `POLAR_ACCESS_TOKEN` | Polar.sh API token for usage reporting |
+| `POLAR_PRO_ID` | Pro plan product ID for metered usage |
 
 ## License
 

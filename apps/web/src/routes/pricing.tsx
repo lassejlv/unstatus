@@ -10,20 +10,6 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-function StatusDot({ size = 8 }: { size?: number }) {
-  return (
-    <span
-      className="relative inline-block rounded-full"
-      style={{ width: size, height: size, background: "var(--emerald)" }}
-    >
-      <span
-        className="absolute inset-0 rounded-full animate-ping"
-        style={{ background: "var(--emerald)", opacity: 0.5 }}
-      />
-    </span>
-  );
-}
-
 function CustomCheck({ className = "size-4", muted }: { className?: string; muted?: boolean }) {
   return (
     <svg
@@ -185,11 +171,11 @@ function PricingHeader() {
 function Plans({
   handleAction,
 }: {
-  handleAction: (plan: "free" | "hobby" | "scale") => void;
+  handleAction: (plan: "free" | "pro") => void;
 }) {
   return (
     <section className="mx-auto max-w-6xl px-5 pb-12 md:pb-16">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="mx-auto grid max-w-4xl gap-4 md:grid-cols-2">
         <PlanCard
           name="Free"
           price="$0"
@@ -205,39 +191,22 @@ function Plans({
           ]}
         />
         <PlanCard
-          name="Hobby"
-          price="$15"
+          name="Pro"
+          price="$7"
           priceSuffix="/ month"
-          desc="Production apps that need faster detection."
-          cta="Get Hobby"
-          onAction={() => handleAction("hobby")}
-          features={[
-            { text: "10 monitors", detail: "Monitor all your services" },
-            { text: "3 status pages", detail: "Separate pages per project" },
-            { text: "1 min checks", detail: "Faster issue detection" },
-            { text: "Custom domains", detail: "status.yourdomain.com" },
-            { text: "Discord alerts", detail: "Post to your server" },
-            { text: "API access", detail: "Automate your workflows" },
-          ]}
-        />
-        <PlanCard
-          name="Scale"
-          price="$49"
-          priceSuffix="/ month"
-          desc="Teams running critical infrastructure."
-          cta="Get Scale"
+          desc="Production apps that need room to grow."
+          cta="Get Pro"
           ctaVariant="default"
           highlight
-          badge="Most popular"
-          onAction={() => handleAction("scale")}
+          badge="Usage based"
+          onAction={() => handleAction("pro")}
           features={[
-            { text: "50 monitors", detail: "Enterprise-grade capacity" },
-            { text: "Unlimited status pages", detail: "No restrictions" },
-            { text: "10 second checks", detail: "Near real-time monitoring" },
-            { text: "Multi-region checks", detail: "US, EU, and Asia" },
-            { text: "Auto incidents", detail: "Automatic status updates" },
-            { text: "Custom CSS", detail: "Full brand control" },
-            { text: "Remove branding", detail: "White-label your pages" },
+            { text: "5 monitors included", detail: "$0.50 per extra monitor" },
+            { text: "1 custom domain included", detail: "$1 per extra custom domain" },
+            { text: "Unlimited status pages", detail: "No page limit" },
+            { text: "1 min checks", detail: "Faster issue detection" },
+            { text: "Discord alerts", detail: "Post to your server" },
+            { text: "API access", detail: "Automate your workflows" },
           ]}
         />
       </div>
@@ -262,8 +231,7 @@ function Plans({
 interface ComparisonRow {
   label: string;
   free: React.ReactNode;
-  hobby: React.ReactNode;
-  scale: React.ReactNode;
+  pro: React.ReactNode;
 }
 
 interface ComparisonGroup {
@@ -275,29 +243,29 @@ const comparisonGroups: ComparisonGroup[] = [
   {
     name: "Monitoring",
     rows: [
-      { label: "Monitors", free: "1", hobby: "10", scale: "50" },
-      { label: "Check interval", free: "10 min", hobby: "1 min", scale: "10 sec" },
-      { label: "Check types", free: "HTTP / TCP / ping", hobby: "HTTP / TCP / ping", scale: "HTTP / TCP / ping" },
-      { label: "Multi-region checks", free: false, hobby: false, scale: "US · EU · Asia" },
+      { label: "Monitors", free: "1", pro: "5 included, then $0.50 each" },
+      { label: "Check interval", free: "10 min", pro: "1 min" },
+      { label: "Check types", free: "HTTP / TCP", pro: "HTTP / TCP" },
+      { label: "Multi-region checks", free: false, pro: false },
     ],
   },
   {
     name: "Status pages",
     rows: [
-      { label: "Status pages", free: "1", hobby: "3", scale: "Unlimited" },
-      { label: "Custom domains", free: false, hobby: true, scale: true },
-      { label: "Custom CSS", free: false, hobby: false, scale: true },
-      { label: "Remove branding", free: false, hobby: false, scale: true },
+      { label: "Status pages", free: "1", pro: "Unlimited" },
+      { label: "Custom domains", free: false, pro: "1 included, then $1 each" },
+      { label: "Custom CSS", free: false, pro: false },
+      { label: "Remove branding", free: false, pro: false },
     ],
   },
   {
     name: "Alerts & incidents",
     rows: [
-      { label: "Email alerts", free: true, hobby: true, scale: true },
-      { label: "Discord alerts", free: false, hobby: true, scale: true },
-      { label: "Webhooks", free: false, hobby: true, scale: true },
-      { label: "Auto incidents", free: false, hobby: false, scale: true },
-      { label: "API access", free: false, hobby: true, scale: true },
+      { label: "Email alerts", free: true, pro: true },
+      { label: "Discord alerts", free: false, pro: true },
+      { label: "Webhooks", free: false, pro: true },
+      { label: "Auto incidents", free: false, pro: false },
+      { label: "API access", free: false, pro: true },
     ],
   },
 ];
@@ -329,17 +297,13 @@ function Comparison() {
                 <th className="sticky left-0 w-[40%] bg-background py-3 pr-4 text-left text-xs font-medium text-muted-foreground">
                   Feature
                 </th>
-                <th className="w-[20%] px-4 py-3 text-center">
+                <th className="w-[30%] px-4 py-3 text-center">
                   <div className="text-sm font-medium">Free</div>
                   <div className="text-xs text-muted-foreground">$0</div>
                 </th>
-                <th className="w-[20%] px-4 py-3 text-center">
-                  <div className="text-sm font-medium">Hobby</div>
-                  <div className="text-xs text-muted-foreground">$15/mo</div>
-                </th>
-                <th className="w-[20%] rounded-t-md bg-muted/40 px-4 py-3 text-center">
-                  <div className="text-sm font-medium">Scale</div>
-                  <div className="text-xs text-muted-foreground">$49/mo</div>
+                <th className="w-[30%] rounded-t-md bg-muted/40 px-4 py-3 text-center">
+                  <div className="text-sm font-medium">Pro</div>
+                  <div className="text-xs text-muted-foreground">$7/mo</div>
                 </th>
               </tr>
             </thead>
@@ -347,7 +311,7 @@ function Comparison() {
               {comparisonGroups.map((g) => (
                 <>
                   <tr key={g.name}>
-                    <td colSpan={4} className="pb-2 pt-8">
+                    <td colSpan={3} className="pb-2 pt-8">
                       <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
                         {g.name}
                       </div>
@@ -361,11 +325,8 @@ function Comparison() {
                       <td className="px-4 py-3 text-center">
                         <Cell v={r.free} />
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <Cell v={r.hobby} />
-                      </td>
                       <td className="bg-muted/40 px-4 py-3 text-center">
-                        <Cell v={r.scale} />
+                        <Cell v={r.pro} />
                       </td>
                     </tr>
                   ))}
@@ -380,12 +341,7 @@ function Comparison() {
                 </td>
                 <td className="px-4 py-4 text-center">
                   <Link to="/login" className="text-xs font-medium hover:underline">
-                    Get Hobby →
-                  </Link>
-                </td>
-                <td className="rounded-b-md bg-muted/40 px-4 py-4 text-center">
-                  <Link to="/login" className="text-xs font-medium hover:underline">
-                    Get Scale →
+                    Get Pro →
                   </Link>
                 </td>
               </tr>
@@ -401,7 +357,7 @@ function Comparison() {
 const faqs = [
   {
     q: "What happens if I hit my plan's monitor limit?",
-    a: "You can upgrade at any time. Your existing monitors and data are preserved during the upgrade — nothing is lost.",
+    a: "Pro includes 5 monitors. Extra monitors are billed monthly as metered usage, so your existing monitors and data are preserved.",
   },
   {
     q: "Can I cancel anytime?",
@@ -413,7 +369,7 @@ const faqs = [
   },
   {
     q: "What is multi-region monitoring?",
-    a: "Scale plans run checks from the US, EU, and Asia. This prevents false alerts from regional network issues.",
+    a: "Multi-region checks run from the US, EU, and Asia. This prevents false alerts from regional network issues.",
   },
   {
     q: "What are auto incidents?",
@@ -532,7 +488,7 @@ function PricingPage() {
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
 
-  const handleAction = (plan: "free" | "hobby" | "scale") => {
+  const handleAction = (plan: "free" | "pro") => {
     if (plan === "free") {
       navigate({ to: "/login" });
       return;

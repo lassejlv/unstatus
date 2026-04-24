@@ -16,12 +16,14 @@ export const Route = createFileRoute("/_authed/dashboard/billing")({
 const PLAN_PRICES: Record<string, string> = {
   free: "$0/month",
   hobby: "$15/month",
+  pro: "$7/month + usage",
   scale: "$49/month",
 };
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
   hobby: "Hobby",
+  pro: "Pro",
   scale: "Scale",
 };
 
@@ -46,6 +48,10 @@ function BillingPage() {
 
 async function openScaleCheckout(orgId: string, theme: "light" | "dark") {
   await authClient.checkoutEmbed({ slug: "scale", referenceId: orgId, theme });
+}
+
+async function openProCheckout(orgId: string, theme: "light" | "dark") {
+  await authClient.checkoutEmbed({ slug: "pro", referenceId: orgId, theme });
 }
 
 function CurrentPlanCard({ orgId }: { orgId: string }) {
@@ -84,27 +90,12 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
           {tier === "free" && (
             <div className="flex gap-2">
               <Button
-                variant="outline"
                 size="sm"
                 disabled={loading}
                 onClick={async () => {
                   setLoading(true);
                   try {
-                    await authClient.checkoutEmbed({ slug: "hobby", referenceId: orgId, theme: checkoutTheme });
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                Upgrade to Hobby
-              </Button>
-              <Button
-                size="sm"
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    await openScaleCheckout(orgId, checkoutTheme);
+                    await openProCheckout(orgId, checkoutTheme);
                   } catch (err: unknown) {
                     const message = err instanceof Error ? err.message : "Failed to open checkout";
                     toast.error(message);
@@ -113,7 +104,7 @@ function CurrentPlanCard({ orgId }: { orgId: string }) {
                   }
                 }}
               >
-                Upgrade to Scale
+                Upgrade to Pro
               </Button>
             </div>
           )}

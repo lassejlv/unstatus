@@ -56,6 +56,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Organization: 'Organization',
+  PolarUsageEvent: 'PolarUsageEvent',
   Monitor: 'Monitor',
   MonitorCheck: 'MonitorCheck',
   MonitorCheckHourlyRollup: 'MonitorCheckHourlyRollup',
@@ -166,10 +167,32 @@ export const OrganizationScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   subscriptionActive: 'subscriptionActive',
   subscriptionPlanName: 'subscriptionPlanName',
+  subscriptionProductId: 'subscriptionProductId',
   cancelAtPeriodEnd: 'cancelAtPeriodEnd'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
+
+
+export const PolarUsageEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  subscriptionId: 'subscriptionId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  eventName: 'eventName',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  polarExternalId: 'polarExternalId',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  reportedAt: 'reportedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PolarUsageEventScalarFieldEnum = (typeof PolarUsageEventScalarFieldEnum)[keyof typeof PolarUsageEventScalarFieldEnum]
 
 
 export const MonitorScalarFieldEnum = {

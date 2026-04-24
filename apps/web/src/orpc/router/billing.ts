@@ -1,6 +1,7 @@
 import { orgProcedure } from "@/orpc/procedures";
 import { prisma } from "@/lib/prisma";
-import { resolvePlanTier, PLAN_LIMITS } from "@/lib/plans";
+import { PLAN_LIMITS, PLAN_METERED_INCLUDES } from "@/lib/plans";
+import { resolveServerPlanTier } from "@/lib/server-plans";
 import { polarClient } from "@/lib/auth";
 import { env } from "@/lib/env";
 import z from "zod";
@@ -13,12 +14,13 @@ export const billingRouter = {
         select: {
           subscriptionActive: true,
           subscriptionPlanName: true,
+          subscriptionProductId: true,
           cancelAtPeriodEnd: true,
         },
       });
       return {
         ...org,
-        tier: resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName),
+        tier: resolveServerPlanTier(org.subscriptionActive, org.subscriptionPlanName, org.subscriptionProductId),
       };
     }),
 
@@ -29,20 +31,31 @@ export const billingRouter = {
         select: {
           subscriptionActive: true,
           subscriptionPlanName: true,
+          subscriptionProductId: true,
         },
       });
-      const tier = resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName);
+      const tier = resolveServerPlanTier(org.subscriptionActive, org.subscriptionPlanName, org.subscriptionProductId);
       const limits = PLAN_LIMITS[tier];
 
-      const [monitorCount, statusPageCount] = await Promise.all([
+      const [monitorCount, statusPageCount, customDomainCount] = await Promise.all([
         prisma.monitor.count({ where: { organizationId: input.organizationId } }),
         prisma.statusPage.count({ where: { organizationId: input.organizationId } }),
+        prisma.statusPage.count({ where: { organizationId: input.organizationId, customDomain: { not: null } } }),
       ]);
 
       return {
         tier,
-        monitors: { used: monitorCount, limit: limits.monitors },
+        monitors: {
+          used: monitorCount,
+          limit: limits.monitors,
+          included: tier === "pro" ? PLAN_METERED_INCLUDES.pro.monitors : null,
+        },
         statusPages: { used: statusPageCount, limit: limits.statusPages },
+        customDomains: {
+          used: customDomainCount,
+          limit: limits.customDomain ? Infinity : 0,
+          included: tier === "pro" ? PLAN_METERED_INCLUDES.pro.customDomains : null,
+        },
         features: {
           multiRegion: limits.multiRegion,
           autoIncidents: limits.autoIncidents,

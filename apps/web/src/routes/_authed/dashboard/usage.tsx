@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_authed/dashboard/usage")({
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
   hobby: "Hobby",
+  pro: "Pro",
   scale: "Scale",
 };
 
@@ -97,11 +98,18 @@ function UsagePage() {
           label="Monitors"
           used={data.monitors.used}
           limit={data.monitors.limit}
+          included={data.monitors.included}
         />
         <UsageCard
           label="Status Pages"
           used={data.statusPages.used}
           limit={data.statusPages.limit}
+        />
+        <UsageCard
+          label="Custom Domains"
+          used={data.customDomains.used}
+          limit={data.customDomains.limit}
+          included={data.customDomains.included}
         />
       </div>
 
@@ -155,14 +163,17 @@ function UsageCard({
   label,
   used,
   limit,
+  included,
 }: {
   label: string;
   used: number;
   limit: number;
+  included?: number | null;
 }) {
   const isUnlimited = !Number.isFinite(limit);
   const pct = isUnlimited ? 0 : Math.min((used / limit) * 100, 100);
   const isNearLimit = !isUnlimited && pct >= 80;
+  const billable = included == null ? null : Math.max(used - included, 0);
 
   return (
     <Card>
@@ -185,6 +196,11 @@ function UsageCard({
         </div>
         {!isUnlimited && (
           <Progress value={pct} className="mt-3" />
+        )}
+        {included != null && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {included} included, {billable} billable
+          </p>
         )}
       </CardContent>
     </Card>

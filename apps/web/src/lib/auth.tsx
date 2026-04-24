@@ -14,6 +14,35 @@ export const polarClient = new Polar({
   server: env.POLAR_MODE === "production" ? "production" : "sandbox",
 });
 
+const checkoutProducts = [
+  {
+    productId: env.POLAR_PRO_ID,
+    slug: "pro",
+  },
+  ...(env.POLAR_HOBBY_ID
+    ? [{
+        productId: env.POLAR_HOBBY_ID,
+        slug: "hobby",
+      }]
+    : []),
+  {
+    productId: env.POLAR_SCALE_ID,
+    slug: "scale",
+  },
+];
+
+type SubscriptionProduct = {
+  id?: string;
+  name?: string;
+};
+
+function getSubscriptionProduct(sub: { product?: SubscriptionProduct; productId?: string }) {
+  return {
+    productId: sub.productId ?? sub.product?.id ?? null,
+    productName: sub.product?.name ?? null,
+  };
+}
+
 function isPersonalOrganizationSlug(slug: string, userId: string) {
   return slug.endsWith(`-personal-${userId.slice(0, 8)}`);
 }
@@ -128,16 +157,7 @@ export const auth = betterAuth({
       createCustomerOnSignUp: true,
       use: [
         checkout({
-          products: [
-            {
-              productId: env.POLAR_PRO_ID,
-              slug: "hobby",
-            },
-            {
-              productId: env.POLAR_SCALE_ID,
-              slug: "scale",
-            },
-          ],
+          products: checkoutProducts,
           successUrl: "/dashboard?tab=overview",
           authenticatedUsersOnly: true,
         }),
@@ -147,7 +167,6 @@ export const auth = betterAuth({
           onSubscriptionActive: async (payload) => {
             const sub = payload.data;
             type SubscriptionMetadata = { referenceId?: string };
-            type SubscriptionProduct = { name?: string };
             const metadata = sub.metadata as SubscriptionMetadata | undefined;
             let orgId = metadata?.referenceId;
 
@@ -168,13 +187,14 @@ export const auth = betterAuth({
             }
 
             if (!orgId) return;
-            const product = (sub as { product?: SubscriptionProduct }).product;
+            const { productId, productName } = getSubscriptionProduct(sub);
             await prisma.organization.update({
               where: { id: orgId },
               data: {
                 subscriptionId: sub.id,
                 subscriptionActive: true,
-                subscriptionPlanName: product?.name ?? "Pro",
+                subscriptionPlanName: productName ?? "Pro",
+                subscriptionProductId: productId,
                 cancelAtPeriodEnd: false,
                 polarCustomerId: sub.customerId,
               },
@@ -195,10 +215,13 @@ export const auth = betterAuth({
 
             if (!orgId) return;
             const cancelAtPeriodEnd = (sub as { cancelAtPeriodEnd?: boolean }).cancelAtPeriodEnd ?? false;
+            const { productId, productName } = getSubscriptionProduct(sub);
             await prisma.organization.update({
               where: { id: orgId },
               data: {
                 cancelAtPeriodEnd,
+                subscriptionPlanName: productName ?? undefined,
+                subscriptionProductId: productId ?? undefined,
               },
             });
           },

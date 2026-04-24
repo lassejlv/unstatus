@@ -1,7 +1,8 @@
 import { os, ORPCError } from "@orpc/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { type PlanTier, resolvePlanTier, requireFeature, requireLimit } from "@/lib/plans";
+import { type PlanTier, requireFeature, requireLimit } from "@/lib/plans";
+import { resolveServerPlanTier } from "@/lib/server-plans";
 import z from "zod";
 
 export const publicProcedure = os.$context<{ headers: Headers }>();
@@ -66,9 +67,9 @@ export async function verifyOrgRole(
 export async function getOrgSubscription(organizationId: string) {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: organizationId },
-    select: { subscriptionActive: true, subscriptionPlanName: true },
+    select: { subscriptionActive: true, subscriptionPlanName: true, subscriptionProductId: true },
   });
-  return { tier: resolvePlanTier(org.subscriptionActive, org.subscriptionPlanName) };
+  return { tier: resolveServerPlanTier(org.subscriptionActive, org.subscriptionPlanName, org.subscriptionProductId) };
 }
 
 export { requireFeature, requireLimit, type PlanTier };

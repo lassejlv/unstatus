@@ -94,6 +94,7 @@ model Organization {
   subscriptionId        String?
   subscriptionActive    Boolean  @default(false)
   subscriptionPlanName  String?
+  subscriptionProductId String?
   cancelAtPeriodEnd     Boolean  @default(false)
 
   members              Member[]
@@ -104,9 +105,35 @@ model Organization {
   maintenanceWindows   MaintenanceWindow[]
   apiKeys              ApiKey[]
   ossApplications      OssApplication[]
+  polarUsageEvents     PolarUsageEvent[]
 
   @@unique([slug])
   @@map("organization")
+}
+
+model PolarUsageEvent {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  subscriptionId  String
+  periodStart     DateTime
+  periodEnd       DateTime
+  eventName       String
+  resourceType    String
+  resourceId      String
+  polarExternalId String       @unique
+
+  status      String    @default("pending")
+  attempts    Int       @default(0)
+  lastError   String?
+  reportedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([organizationId, periodStart])
+  @@index([subscriptionId, eventName])
+  @@map("polar_usage_event")
 }
 
 model Monitor {

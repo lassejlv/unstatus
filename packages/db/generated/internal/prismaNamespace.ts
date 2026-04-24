@@ -389,6 +389,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Organization: 'Organization',
+  PolarUsageEvent: 'PolarUsageEvent',
   Monitor: 'Monitor',
   MonitorCheck: 'MonitorCheck',
   MonitorCheckHourlyRollup: 'MonitorCheckHourlyRollup',
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentMonitor" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency" | "apiKey" | "ossApplication"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "polarUsageEvent" | "monitor" | "monitorCheck" | "monitorCheckHourlyRollup" | "monitorCheckDailyRollup" | "member" | "invitation" | "statusPage" | "statusPageSubscriber" | "statusPageMonitor" | "incident" | "incidentMonitor" | "incidentUpdate" | "notificationChannel" | "maintenanceWindow" | "maintenanceWindowMonitor" | "externalService" | "externalServiceComponent" | "externalServiceStatus" | "monitorDependency" | "apiKey" | "ossApplication"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -796,6 +797,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrganizationCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrganizationCountAggregateOutputType> | number
+        }
+      }
+    }
+    PolarUsageEvent: {
+      payload: Prisma.$PolarUsageEventPayload<ExtArgs>
+      fields: Prisma.PolarUsageEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PolarUsageEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PolarUsageEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        findFirst: {
+          args: Prisma.PolarUsageEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PolarUsageEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        findMany: {
+          args: Prisma.PolarUsageEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>[]
+        }
+        create: {
+          args: Prisma.PolarUsageEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        createMany: {
+          args: Prisma.PolarUsageEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PolarUsageEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>[]
+        }
+        delete: {
+          args: Prisma.PolarUsageEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        update: {
+          args: Prisma.PolarUsageEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.PolarUsageEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PolarUsageEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PolarUsageEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.PolarUsageEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PolarUsageEventPayload>
+        }
+        aggregate: {
+          args: Prisma.PolarUsageEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePolarUsageEvent>
+        }
+        groupBy: {
+          args: Prisma.PolarUsageEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PolarUsageEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PolarUsageEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PolarUsageEventCountAggregateOutputType> | number
         }
       }
     }
@@ -2463,10 +2538,32 @@ export const OrganizationScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   subscriptionActive: 'subscriptionActive',
   subscriptionPlanName: 'subscriptionPlanName',
+  subscriptionProductId: 'subscriptionProductId',
   cancelAtPeriodEnd: 'cancelAtPeriodEnd'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
+
+
+export const PolarUsageEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  subscriptionId: 'subscriptionId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  eventName: 'eventName',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  polarExternalId: 'polarExternalId',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  reportedAt: 'reportedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PolarUsageEventScalarFieldEnum = (typeof PolarUsageEventScalarFieldEnum)[keyof typeof PolarUsageEventScalarFieldEnum]
 
 
 export const MonitorScalarFieldEnum = {
@@ -3030,6 +3127,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   organization?: Prisma.OrganizationOmit
+  polarUsageEvent?: Prisma.PolarUsageEventOmit
   monitor?: Prisma.MonitorOmit
   monitorCheck?: Prisma.MonitorCheckOmit
   monitorCheckHourlyRollup?: Prisma.MonitorCheckHourlyRollupOmit

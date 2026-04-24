@@ -9,6 +9,7 @@ export const env = z
     POLAR_MODE: z.enum(["sandbox", "production"]).default("sandbox"),
     POLAR_ACCESS_TOKEN: z.string(),
     POLAR_WEBHOOK_SECRET: z.string(),
+    POLAR_HOBBY_ID: z.string().optional(),
     POLAR_PRO_ID: z.string(),
     POLAR_SCALE_ID: z.string(),
     WORKER_URL: z.url().optional(),

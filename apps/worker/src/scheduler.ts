@@ -2,6 +2,7 @@ import { runChecks } from "./runner.js";
 import { runMonitorPerfMaintenance } from "./db/maintenance.js";
 import { runExternalServiceChecks, runExternalServiceMaintenance } from "./external-service-runner.js";
 import { processMaintenanceWindows } from "./maintenance.js";
+import { runPolarUsageReconciliation } from "./polar-usage.js";
 
 type SchedulerState = {
   name: string;
@@ -160,4 +161,9 @@ export function startSchedulers() {
   const extTimeout = Number(process.env.EXTERNAL_RUN_TIMEOUT_SEC ?? 180) * 1000;
   startGuardedLoop("external-services", runExternalServiceChecks, extPollInterval, extTimeout);
   console.log(`External service polling every ${extPollInterval / 1000}s (timeout ${extTimeout / 1000}s)`);
+
+  const polarUsageInterval = Number(process.env.POLAR_USAGE_SYNC_INTERVAL_SEC ?? 21600) * 1000;
+  const polarUsageTimeout = Number(process.env.POLAR_USAGE_SYNC_TIMEOUT_SEC ?? 300) * 1000;
+  startGuardedLoop("polar-usage", runPolarUsageReconciliation, polarUsageInterval, polarUsageTimeout);
+  console.log(`Polar usage sync every ${polarUsageInterval / 1000}s (timeout ${polarUsageTimeout / 1000}s)`);
 }
