@@ -143,7 +143,10 @@ async function getPublicStatusRows(
   ]);
 }
 
-export async function getPublicStatusPage(page: ResolvedPublicPage) {
+export async function getPublicStatusPage(
+  page: ResolvedPublicPage,
+  options: { allowCustomJs?: boolean } = {},
+) {
   const now = new Date();
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86_400_000);
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 3_600_000);
@@ -357,7 +360,7 @@ export async function getPublicStatusPage(page: ResolvedPublicPage) {
     showResponseTimes: page.showResponseTimes,
     showDependencies: page.showDependencies,
     customCss: page.customCss,
-    customJs: page.customJs,
+    customJs: options.allowCustomJs ? page.customJs : null,
     overallStatus,
     monitors,
     incidents: incidentRows.map((incident) => ({
@@ -441,7 +444,7 @@ export const publicStatusRouter = {
     .input(z.object({ domain: z.string() }))
     .handler(async ({ input }) => {
       const page = await resolvePublicPage({ customDomain: input.domain });
-      return getPublicStatusPage(page);
+      return getPublicStatusPage(page, { allowCustomJs: true });
     }),
 
   getIncident: publicProcedure

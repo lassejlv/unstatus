@@ -6,6 +6,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { monitorTypeSchema, regionSchema } from "@/types";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
+import { requireApiFeature, requireApiLimit } from "./plan-guards";
 
 const app = new Hono();
 const ruleSchema = z.object({
@@ -133,16 +134,23 @@ app.post("/", async (c) => {
   const body = await parseJsonBody(c, createMonitorBodySchema);
   const { name, type, interval, timeout, url, method, headers, body: reqBody, host, port, rules, regions, autoIncidents } = body;
 
-  const maxMonitors = PLAN_LIMITS[tier].monitors;
   const count = await prisma.monitor.count({ where: { organizationId } });
-  if (count >= maxMonitors) {
-    throw new ApiError("FORBIDDEN", `Maximum of ${maxMonitors} monitors reached on your plan`, 403);
-  }
+  requireApiLimit(tier, "monitors", count);
+  if (autoIncidents) requireApiFeature(tier, "autoIncidents", "Auto-create incidents");
+  if (regions.length > 1) requireApiFeature(tier, "multiRegion", "Multiple regions");
+  if (type === "ping") requireApiFeature(tier, "pingMonitor", "Ping monitors");
   if (type === "redis" && !PLAN_LIMITS[tier].redisMonitor) {
     throw new ApiError("FORBIDDEN", "Redis monitors require the Scale plan", 403);
   }
   if (type === "postgres" && !PLAN_LIMITS[tier].postgresMonitor) {
     throw new ApiError("FORBIDDEN", "Postgres monitors require the Scale plan", 403);
+  }
+  if (interval < PLAN_LIMITS[tier].minInterval) {
+    throw new ApiError(
+      "FORBIDDEN",
+      `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds.`,
+      403,
+    );
   }
 
   const monitor = await prisma.monitor.create({
@@ -168,7 +176,7 @@ app.post("/", async (c) => {
 });
 
 app.patch("/:id", async (c) => {
-  const { organizationId } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
 
   const id = c.req.param("id");
   const monitor = await prisma.monitor.findUnique({ where: { id } });
@@ -177,6 +185,18 @@ app.patch("/:id", async (c) => {
   }
 
   const body = await parseJsonBody(c, updateMonitorBodySchema);
+  if (body.autoIncidents) requireApiFeature(tier, "autoIncidents", "Auto-create incidents");
+  if (body.regions && body.regions.length > 1) requireApiFeature(tier, "multiRegion", "Multiple regions");
+  if (body.type === "ping") requireApiFeature(tier, "pingMonitor", "Ping monitors");
+  if (body.type === "redis") requireApiFeature(tier, "redisMonitor", "Redis monitors");
+  if (body.type === "postgres") requireApiFeature(tier, "postgresMonitor", "Postgres monitors");
+  if (body.interval !== undefined && body.interval < PLAN_LIMITS[tier].minInterval) {
+    throw new ApiError(
+      "FORBIDDEN",
+      `Minimum check interval for your plan is ${PLAN_LIMITS[tier].minInterval} seconds.`,
+      403,
+    );
+  }
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;

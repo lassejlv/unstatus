@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import z from "zod";
 import { prisma } from "@/lib/prisma";
+import { isAllowedDiscordWebhookUrl } from "@/lib/notifications";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
+import { requireApiFeature } from "./plan-guards";
 
 const app = new Hono();
 const notificationSettingsSchema = {
@@ -60,9 +62,16 @@ app.get("/", async (c) => {
 });
 
 app.post("/", async (c) => {
-  const { organizationId } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
   const body = await parseJsonBody(c, createNotificationBodySchema);
   const { name, type } = body;
+
+  if (type === "discord") {
+    if (!isAllowedDiscordWebhookUrl(body.webhookUrl)) {
+      throw new ApiError("BAD_REQUEST", "Discord webhook URL must be a valid Discord webhook.", 400);
+    }
+    requireApiFeature(tier, "discordAlerts", "Discord notifications");
+  }
 
   const channel = await prisma.notificationChannel.create({
     data: {
@@ -95,6 +104,9 @@ app.patch("/:id", async (c) => {
   }
 
   const body = await parseJsonBody(c, updateNotificationBodySchema);
+  if (channel.type === "discord" && body.webhookUrl && !isAllowedDiscordWebhookUrl(body.webhookUrl)) {
+    throw new ApiError("BAD_REQUEST", "Discord webhook URL must be a valid Discord webhook.", 400);
+  }
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;

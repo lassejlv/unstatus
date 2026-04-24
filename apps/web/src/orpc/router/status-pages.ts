@@ -86,6 +86,10 @@ export const statusPagesRouter = {
     const { tier } = await getOrgSubscription(input.organizationId);
     const count = await prisma.statusPage.count({ where: { organizationId: input.organizationId } });
     requireLimit(tier, "statusPages", count);
+    if (input.customDomain) requireFeature(tier, "customDomain", "Custom domains");
+    if (input.customCss) requireFeature(tier, "customCss", "Custom CSS");
+    if (input.customJs) requireFeature(tier, "customJs", "Custom JavaScript");
+    if (input.showDependencies) requireFeature(tier, "dependencies", "Dependency chain");
     return prisma.statusPage.create({ data: input });
   }),
 

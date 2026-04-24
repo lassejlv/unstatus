@@ -1,14 +1,26 @@
 import { Hono } from "hono";
 import z from "zod";
 import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 import { getApiContext } from "../middleware/auth";
 import { ApiError, success, paginated, parsePagination, parseJsonBody } from "../helpers";
+import { requireApiFeature, requireApiLimit } from "./plan-guards";
 
 const app = new Hono();
+const domainSchema = z
+  .string()
+  .transform((v) => v.replace(/^https?:\/\//, "").replace(/\/+$/, "").toLowerCase())
+  .refine((v) => /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(v), {
+    message: "Invalid domain format",
+  })
+  .refine((v) => env.APP_DOMAIN === "localhost" || v !== env.APP_DOMAIN, {
+    message: "Cannot use the application's own domain",
+  });
+
 const statusPageFields = {
   name: z.string().trim().min(1),
   slug: z.string().trim().min(1),
-  customDomain: z.string().trim().min(1).nullable().optional(),
+  customDomain: domainSchema.nullable().optional(),
   isPublic: z.boolean().optional(),
   logoUrl: z.string().trim().min(1).nullable().optional(),
   faviconUrl: z.string().trim().min(1).nullable().optional(),
@@ -75,9 +87,16 @@ app.get("/:id", async (c) => {
 });
 
 app.post("/", async (c) => {
-  const { organizationId } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
   const body = await parseJsonBody(c, createStatusPageBodySchema);
   const { name, slug } = body;
+
+  const count = await prisma.statusPage.count({ where: { organizationId } });
+  requireApiLimit(tier, "statusPages", count);
+  if (body.customDomain) requireApiFeature(tier, "customDomain", "Custom domains");
+  if (body.customCss) requireApiFeature(tier, "customCss", "Custom CSS");
+  if (body.customJs) requireApiFeature(tier, "customJs", "Custom JavaScript");
+  if (body.showDependencies) requireApiFeature(tier, "dependencies", "Dependency chain");
 
   const statusPage = await prisma.statusPage.create({
     data: {
@@ -102,7 +121,7 @@ app.post("/", async (c) => {
 });
 
 app.patch("/:id", async (c) => {
-  const { organizationId } = getApiContext(c);
+  const { organizationId, tier } = getApiContext(c);
 
   const id = c.req.param("id");
   const statusPage = await prisma.statusPage.findUnique({ where: { id } });
@@ -111,6 +130,10 @@ app.patch("/:id", async (c) => {
   }
 
   const body = await parseJsonBody(c, updateStatusPageBodySchema);
+  if (body.customDomain) requireApiFeature(tier, "customDomain", "Custom domains");
+  if (body.customCss) requireApiFeature(tier, "customCss", "Custom CSS");
+  if (body.customJs) requireApiFeature(tier, "customJs", "Custom JavaScript");
+  if (body.showDependencies) requireApiFeature(tier, "dependencies", "Dependency chain");
   const data: Record<string, unknown> = {};
 
   if (body.name !== undefined) data.name = body.name;

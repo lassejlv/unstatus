@@ -1,5 +1,6 @@
 import type { Monitor } from "@unstatus/db";
 import { connect, type Socket } from "net";
+import { assertPublicHostTarget } from "./egress.js";
 
 const RETRY_DELAY_MS = 1500;
 
@@ -62,10 +63,8 @@ async function probePort(host: string, port: number, timeoutMs: number) {
 }
 
 async function performPing(monitor: Monitor): Promise<PingResult> {
-  const rawHost = (monitor.host ?? monitor.url ?? "")
-    .replace(/^https?:\/\//, "")
-    .replace(/[:/].*$/, "")
-    .trim();
+  const startedAt = performance.now();
+  const rawHost = monitor.host ?? monitor.url ?? "";
   const timeoutMs = monitor.timeout * 1000;
 
   if (!rawHost) {
@@ -79,7 +78,21 @@ async function performPing(monitor: Monitor): Promise<PingResult> {
     };
   }
 
-  const primary = await probePort(rawHost, 443, timeoutMs);
+  let host: string;
+  try {
+    host = await assertPublicHostTarget(rawHost);
+  } catch (e) {
+    return {
+      status: "down",
+      latency: Math.round(performance.now() - startedAt),
+      statusCode: null,
+      message: e instanceof Error ? e.message : "Target host is not allowed",
+      responseHeaders: null,
+      responseBody: null,
+    };
+  }
+
+  const primary = await probePort(host, 443, timeoutMs);
   if (primary.reachable) {
     return {
       status: "up",
@@ -92,7 +105,7 @@ async function performPing(monitor: Monitor): Promise<PingResult> {
   }
 
   if (primary.refused) {
-    const fallback = await probePort(rawHost, 80, timeoutMs);
+    const fallback = await probePort(host, 80, timeoutMs);
     return {
       status: fallback.reachable ? "up" : "down",
       latency: fallback.latency,

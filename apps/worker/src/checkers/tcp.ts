@@ -1,8 +1,21 @@
 import type { Monitor } from "@unstatus/db";
 import { connect } from "net";
+import { assertPublicHostname } from "./egress.js";
 
 export async function checkTcp(monitor: Monitor) {
   const start = performance.now();
+  try {
+    await assertPublicHostname(monitor.host!);
+  } catch (e) {
+    return {
+      status: "down",
+      latency: Math.round(performance.now() - start),
+      statusCode: null,
+      message: e instanceof Error ? e.message : "Target host is not allowed",
+      responseHeaders: null,
+      responseBody: null,
+    };
+  }
   return new Promise<{
     status: string;
     latency: number;

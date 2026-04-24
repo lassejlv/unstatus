@@ -45,7 +45,7 @@ app.get("/api/status/summary.json", async (c) => {
     }
 
     const page = await resolvePublicPage({ customDomain: hostname });
-    const data = await getPublicStatusPage(page);
+    const data = await getPublicStatusPage(page, { allowCustomJs: true });
     const pageUrl = `https://${hostname}`;
     const summary = buildAtlassianSummary(data, pageUrl);
 

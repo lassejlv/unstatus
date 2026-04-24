@@ -1,9 +1,37 @@
 import type { Monitor } from "@unstatus/db";
+import { assertPublicUrl } from "./egress.js";
 
 type Rule = { type: string; operator: string; value: string };
 
 const DEFAULT_USER_AGENT = "Unstatus/1.0 (https://unstatus.app; monitor)";
 const RETRY_DELAY_MS = 1500;
+const MAX_REDIRECTS = 5;
+
+async function fetchWithValidatedRedirects(
+  url: URL,
+  init: RequestInit,
+  redirectsRemaining = MAX_REDIRECTS,
+): Promise<Response> {
+  const res = await fetch(url, { ...init, redirect: "manual" });
+  if (![301, 302, 303, 307, 308].includes(res.status)) return res;
+
+  const location = res.headers.get("location");
+  if (!location) return res;
+  if (redirectsRemaining <= 0) {
+    throw new Error("Too many redirects");
+  }
+
+  const nextUrl = await assertPublicUrl(new URL(location, url).toString(), ["http:", "https:"]);
+  return fetchWithValidatedRedirects(
+    nextUrl,
+    {
+      ...init,
+      method: res.status === 303 ? "GET" : init.method,
+      body: res.status === 303 ? undefined : init.body,
+    },
+    redirectsRemaining - 1,
+  );
+}
 
 async function performHttpCheck(monitor: Monitor) {
   const start = performance.now();
@@ -20,12 +48,15 @@ async function performHttpCheck(monitor: Monitor) {
   const timeoutId = setTimeout(() => controller.abort(), monitor.timeout * 1000);
 
   try {
-    const res = await fetch(monitor.url!, {
+    if (!monitor.url) {
+      throw new Error("No URL configured");
+    }
+    const url = await assertPublicUrl(monitor.url, ["http:", "https:"]);
+    const res = await fetchWithValidatedRedirects(url, {
       method: monitor.method ?? "GET",
       headers,
       body: monitor.method !== "GET" ? monitor.body ?? undefined : undefined,
       signal: controller.signal,
-      redirect: "follow",
     });
     clearTimeout(timeoutId);
 

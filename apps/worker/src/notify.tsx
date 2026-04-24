@@ -5,6 +5,26 @@ const email = process.env.INBOUND_API_KEY
   ? createEmailClient(process.env.INBOUND_API_KEY)
   : null;
 
+const DISCORD_WEBHOOK_HOSTS = new Set([
+  "discord.com",
+  "ptb.discord.com",
+  "canary.discord.com",
+  "discordapp.com",
+  "ptb.discordapp.com",
+  "canary.discordapp.com",
+]);
+
+function isAllowedDiscordWebhookUrl(webhookUrl: string): boolean {
+  try {
+    const url = new URL(webhookUrl);
+    return url.protocol === "https:"
+      && DISCORD_WEBHOOK_HOSTS.has(url.hostname)
+      && /^\/api\/webhooks\/[^/]+\/[^/]+/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 type NotifyEvent =
   | { type: "monitor.down"; monitorName: string; message?: string }
   | { type: "monitor.recovered"; monitorName: string }
@@ -161,6 +181,10 @@ export async function sendNotifications(organizationId: string, event: NotifyEve
   await Promise.allSettled(
     channels.map(async (channel) => {
       if (channel.type === "discord" && channel.webhookUrl) {
+        if (!isAllowedDiscordWebhookUrl(channel.webhookUrl)) {
+          console.error(`Blocked invalid Discord webhook for channel ${channel.id}`);
+          return;
+        }
         const embed = buildEmbed(event);
         const res = await fetch(channel.webhookUrl, {
           method: "POST",

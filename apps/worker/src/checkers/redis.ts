@@ -1,5 +1,6 @@
 import type { Monitor } from "@unstatus/db";
 import { RedisClient } from "bun";
+import { assertPublicUrl } from "./egress.js";
 
 const RETRY_DELAY_MS = 1500;
 
@@ -41,6 +42,7 @@ async function performRedisCheck(monitor: Monitor) {
   try {
     const result = await Promise.race([
       (async () => {
+        await assertPublicUrl(monitor.url!, ["redis:", "rediss:"]);
         client = new RedisClient(monitor.url!);
         await client.connect();
 
