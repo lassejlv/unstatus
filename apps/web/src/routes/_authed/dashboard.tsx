@@ -65,7 +65,7 @@ function DashboardLayout() {
   return (
     <OrgProvider>
       <SidebarProvider>
-        <Sidebar variant="inset">
+        <Sidebar variant="floating">
           <SidebarHeader>
             <OrgSwitcher />
           </SidebarHeader>
@@ -83,11 +83,11 @@ function DashboardLayout() {
                         >
                           <Link to={item.to} search={item.search} className="group/nav">
                             <motion.div
-                              whileHover={{ 
+                              whileHover={{
                                 scale: 1.15,
                                 rotate: [0, -10, 10, -5, 5, 0],
                               }}
-                              transition={{ 
+                              transition={{
                                 scale: { duration: 0.2 },
                                 rotate: { duration: 0.4, ease: "easeInOut" }
                               }}
