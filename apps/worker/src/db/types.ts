@@ -1,10 +1,15 @@
 import { Prisma, type Monitor } from "@unstatus/db";
 
-export const RAW_RETENTION_DAYS = 30;
-export const HOURLY_RETENTION_DAYS = 35;
-export const DAILY_BACKFILL_DAYS = 120;
-export const HOURLY_BACKFILL_DAYS = 35;
-export const DUE_BATCH_SIZE = 500;
+export const RAW_RETENTION_DAYS = getPositiveIntEnv("RAW_RETENTION_DAYS", 30);
+export const HOURLY_RETENTION_DAYS = getPositiveIntEnv("HOURLY_RETENTION_DAYS", 35);
+export const DAILY_BACKFILL_DAYS = getPositiveIntEnv("DAILY_BACKFILL_DAYS", 120);
+export const HOURLY_BACKFILL_DAYS = getPositiveIntEnv("HOURLY_BACKFILL_DAYS", 35);
+export const DUE_BATCH_SIZE = getPositiveIntEnv("DUE_BATCH_SIZE", 500);
+
+function getPositiveIntEnv(name: string, fallback: number) {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
 
 export const MONITOR_BASE_SELECT = `
   SELECT

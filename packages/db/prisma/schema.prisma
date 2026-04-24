@@ -159,6 +159,7 @@ model Monitor {
   @@index([organizationId])
   @@index([active])
   @@index([active, nextCheckAt])
+  @@index([regions(ops: JsonbPathOps)], type: Gin)
   @@map("monitor")
 }
 
@@ -177,6 +178,7 @@ model MonitorCheck {
   checkedAt       DateTime @default(now())
 
   @@index([monitorId, checkedAt])
+  @@index([checkedAt])
   @@map("monitor_check")
 }
 

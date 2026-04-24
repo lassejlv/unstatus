@@ -28,6 +28,11 @@ const paginationInput = z.object({
   offset: z.number().min(0).default(0),
 });
 
+type CheckRollupStatsRow = {
+  total: bigint | number | null;
+  failed: bigint | number | null;
+};
+
 export const adminRouter = {
   stats: adminProcedure.handler(async () => {
     const now = new Date();
@@ -46,7 +51,7 @@ export const adminRouter = {
       totalOrganizations,
       totalMonitors,
       totalIncidents,
-      checksToday,
+      checksTodayRows,
       // Growth: this week
       usersThisWeek,
       orgsThisWeek,
@@ -66,15 +71,19 @@ export const adminRouter = {
       // Subscriptions
       activeSubscriptions,
       // Check stats (last 24h for failure rate)
-      checksLast24h,
-      failedChecksLast24h,
+      checkRowsLast24h,
     ] = await Promise.all([
       // Total counts
       prisma.user.count(),
       prisma.organization.count(),
       prisma.monitor.count(),
       prisma.incident.count(),
-      prisma.monitorCheck.count({ where: { checkedAt: { gte: todayStart } } }),
+      prisma.$queryRaw<CheckRollupStatsRow[]>`
+        SELECT COALESCE(SUM("totalChecks"), 0)::bigint as total,
+               COALESCE(SUM("downChecks" + "degradedChecks"), 0)::bigint as failed
+        FROM monitor_check_daily_rollup
+        WHERE "bucketDate" >= ${todayStart}
+      `,
       // Growth: this week
       prisma.user.count({ where: { createdAt: { gte: oneWeekAgo } } }),
       prisma.organization.count({ where: { createdAt: { gte: oneWeekAgo } } }),
@@ -100,18 +109,17 @@ export const adminRouter = {
       // Subscriptions
       prisma.organization.count({ where: { subscriptionActive: true } }),
       // Check stats (last 24h)
-      prisma.monitorCheck.count({
-        where: {
-          checkedAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-        },
-      }),
-      prisma.monitorCheck.count({
-        where: {
-          checkedAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-          status: { in: ["down", "degraded"] },
-        },
-      }),
+      prisma.$queryRaw<CheckRollupStatsRow[]>`
+        SELECT COALESCE(SUM("totalChecks"), 0)::bigint as total,
+               COALESCE(SUM("downChecks" + "degradedChecks"), 0)::bigint as failed
+        FROM monitor_check_hourly_rollup
+        WHERE "bucketStart" >= ${new Date(now.getTime() - 24 * 60 * 60 * 1000)}
+      `,
     ]);
+
+    const checksToday = Number(checksTodayRows[0]?.total ?? 0);
+    const checksLast24h = Number(checkRowsLast24h[0]?.total ?? 0);
+    const failedChecksLast24h = Number(checkRowsLast24h[0]?.failed ?? 0);
 
     // Calculate failure rate
     const failureRate24h =

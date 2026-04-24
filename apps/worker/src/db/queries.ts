@@ -55,7 +55,7 @@ export async function listDueMonitors(now: Date, region: string) {
         JOIN maintenance_window mw ON mw.id = mwm."maintenanceWindowId"
         WHERE mw.status = 'in_progress'
       )
-    ORDER BY COALESCE("nextCheckAt", to_timestamp(0)) ASC
+    ORDER BY "nextCheckAt" ASC NULLS FIRST
     LIMIT ${DUE_BATCH_SIZE}`,
     now,
     region,
