@@ -83,10 +83,8 @@ function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-lg p-6 md:p-7",
-        highlight
-          ? "bg-zinc-900 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]"
-          : "border bg-card"
+        "relative flex flex-col rounded-lg border bg-card p-6 md:p-7",
+        highlight && "shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]"
       )}
     >
       {badge && (
@@ -97,34 +95,28 @@ function PlanCard({
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h3 className={cn("text-sm font-medium", highlight ? "text-white" : "text-foreground")}>
+        <h3 className="text-sm font-medium text-foreground">
           {name}
         </h3>
           {savings && (
             <span
-              className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-mono",
-                highlight ? "bg-white/15 text-white" : "bg-muted text-muted-foreground"
-              )}
+              className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground"
             >
               {savings}
             </span>
           )}
       </div>
-      <p className={cn("mt-1 text-xs", highlight ? "text-white/70" : "text-muted-foreground")}>
+      <p className="mt-1 text-xs text-muted-foreground">
         {desc}
       </p>
       <div className="mt-6 flex items-baseline gap-1.5">
         <span
-          className={cn(
-            "text-4xl font-semibold tracking-tight tabular-nums",
-            highlight ? "text-white" : "text-foreground"
-          )}
+          className="text-4xl font-semibold tracking-tight tabular-nums text-foreground"
         >
           {price}
         </span>
         {priceSuffix && (
-          <span className={cn("text-xs", highlight ? "text-white/60" : "text-muted-foreground")}>
+          <span className="text-xs text-muted-foreground">
             {priceSuffix}
           </span>
         )}
@@ -132,10 +124,9 @@ function PlanCard({
       <Button
         className={cn(
           "mt-6 w-full rounded-md text-sm",
-          ctaVariant === "default" && !highlight && "hover:opacity-90",
-          highlight && "bg-white text-zinc-900 hover:opacity-90"
+          ctaVariant === "default" && "hover:opacity-90"
         )}
-        variant={highlight ? "outline" : ctaVariant}
+        variant={ctaVariant}
         onClick={onAction}
       >
         {cta}
@@ -144,11 +135,11 @@ function PlanCard({
       <ul className="mt-7 space-y-3 text-sm">
         {features.map((f, i) => (
           <li key={i} className="flex items-start gap-2.5">
-            <CustomCheck className="mt-0.5 size-4 shrink-0" muted={!!highlight} />
+            <CustomCheck className="mt-0.5 size-4 shrink-0" />
             <div>
-              <div className={highlight ? "text-white" : "text-foreground"}>{f.text}</div>
+              <div className="text-foreground">{f.text}</div>
               {f.detail && (
-                <div className={cn("mt-0.5 text-xs", highlight ? "text-white/60" : "text-muted-foreground")}>
+                <div className="mt-0.5 text-xs text-muted-foreground">
                   {f.detail}
                 </div>
               )}
